@@ -107,3 +107,12 @@ C1 deposit 20 USDC → T (`{"action":"deposit"}`) · C2 `execute_lp` with the pl
 `node scripts/plan-lp.ts 2951 18000000 100`, computed just before (current preview: swap
 8 323 187 USDC atomic, ≈ 9.68 USDC to LP) · C3 `verify_liquidity` · C4 `register_position(0)` ·
 C5 `close_season(0)` · C6 `claim(0)` · C7 second claim, expected to fail.
+
+## 7. Batch B progress (approved « OK BATCH B + C », 2026-11-11/12)
+
+| Step | Hash | Result |
+|---|---|---|
+| B0 | — (local) | near-cli testnet `rpc_url` changed from `archival-rpc.testnet.fastnear.com` to `https://test.rpc.fastnear.com/` |
+| B1 | [HJTW4c6u…yUpY](https://testnet.nearblocks.io/txns/HJTW4c6uNaSVmuzNRG84NcCQaRMeunAoiP3omquNyUpY) | Treasury deployed (wasm SHA-256 `73b99075…520e`), code_hash `8njzxUPU74wzskUUJ6QDjowp953JePSqL96ez5kqJ7F3`, 20.16 Tgas, storage 250 821 B (2.508 NEAR locked), config pool 2951 |
+| B2 | [6sMPV5RT…eVgy](https://testnet.nearblocks.io/txns/6sMPV5RToZRd77cjaUa32QgpU9f8poWFawpFAKSEeVgy) | `setup` SUCCESS, 26.15 Tgas; event `setup_done {pool_id 2951, usdc_pool_index 0}`; `get_config.ready = true` |
+| B3–B5, C1–C7 | — | **NOT executed yet** (session stopped: usage limit). Resume at B3. FUEL not deployed → no season clock running. |
