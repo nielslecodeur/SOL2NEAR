@@ -10,6 +10,8 @@ export const REF_EXCHANGE_ID = "ref-finance-101.testnet";
 /** Lead's accounts (created 2026-11-11). The Treasury contract is not deployed yet. */
 export const DEV_ACCOUNT_ID = "sol2near-dev.testnet";
 export const TREASURY_ACCOUNT_ID = "treasury.sol2near-dev.testnet";
+/** Planned FUEL account (not created yet). */
+export const FUEL_ACCOUNT_ID = "fuel.sol2near-dev.testnet";
 
 /** Pool id is set after the pool is created on Ref (gate G2). null until then. */
 export const LP_POOL_ID: number | null = null;

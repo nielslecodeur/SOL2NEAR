@@ -1,4 +1,4 @@
-﻿# SOL2NEAR
+# SOL2NEAR
 
 > **SOL2NEAR turns Solana memecoin creator revenue into verifiable, programmable liquidity on NEAR.**
 >
