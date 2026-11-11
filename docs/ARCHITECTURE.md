@@ -91,12 +91,13 @@ $vs = "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Commo
 $env:PATH = "$vs\CMake\bin;$vs\Ninja;$env:PATH"; $env:AWS_LC_SYS_NO_ASM = "1"
 cargo test -p sol2near-treasury
 
-# wasm (fallback until cargo-near is installed): ~302 KB stripped
-$env:RUSTFLAGS = "-C link-arg=-s"; cargo build -p sol2near-treasury --target wasm32-unknown-unknown --release
+# reference wasm build (WSL Ubuntu, cargo-near 0.22.0): 248.9 KB with embedded ABI
+# Linux artifacts in a WSL-local target dir; output copied to target/near/treasury/
+wsl -d Ubuntu -- bash -lc 'export PATH=$HOME/.local/bin:$PATH CARGO_TARGET_DIR=$HOME/sol2near-target; cd /mnt/c/Users/niels/OneDrive/fintech/projet/SOL2NEAR/contracts/treasury && cargo near build non-reproducible-wasm --out-dir ../../target/near/treasury'
 ```
 
-Not yet proven: that this raw wasm (Rust 1.98) is accepted by nearcore testnet (FEASIBILITY H8);
-`cargo near build` is the reference build once installed.
+cargo-near runs `wasm-opt --enable-nontrapping-float-to-int --enable-bulk-memory`. Acceptance of
+the wasm by nearcore testnet (FEASIBILITY H8) is only proven by a deploy.
 
 ## 8. Known limits (A1)
 

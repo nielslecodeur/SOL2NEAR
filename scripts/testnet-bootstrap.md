@@ -61,8 +61,8 @@ If Ref rejects the 1-yocto deposit on `swap`, change `launch_swap` in `contracts
 
 ## 6. Treasury deploy + setup (gate G3, separate approval)
 ```powershell
-# build (cargo-near when available; fallback = stripped raw build, see docs/ARCHITECTURE.md)
-near contract deploy $T use-file target/wasm32-unknown-unknown/release/sol2near_treasury.wasm with-init-call new json-args "{\"usdc_token\":\"$USDC\",\"wnear_token\":\"$WNEAR\",\"ref_exchange\":\"$REF\",\"pool_id\":<N>,\"min_deposit\":\"1000000\",\"lp_lock_duration_ns\":\"600000000000\"}" prepaid-gas '100 Tgas' attached-deposit '0 NEAR' network-config testnet sign-with-keychain send
+# build with cargo-near first (docs/ARCHITECTURE.md §7) and check the SHA-256 printed by the build
+near contract deploy $T use-file target/near/treasury/sol2near_treasury.wasm with-init-call new json-args "{\"usdc_token\":\"$USDC\",\"wnear_token\":\"$WNEAR\",\"ref_exchange\":\"$REF\",\"pool_id\":<N>,\"min_deposit\":\"1000000\",\"lp_lock_duration_ns\":\"600000000000\"}" prepaid-gas '100 Tgas' attached-deposit '0 NEAR' network-config testnet sign-with-keychain send
 call $T setup '{}' '0.105 NEAR' '150 Tgas'
 view $T get_config
 ```
