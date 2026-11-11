@@ -6,6 +6,9 @@
   "packageManager": "pnpm@10.34.9",
   "scripts": {
     "test:contracts": "cargo test --workspace",
+    "test:ts": "pnpm --filter @sol2near/near-client test",
+    "typecheck": "pnpm -r typecheck",
+    "verify:testnet": "node scripts/probes/verify-testnet.mjs",
     "build:shared": "pnpm --filter @sol2near/shared build"
   }
 }

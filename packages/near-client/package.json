@@ -1,0 +1,16 @@
+{
+  "name": "@sol2near/near-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lead-side NEAR helpers: LP plan computation from live Ref views (no hard-coded fees).",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "node --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "typescript": "5.6.3"
+  }
+}

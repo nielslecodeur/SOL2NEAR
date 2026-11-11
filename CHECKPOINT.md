@@ -11,6 +11,10 @@ build done; nothing deployed; real Ref/Rhea LP not yet proven on-chain.**
 | `cargo test -p sol2near-treasury` (Windows) | **33 passed, 0 failed** (4 ledger + 29 contract) |
 | `cargo near build non-reproducible-wasm` (WSL, cargo-near **0.22.0**) | ✅ `target/near/treasury/sol2near_treasury.wasm` **248.9 KB**, SHA-256 `35e9a79a3cd0532298196bffffe73266242cd59b4299ff845fa6163c4e9a8168`, embedded ABI (26 functions; 10 callbacks `private`; `setup` / `withdraw_lp` / `withdraw_reserve` `payable`) |
 | `packages/shared` typecheck | ✅ |
+| `packages/near-client` (LP plan from live Ref views) | ✅ `pass 6, fail 0`; swap formula reproduces live `get_return` exactly (9418312462); add-liquidity minimums come from the live `predict_add_simple_liquidity` view (a local formula was 0.01 % off) |
+| `node scripts/probes/verify-testnet.mjs` (read-only) | ✅ `all checks passed` (2026-11-11 ~22:00 UTC): Tidepool testnet + Solana route ok, dry quote 1 USDC → 0.9974 (cost 2600 atomic, read from the quote), Ref v1.9.19 Running; Treasury not deployed, no pool yet |
+| Hackathon rules | ✅ `docs/HACKATHON_CHECKLIST.md` (live HACKATHON.md read), `LICENSE` MIT, README disclosures, `CLAUDE.md` |
+| Git identity | ✅ local commits rewritten as `nielslecodeur <188048354+nielslecodeur@users.noreply.github.com>` (repo-local config); initial commit `ec13f38` on GitHub still shows the placeholder |
 | Testnet accounts | `sol2near-dev.testnet` (~5 NEAR), `treasury.sol2near-dev.testnet` (5 NEAR, no code) |
 | On-chain transactions by SOL2NEAR | only the 2 account creations (`6rTeGov…82wB`, `bi1cErW…eCma`) |
 
