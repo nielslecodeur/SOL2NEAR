@@ -7,7 +7,7 @@ import {
 
 const [poolArg, budgetArg, slipArg = "100"] = process.argv.slice(2);
 if (!poolArg || !budgetArg) throw new Error("usage: node scripts/plan-lp.ts <pool_id> <lp_budget_usdc_atomic> [slippage_bps]");
-const RPC = process.env.NEAR_RPC_URL ?? "https://rpc.testnet.near.org";
+const RPC = process.env.NEAR_RPC_URL ?? "https://near-testnet.drpc.org";
 const USDC = "usdc.tidepool-sandbox.testnet";
 
 const res = await fetch(RPC, {

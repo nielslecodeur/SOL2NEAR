@@ -6,7 +6,7 @@
 // Prints one line per check: PASS / FAIL / INFO, then exits 1 if any FAIL.
 
 const TIDEPOOL = "https://www.usetidepool.tech";
-const RPC = process.env.NEAR_RPC_URL ?? "https://rpc.testnet.near.org";
+const RPC = process.env.NEAR_RPC_URL ?? "https://near-testnet.drpc.org";
 const REF = "ref-finance-101.testnet";
 const USDC = "usdc.tidepool-sandbox.testnet";
 const WNEAR = "wnear.tidepool-sandbox.testnet";
@@ -15,7 +15,7 @@ const TREASURY = "treasury.sol2near-dev.testnet";
 const DEV = "sol2near-dev.testnet";
 // Dry quotes never create a deposit address; this placeholder is the Solana devnet USDC mint itself.
 const REFUND = process.env.SOLANA_REFUND_ADDRESS ?? "7pafEGXSmR35rLKNaD6inpfLYuEnRX9DyBc1c7M8r4Xr";
-const POOL_ID = process.env.LP_POOL_ID ? Number(process.env.LP_POOL_ID) : null;
+const POOL_ID = Number(process.env.LP_POOL_ID ?? 2951); // pool created in G2 batch A
 const UA = { "user-agent": "sol2near-verify/0.1" };
 
 let failures = 0;
@@ -120,8 +120,12 @@ if (POOL_ID !== null) {
   await check("lp pool", async () => {
     const p = await view(REF, "get_pool", { pool_id: POOL_ID });
     info(`pool ${POOL_ID}: ${p.pool_kind} ${p.token_account_ids.join("/")} amounts ${p.amounts.join("/")} fee ${p.total_fee} bps`);
+    const ok = p.pool_kind === "SIMPLE_POOL" && p.token_account_ids.join() === `${USDC},${WNEAR}`;
+    ok ? pass(`pool ${POOL_ID} is SIMPLE_POOL ${USDC}/${WNEAR}`) : fail(`pool ${POOL_ID} is not our USDC/wNEAR simple pool`);
+    const d = await view(REF, "get_pool_shares", { pool_id: POOL_ID, account_id: DEV });
+    BigInt(d) > 0n ? pass(`${DEV} holds ${d} LP shares of pool ${POOL_ID} (total ${p.shares_total_supply})`) : fail(`${DEV} holds 0 LP shares`);
     const s = await view(REF, "get_pool_shares", { pool_id: POOL_ID, account_id: TREASURY });
-    BigInt(s) > 0n ? pass(`Treasury holds ${s} LP shares of pool ${POOL_ID}`) : info(`Treasury holds 0 LP shares of pool ${POOL_ID}`);
+    BigInt(s) > 0n ? pass(`Treasury holds ${s} LP shares of pool ${POOL_ID}`) : info(`Treasury holds 0 LP shares of pool ${POOL_ID} (not deployed yet)`);
   });
 } else {
   info("LP_POOL_ID not set: no SOL2NEAR pool created yet (gate G2)");

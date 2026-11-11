@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // READ-ONLY snapshot of everything batch A touches. No keys, no signing.
 // Usage: node scripts/probes/g2-state.mjs [pool_id]
-const RPC = process.env.NEAR_RPC_URL ?? "https://rpc.testnet.near.org";
+const RPC = process.env.NEAR_RPC_URL ?? "https://near-testnet.drpc.org";
 const REF = "ref-finance-101.testnet";
 const DEV = "sol2near-dev.testnet";
 const USDC = "usdc.tidepool-sandbox.testnet";

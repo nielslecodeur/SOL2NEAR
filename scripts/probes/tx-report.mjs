@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // READ-ONLY: status, gas burnt, NEAR spent, every receipt, logs and NEAR transfers (refunds) of a tx.
 // Usage: node scripts/probes/tx-report.mjs <tx_hash> <signer_account_id>
-const RPC = process.env.NEAR_RPC_URL ?? "https://rpc.testnet.near.org";
+const RPC = process.env.NEAR_RPC_URL ?? "https://near-testnet.drpc.org";
 const [hash, signer] = process.argv.slice(2);
 if (!hash || !signer) throw new Error("usage: tx-report.mjs <tx_hash> <signer>");
 
