@@ -268,6 +268,9 @@ impl Treasury {
             dust_usdc: U128(0),
             dust_wnear: U128(0),
             unlock_at: None,
+            pool_id: None,
+            lp_confirmed_at: None,
+            lp_confirmed_block: None,
             last_error: None,
             created_at: now,
             updated_at: now,
@@ -863,6 +866,9 @@ impl Treasury {
         d.dust_usdc = U128(usdc.0 - used_usdc);
         d.dust_wnear = U128(wnear.0 - used_wnear);
         d.unlock_at = Some(U64(env::block_timestamp() + self.config.lp_lock_duration_ns.0));
+        d.pool_id = Some(self.config.pool_id);
+        d.lp_confirmed_at = Some(U64(env::block_timestamp()));
+        d.lp_confirmed_block = Some(U64(env::block_height()));
         d.status = DepositStatus::LpConfirmed;
         self.in_flight = None;
         if let Some(s) = shares_now {

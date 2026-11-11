@@ -1,0 +1,16 @@
+[package]
+name = "sol2near-fuel"
+version = "0.1.0"
+edition = "2021"
+description = "FUEL: fixed-supply NEP-141 memecoin whose rewards and burns are driven by verified Ref/Rhea LP held by the SOL2NEAR Treasury (testnet)"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = "5.30"
+near-contract-standards = "5.30"
+
+[dev-dependencies]
+near-sdk = { version = "5.30", features = ["unit-testing"] }

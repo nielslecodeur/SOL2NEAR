@@ -247,6 +247,7 @@ fn happy_path_confirms_lp_with_dust_and_lock() {
     assert_eq!(d.dust_usdc.0, 10);
     assert_eq!(d.dust_wnear.0, 7);
     assert_eq!(d.unlock_at, Some(U64(1_000 + LOCK_NS)));
+    assert_eq!((d.pool_id, d.lp_confirmed_at), (Some(POOL), Some(U64(1_000))));
     let a = t.get_accounting();
     assert_eq!(a.recorded_shares.0, 5_000);
     assert_eq!(a.pending_budget_total.0, 0);

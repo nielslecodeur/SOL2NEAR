@@ -35,6 +35,9 @@ export interface TreasuryDeposit {
   dust_usdc: string;
   dust_wnear: string;
   unlock_at: string | null;
+  pool_id: number | null;
+  lp_confirmed_at: string | null;
+  lp_confirmed_block: string | null;
   last_error: string | null;
   created_at: string;
   updated_at: string;

@@ -81,6 +81,10 @@ pub struct Deposit {
     pub dust_usdc: U128,
     pub dust_wnear: U128,
     pub unlock_at: Option<U64>,
+    /// Proof fields set once when the LP is confirmed (read by the FUEL contract).
+    pub pool_id: Option<u64>,
+    pub lp_confirmed_at: Option<U64>,
+    pub lp_confirmed_block: Option<U64>,
     pub last_error: Option<String>,
     pub created_at: U64,
     pub updated_at: U64,
