@@ -567,6 +567,7 @@ impl Fuel {
         }
         self.seasons.insert(season_id, season);
         if reward > 0 {
+            // shortcut: per-vault Vec pruned on write, fine for a demo; index by time if a vault gets thousands of awards
             let awards = self.vault_awards.entry(d.creator.clone()).or_default();
             awards.retain(|(t, _)| t + CAP_WINDOW_NS > now);
             awards.push((now, reward));

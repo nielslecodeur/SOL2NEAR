@@ -24,9 +24,12 @@ Lead = 70 % (contracts, Ref/Rhea LP, FUEL, frontend); teammate = 30 % (`packages
 # Treasury unit tests (Windows)
 $vs = "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake"
 $env:PATH = "$vs\CMake\bin;$vs\Ninja;$env:PATH"; $env:AWS_LC_SYS_NO_ASM = "1"
-cargo test -p sol2near-treasury
+cargo test --workspace                      # Treasury + FUEL
 
-# Official wasm build (WSL, cargo-near 0.22.0) — see docs/ARCHITECTURE.md §7
-# Shared types
-pnpm --filter @sol2near/shared typecheck
+# Official wasm builds (WSL, cargo-near 0.22.0)
+wsl -d Ubuntu -- bash scripts/build-wasm.sh
+
+# TypeScript
+pnpm typecheck; pnpm test:ts; pnpm --filter @sol2near/web test; pnpm --filter @sol2near/web build
 ```
+FUEL rules: `docs/FUEL_REACTOR.md`. Current status: `docs/CHECKPOINT_A2.md`.

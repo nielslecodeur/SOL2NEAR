@@ -408,6 +408,39 @@ fn level_goes_up_then_down() {
     assert_eq!(f.get_reactor().seasons_touched, vec![0, 1]);
 }
 
+// ------------------------- narrated demo (MOCKED VM, not testnet) -------------------------
+
+/// `cargo test -p sol2near-fuel demo_walkthrough -- --nocapture`
+#[test]
+fn demo_walkthrough() {
+    println!("\n=== SOL2NEAR FUEL Reactor walkthrough — MOCKED NEAR VM (not testnet) ===");
+    let mut f = fuel();
+    let d = deposit(0, ALICE, 9_500_000, GENESIS + MIN);
+    println!("1. Treasury deposit #0 by {ALICE}: status LpConfirmed, lp_verified, {} shares, 9.5 USDC in pool {POOL}", d.lp_shares.0);
+    println!("2. Proof: Ref get_pool_shares(Treasury)=1000 >= Treasury recorded_shares=1000, lock 10 min >= min lock");
+    assert!(admit(&mut f, GENESIS + 2 * MIN, Some(d), 1_000, 1_000));
+    let p = f.get_position(U64(0)).unwrap();
+    println!("   -> admitted in season {}: reward {} FUEL ({} creator / {} community), status {:?}",
+        p.position.season_id, p.position.reward_total.0 as f64 / 1e18, p.position.creator_reward.0 as f64 / 1e18,
+        p.position.community_reward.0 as f64 / 1e18, p.reward_status);
+    assert!(!admit(&mut f, GENESIS + 3 * MIN, Some(deposit(1, BOB, 5 * USDC, GENESIS + MIN)), 1_000, 999));
+    println!("   -> deposit #1 refused: Ref shows 999 < 1000 recorded shares (ERR_SHARES_NOT_BACKED_ON_REF)");
+    admit_ok(&mut f, deposit(2, BOB, 1 * USDC, GENESIS + 4 * MIN));
+    let s = f.get_season(0).unwrap();
+    println!("3. Reactor season 0 progress: {} / {} USDC, {} positions", s.progress_usdc.0 as f64 / 1e6, s.target_usdc.0 as f64 / 1e6, s.positions);
+    set(BOB, GENESIS + SEASON);
+    let closed = f.close_season(0);
+    println!("4. close_season(0) by anyone after end: {:?}, level -> {:?}, burned {}", closed.status, closed.level_after, closed.burned.0);
+    f.token.internal_register_account(&acc(ALICE));
+    let paid = f.claim(U64(0));
+    println!("5. claim(#0): {} FUEL paid to {ALICE} (lock over, season SUCCESS)", paid.0 as f64 / 1e18);
+    let again = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f.claim(U64(0))));
+    println!("6. second claim(#0): {}", if again.is_err() { "REJECTED (ERR_ALREADY_CLAIMED)" } else { "accepted?!" });
+    assert!(again.is_err());
+    assert_invariants(&f);
+    println!("   supply {} FUEL, invariants hold\n", f.ft_total_supply().0 / ONE_FUEL);
+}
+
 // ------------------------- team vesting & holders -------------------------
 
 #[test]

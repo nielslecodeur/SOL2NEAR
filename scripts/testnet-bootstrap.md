@@ -67,3 +67,19 @@ call $T setup '{}' '0.105 NEAR' '150 Tgas'
 view $T get_config
 ```
 `lp_lock_duration_ns = 600000000000` = **10 minutes, test value** (spec V3 §5: accelerated lock, declared as such).
+
+## 7. FUEL deploy (gate G3, separate approval) — DEMO config, not production
+```powershell
+$FUEL="fuel.sol2near-dev.testnet"
+near account create-account fund-myself $FUEL '4 NEAR' autogenerate-new-keypair save-to-keychain sign-as $DEV network-config testnet sign-with-keychain send
+# genesis = now (ns); season 30 min, target 10 USDC, burn 10 FUEL, min lock 10 min, team cliff 1 h / vesting 10 h
+$G = [string]([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() * 1000000)
+$cfg = "{`"config`":{`"treasury_id`":`"$T`",`"ref_exchange`":`"$REF`",`"pool_id`":<N>,`"ecosystem_id`":`"$DEV`",`"liquidity_id`":`"$DEV`",`"team_id`":`"$DEV`",`"genesis_ns`":`"$G`",`"season_duration_ns`":`"1800000000000`",`"season_target_usdc`":`"10000000`",`"season_reward_budget`":`"5000000000000000000000`",`"season_burn`":`"10000000000000000000`",`"min_lock_ns`":`"600000000000`",`"vault_cap`":`"2000000000000000000000`",`"team_cliff_ns`":`"3600000000000`",`"team_vesting_ns`":`"36000000000000`"}}"
+near contract deploy $FUEL use-file target/near/fuel/sol2near_fuel.wasm with-init-call new json-args $cfg prepaid-gas '100 Tgas' attached-deposit '0 NEAR' network-config testnet sign-with-keychain send
+view $FUEL get_reactor
+# after a Treasury deposit reaches LpConfirmed:
+call $FUEL register_position '{"position_id":"0"}' '0 NEAR' '100 Tgas'
+view $FUEL get_position '{"position_id":"0"}'
+```
+On testnet the ecosystem, liquidity and team allocations go to `$DEV` for simplicity. Dedicated
+accounts would be used in production.

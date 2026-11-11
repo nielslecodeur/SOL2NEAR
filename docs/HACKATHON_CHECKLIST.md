@@ -52,7 +52,8 @@ Légende : ☐ à faire · ☑ fait (avec preuve) · ⚠ point d'attention
 
 | Catégorie | À déclarer |
 |---|---|
-| Bibliothèques Rust | `near-sdk` 5.30.1 (feature `unit-testing` en dev) |
+| Bibliothèques Rust | `near-sdk` 5.30.1 (feature `unit-testing` en dev), `near-contract-standards` 5.30.1 (implémentation NEP-141/145 de FUEL) |
+| Bibliothèques web | React 18.3.1, Vite 5.4.11, @vitejs/plugin-react 4.3.4 (aucune lib wallet) |
 | Outils de build | cargo-near 0.22.0, wasm-opt (via cargo-near), near-cli-rs 0.31.1, pnpm 10, TypeScript 5.6.3 |
 | Services externes | Tidepool (sandbox communautaire), Ref/Rhea exchange testnet `ref-finance-101.testnet`, NEAR testnet RPC |
 | Templates / boilerplate | aucun |
@@ -72,7 +73,11 @@ Règle : **aucune fonctionnalité n'est annoncée sans preuve vérifiable**. Un 
 | Pool Ref créé | tx `add_simple_pool` + `get_pool` | ☐ G2 |
 | LP réelles détenues par Treasury | tx `add_liquidity` + `get_pool_shares(Treasury) > 0` | ☐ G2/G3 |
 | Proof of Liquidity | tx `verify_liquidity` + event `proof_of_liquidity` | ☐ |
-| FUEL | tx de claim + précondition LP vérifiée | ☐ CP2 |
+| FUEL : règles (supply, PoL, saisons, burn, claims) | `cargo test -p sol2near-fuel` → 27 passed ; walkthrough `demo_walkthrough -- --nocapture` | ☑ unitaire (VM mockée) |
+| FUEL : build | cargo-near + SHA-256 | ☑ `scripts/build-wasm.sh` |
+| FUEL : admission d'une vraie position | tx `register_position` + event `position_admitted` | ☐ (nécessite G2 + déploiements) |
+| FUEL : clôture de saison et claim | tx `close_season` + `claim` + event `reward_claimed` | ☐ |
+| Frontend | `pnpm --filter @sol2near/web build` ; les données démo portent le bandeau SIMULATED | ☑ build ; ☐ données testnet réelles |
 
 Chaque preuve va dans le README avec un lien explorer (`testnet.nearblocks.io`, `explorer.solana.com/?cluster=devnet`). Si une étape n'est pas prouvée le jour J, le README et la vidéo disent **« non démontré »**.
 

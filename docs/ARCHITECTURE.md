@@ -13,6 +13,7 @@ creator ──execute_lp(plan)──► Treasury ──► Ref ft_transfer_call 
 LP shares (Ref MFT ":<pool_id>") held by Treasury, recorded per deposit, locked until unlock_at
 creator ──withdraw_lp──► mft_transfer(shares → creator)       creator ──withdraw_reserve──► USDC
 anyone ──verify_liquidity──► get_pool_shares(Treasury) vs recorded_shares → Proof + event
+anyone ──FUEL.register_position──► reads Treasury + Ref → season progress, FUEL reward (see §8)
 ```
 
 Why the user (not Treasury) is the Tidepool recipient: Tidepool settles with a plain `ft_transfer`,
@@ -99,7 +100,38 @@ wsl -d Ubuntu -- bash -lc 'export PATH=$HOME/.local/bin:$PATH CARGO_TARGET_DIR=$
 cargo-near runs `wasm-opt --enable-nontrapping-float-to-int --enable-bulk-memory`. Acceptance of
 the wasm by nearcore testnet (FEASIBILITY H8) is only proven by a deploy.
 
-## 8. Known limits (A1)
+## 8. FUEL contract (checkpoint A2)
+
+```
+creator LP confirmed in Treasury ──► anyone: FUEL.register_position(id)
+   FUEL ──► Treasury.get_deposit(id) ┐
+   FUEL ──► Treasury.get_accounting() ├─ joint ─► FUEL.on_position_proof: admit or reject (no partial write)
+   FUEL ──► Ref.get_pool_shares(pool, Treasury) ┘
+season ends ──► anyone: FUEL.close_season(k) ── SUCCESS: level+1, rewards claimable
+                                              └ FAILED: level−1, rewards back to reserve, burn ≤ 10 FUEL
+lock over ──► anyone: FUEL.claim(id) ── internal transfer of the creator's 80 % (sync, all-or-nothing)
+```
+
+- Token and Reactor live in the **same contract**, so rewards are internal ledger moves. A claim
+  never leaves a half-paid async state behind.
+- The only async step is the proof read. Its callback is private and idempotent: an already
+  registered position or a closed season means a reject, and a rejection writes nothing.
+- The Treasury added three proof fields to `Deposit` for FUEL: `pool_id`, `lp_confirmed_at`,
+  `lp_confirmed_block`. They are written once, when `finalize_lp` confirms the LP.
+- Full rules and parameters: `docs/FUEL_REACTOR.md`.
+
+## 9. Frontend (checkpoint A2)
+
+`apps/web` (Vite + React 18) has three screens: Dashboard, Vault detail and FUEL Reactor.
+- **Live mode** reads public state through JSON-RPC views (`get_creator_deposits`,
+  `get_accounting`, Ref `get_pool_shares`, FUEL `get_reactor` / `get_season` / `get_position`).
+  It has no wallet and no signing. When a contract is not deployed, the UI says so.
+- **Demo mode** shows a `SIMULATED / DEMO DATA` banner. Its data has the contract shapes and obeys
+  the contract invariants (`src/demo.test.ts`).
+- The cross-chain card uses an isolated SIMULATED adapter (`src/demo.ts`) until
+  `packages/crosschain` lands.
+
+## 10. Known limits (A1)
 
 - Global lock serialises LP jobs (fine for a demo, not for many creators).
 - Storage of deposits is paid by Treasury's balance (no per-depositor storage charge yet).
