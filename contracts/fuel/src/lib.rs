@@ -53,6 +53,12 @@ const USDC_TO_FUEL: u128 = 1_000_000_000_000;
 const CREATOR_SHARE_BPS: u128 = 8_000;
 const BPS: u128 = 10_000;
 
+/// After the registration window closes, in-flight proof callbacks (1-3 blocks) get this long to
+/// land before `close_season` is allowed.
+pub const SETTLE_NS: u64 = 60 * 1_000_000_000;
+const TREASURY_LP_BPS: u128 = 9_000;
+const TREASURY_RESERVE_BPS: u128 = 800;
+
 const GAS_VIEW: Gas = Gas::from_tgas(5);
 const GAS_PROOF_CB: Gas = Gas::from_tgas(30);
 
@@ -78,6 +84,9 @@ pub struct ReactorConfig {
     /// Start of season 0 (ns). Seasons are [genesis + k*duration, genesis + (k+1)*duration).
     pub genesis_ns: U64,
     pub season_duration_ns: U64,
+    /// A position confirmed in season k may be *requested* for registration until end_k + grace.
+    /// close_season(k) is allowed from end_k + grace + SETTLE_NS.
+    pub registration_grace_ns: U64,
     /// USDC (atomic, 6 decimals) of newly confirmed LP needed for SUCCESS.
     pub season_target_usdc: U128,
     /// Max FUEL committed as rewards per season.
@@ -197,6 +206,13 @@ pub struct ReactorView {
 pub struct TreasuryDeposit {
     pub id: U64,
     pub creator: AccountId,
+    /// USDC credited by the token contract, and its 90/8/2 split (re-checked here).
+    pub amount: U128,
+    pub lp_budget: U128,
+    pub reserve: U128,
+    pub community: U128,
+    pub usdc_swapped: U128,
+    pub dust_usdc: U128,
     pub status: Value,
     pub lp_shares: U128,
     pub lp_verified: bool,
@@ -254,6 +270,7 @@ impl Fuel {
         let me = env::current_account_id();
         let c = &config;
         require!(c.season_duration_ns.0 >= 60_000_000_000, "ERR_SEASON_TOO_SHORT");
+        require!(c.registration_grace_ns.0 <= c.season_duration_ns.0, "ERR_GRACE_GT_SEASON");
         require!(c.season_target_usdc.0 > 0, "ERR_TARGET_ZERO");
         require!(c.season_reward_budget.0 <= POL_RESERVE, "ERR_BUDGET_GT_RESERVE");
         require!(c.season_burn.0 <= MAX_BURN_PER_SEASON, "ERR_BURN_GT_10_FUEL");
@@ -328,13 +345,19 @@ impl Fuel {
                     .with_static_gas(GAS_VIEW)
                     .get_pool_shares(c.pool_id, c.treasury_id.clone()),
             )
-            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_PROOF_CB).on_position_proof(position_id))
+            .then(
+                Self::ext(env::current_account_id())
+                    .with_static_gas(GAS_PROOF_CB)
+                    .on_position_proof(position_id, U64(env::block_timestamp())),
+            )
     }
 
+    /// `requested_at` is the block time of `register_position`, set by this contract itself.
     #[private]
     pub fn on_position_proof(
         &mut self,
         position_id: U64,
+        requested_at: U64,
         #[callback_result] deposit: Result<Option<TreasuryDeposit>, PromiseError>,
         #[callback_result] accounting: Result<TreasuryAccounting, PromiseError>,
         #[callback_result] ref_shares: Result<U128, PromiseError>,
@@ -342,7 +365,7 @@ impl Fuel {
         // Same check as #[private], kept explicit because this callback is the trust boundary.
         require!(env::predecessor_account_id() == env::current_account_id(), "ERR_PRIVATE_CALLBACK");
         let result = match (deposit, accounting, ref_shares) {
-            (Ok(d), Ok(a), Ok(s)) => self.admit(position_id.0, d, a.recorded_shares.0, s.0),
+            (Ok(d), Ok(a), Ok(s)) => self.admit(position_id.0, requested_at.0, d, a.recorded_shares.0, s.0),
             _ => Err("ERR_PROOF_VIEW_FAILED"),
         };
         match result {
@@ -372,6 +395,10 @@ impl Fuel {
         let mut s = self.seasons.get(&season_id).cloned().unwrap_or_else(|| env::panic_str("ERR_SEASON_EMPTY"));
         require!(s.status == SeasonStatus::Open, "ERR_ALREADY_CLOSED");
         require!(env::block_timestamp() >= s.end.0, "ERR_SEASON_NOT_ENDED");
+        require!(
+            env::block_timestamp() >= s.end.0 + self.config.registration_grace_ns.0 + SETTLE_NS,
+            "ERR_REGISTRATION_WINDOW_NOT_SETTLED"
+        );
 
         let committed = s.committed_creator.0 + s.committed_community.0;
         if s.progress_usdc.0 >= s.target_usdc.0 {
@@ -506,6 +533,7 @@ impl Fuel {
     fn admit(
         &mut self,
         id: u64,
+        requested_at: u64,
         deposit: Option<TreasuryDeposit>,
         treasury_recorded_shares: u128,
         ref_treasury_shares: u128,
@@ -529,6 +557,18 @@ impl Fuel {
         if d.lp_shares.0 == 0 || d.usdc_in_lp.0 == 0 {
             return Err("ERR_EMPTY_POSITION");
         }
+        // Re-check the Treasury's books instead of trusting them: 90/8/2 of the credited amount,
+        // then every USDC of the LP budget accounted for (swapped + in the pool + dust left on Ref).
+        let a = d.amount.0;
+        if d.lp_budget.0 != a * TREASURY_LP_BPS / BPS
+            || d.reserve.0 != a * TREASURY_RESERVE_BPS / BPS
+            || d.lp_budget.0 + d.reserve.0 + d.community.0 != a
+        {
+            return Err("ERR_SPLIT_MISMATCH");
+        }
+        if d.usdc_swapped.0 + d.usdc_in_lp.0 + d.dust_usdc.0 != d.lp_budget.0 {
+            return Err("ERR_USDC_RECONCILIATION");
+        }
         // Proof from the DEX itself: Treasury really holds every share it claims to hold.
         if ref_treasury_shares < treasury_recorded_shares || ref_treasury_shares < d.lp_shares.0 {
             return Err("ERR_SHARES_NOT_BACKED_ON_REF");
@@ -542,6 +582,10 @@ impl Fuel {
         }
         let season_id = self.season_of(confirmed_at).ok_or("ERR_BEFORE_GENESIS")?;
         let mut season = self.seasons.get(&season_id).cloned().unwrap_or_else(|| self.empty_season(season_id));
+        if requested_at >= season.end.0 + self.config.registration_grace_ns.0 {
+            return Err("ERR_REGISTRATION_WINDOW_CLOSED");
+        }
+        // Only reachable if a callback took longer than SETTLE_NS: refused, never retroactive.
         if season.status != SeasonStatus::Open {
             return Err("ERR_SEASON_CLOSED");
         }

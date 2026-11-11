@@ -75,6 +75,8 @@ pub struct Deposit {
     pub lp_shares: U128,
     /// true when Treasury's on-chain share balance covered the recorded shares after minting.
     pub lp_verified: bool,
+    /// USDC actually swapped to wNEAR (set when the swap is confirmed, not from the plan).
+    pub usdc_swapped: U128,
     pub usdc_in_lp: U128,
     pub wnear_in_lp: U128,
     /// Leftovers of this deposit kept in Treasury's Ref deposit after add_liquidity.

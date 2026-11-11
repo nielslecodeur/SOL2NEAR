@@ -15,6 +15,9 @@ const MIN: u64 = 60 * 1_000_000_000;
 const SEASON: u64 = 30 * MIN; // demo season: 30 minutes
 const LOCK: u64 = 10 * MIN; // Treasury demo lock: 10 minutes
 const GENESIS: u64 = 1_000 * MIN;
+const GRACE: u64 = 5 * MIN; // demo registration grace
+/// Earliest close of season 0, relative to GENESIS.
+const CLOSE: u64 = SEASON + GRACE + SETTLE_NS;
 const USDC: u128 = 1_000_000; // 1 USDC atomic
 
 fn acc(s: &str) -> AccountId {
@@ -42,6 +45,7 @@ fn config() -> ReactorConfig {
         team_id: acc("team.sol2near-dev.testnet"),
         genesis_ns: U64(GENESIS),
         season_duration_ns: U64(SEASON),
+        registration_grace_ns: U64(GRACE),
         season_target_usdc: U128(10 * USDC),
         season_reward_budget: U128(5_000 * ONE_FUEL),
         season_burn: U128(10 * ONE_FUEL),
@@ -57,11 +61,21 @@ fn fuel() -> Fuel {
     Fuel::new(config())
 }
 
-/// Treasury `get_deposit` answer for a confirmed, verified position.
+/// Treasury `get_deposit` answer for a confirmed, verified position whose books reconcile:
+/// amount = 2 × usdc_in_lp, 90/8/2 split, swapped = lp_budget − usdc_in_lp, no dust.
 fn deposit(id: u64, creator: &str, usdc_in_lp: u128, confirmed_at: u64) -> TreasuryDeposit {
+    let amount = 2 * usdc_in_lp;
+    let lp_budget = amount * 9_000 / 10_000;
+    let reserve = amount * 800 / 10_000;
     TreasuryDeposit {
         id: U64(id),
         creator: acc(creator),
+        amount: U128(amount),
+        lp_budget: U128(lp_budget),
+        reserve: U128(reserve),
+        community: U128(amount - lp_budget - reserve),
+        usdc_swapped: U128(lp_budget - usdc_in_lp),
+        dust_usdc: U128(0),
         status: Value::String("LpConfirmed".into()),
         lp_shares: U128(1_000),
         lp_verified: true,
@@ -78,7 +92,7 @@ fn deposit(id: u64, creator: &str, usdc_in_lp: u128, confirmed_at: u64) -> Treas
 fn admit(f: &mut Fuel, now: u64, d: Option<TreasuryDeposit>, recorded: u128, on_ref: u128) -> bool {
     let id = d.as_ref().map_or(999, |d| d.id.0);
     set(FUEL_ID, now);
-    f.on_position_proof(U64(id), Ok(d), Ok(TreasuryAccounting { recorded_shares: U128(recorded) }), Ok(U128(on_ref)))
+    f.on_position_proof(U64(id), U64(now), Ok(d), Ok(TreasuryAccounting { recorded_shares: U128(recorded) }), Ok(U128(on_ref)))
 }
 
 fn admit_ok(f: &mut Fuel, d: TreasuryDeposit) -> bool {
@@ -157,13 +171,16 @@ fn rejected_positions_write_nothing() {
     let short_lock = TreasuryDeposit { unlock_at: Some(U64(GENESIS + MIN + LOCK - 1)), ..base() };
     let no_proof = TreasuryDeposit { lp_confirmed_block: None, ..base() };
     let before_genesis = deposit(1, ALICE, 9 * USDC, GENESIS - 1);
-    for d in [pending, failed, withdrawn, unverified, wrong_pool, short_lock, no_proof, before_genesis] {
+    // Books that do not reconcile: inflated usdc_in_lp, or a 90/8/2 split that is off.
+    let inflated = TreasuryDeposit { usdc_in_lp: U128(10 * USDC), ..base() };
+    let bad_split = TreasuryDeposit { reserve: U128(base().reserve.0 + 1), community: U128(base().community.0 - 1), ..base() };
+    for d in [pending, failed, withdrawn, unverified, wrong_pool, short_lock, no_proof, before_genesis, inflated, bad_split] {
         assert!(!admit(&mut f, now, Some(d), 1_000, 1_000));
     }
     assert!(!admit(&mut f, now, None, 0, 0), "non-existent position");
     assert!(!admit(&mut f, now, Some(base()), 1_000, 999), "Ref shows fewer shares than Treasury records");
     set(FUEL_ID, now);
-    assert!(!f.on_position_proof(U64(1), Err(PromiseError::Failed), Ok(TreasuryAccounting { recorded_shares: U128(0) }), Ok(U128(0))));
+    assert!(!f.on_position_proof(U64(1), U64(now), Err(PromiseError::Failed), Ok(TreasuryAccounting { recorded_shares: U128(0) }), Ok(U128(0))));
     assert!(f.get_position(U64(1)).is_none());
     assert!(f.get_season(0).is_none(), "no season record created by rejections");
     assert_invariants(&f);
@@ -191,10 +208,10 @@ fn register_rejects_known_position_before_any_call() {
 fn old_capital_cannot_recharge_a_later_season() {
     let mut f = fuel();
     admit_ok(&mut f, deposit(0, ALICE, 9 * USDC, GENESIS + MIN)); // season 0 touched
-    set(BOB, GENESIS + SEASON);
+    set(BOB, GENESIS + CLOSE);
     f.close_season(0);
-    // Confirmed during season 0, registered during season 1: season 0 is closed -> refused.
-    assert!(!admit(&mut f, GENESIS + SEASON + MIN, Some(deposit(1, BOB, 9 * USDC, GENESIS + 2 * MIN)), 1_000, 1_000));
+    // Confirmed during season 0, requested after its window: refused, and it does not move to season 1.
+    assert!(!admit(&mut f, GENESIS + CLOSE + MIN, Some(deposit(1, BOB, 9 * USDC, GENESIS + 2 * MIN)), 1_000, 1_000));
     assert!(f.get_season(1).is_none());
 }
 
@@ -203,7 +220,66 @@ fn old_capital_cannot_recharge_a_later_season() {
 fn proof_callback_rejects_other_callers() {
     let mut f = fuel();
     set(BOB, GENESIS + MIN); // attacker calls the callback with fabricated data
-    f.on_position_proof(U64(0), Ok(Some(deposit(0, BOB, 2_000 * USDC, GENESIS))), Ok(TreasuryAccounting { recorded_shares: U128(0) }), Ok(U128(1)));
+    f.on_position_proof(U64(0), U64(GENESIS + MIN), Ok(Some(deposit(0, BOB, 2_000 * USDC, GENESIS))), Ok(TreasuryAccounting { recorded_shares: U128(0) }), Ok(U128(1)));
+}
+
+// ------------------------- season boundaries & async policy -------------------------
+
+#[test]
+fn registration_window_boundary_is_by_request_time() {
+    let mut f = fuel();
+    let end = GENESIS + SEASON;
+    // Confirmed in the last second of season 0, requested during the grace period: counts for season 0.
+    assert!(admit(&mut f, end + GRACE - 1, Some(deposit(0, ALICE, 6 * USDC, end - 1)), 1_000, 1_000));
+    assert_eq!(f.get_position(U64(0)).unwrap().position.season_id, 0);
+    // Requested exactly at end + grace: window closed, nothing written.
+    assert!(!admit(&mut f, end + GRACE, Some(deposit(1, BOB, 6 * USDC, end - 1)), 1_000, 1_000));
+    assert!(f.get_position(U64(1)).is_none());
+    assert_eq!(f.get_season(0).unwrap().progress_usdc.0, 6 * USDC);
+    // Confirmed in season 1, requested during season 0's grace: counts for season 1, not season 0.
+    assert!(admit(&mut f, end + MIN, Some(deposit(2, BOB, 3 * USDC, end + 1)), 1_000, 1_000));
+    assert_eq!(f.get_position(U64(2)).unwrap().position.season_id, 1);
+    assert_eq!(f.get_season(0).unwrap().progress_usdc.0, 6 * USDC, "no double counting across seasons");
+}
+
+#[test]
+fn close_waits_for_grace_and_settlement() {
+    let mut f = fuel();
+    admit_ok(&mut f, deposit(0, ALICE, 10 * USDC, GENESIS + MIN));
+    set(BOB, GENESIS + CLOSE - 1);
+    let early = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f.close_season(0)));
+    assert!(early.is_err(), "cannot close while proofs may still be in flight");
+    assert_eq!(f.get_season(0).unwrap().status, SeasonStatus::Open);
+    set(BOB, GENESIS + CLOSE);
+    assert_eq!(f.close_season(0).status, SeasonStatus::Success);
+}
+
+#[test]
+fn late_callback_after_close_is_refused_not_retroactive() {
+    let mut f = fuel();
+    admit_ok(&mut f, deposit(0, ALICE, 10 * USDC, GENESIS + MIN));
+    set(BOB, GENESIS + CLOSE);
+    f.close_season(0);
+    let before = f.get_season(0).unwrap();
+    // A proof requested inside the window whose callback lands after the close (> SETTLE_NS late).
+    set(FUEL_ID, GENESIS + CLOSE + 1);
+    let late = deposit(1, BOB, 5 * USDC, GENESIS + 3 * MIN);
+    assert!(!f.on_position_proof(U64(1), U64(GENESIS + SEASON + GRACE - 1), Ok(Some(late)), Ok(TreasuryAccounting { recorded_shares: U128(1_000) }), Ok(U128(1_000))));
+    assert_eq!(f.get_season(0).unwrap(), before, "closed season unchanged");
+    assert!(f.get_position(U64(1)).is_none());
+    assert_invariants(&f);
+}
+
+#[test]
+fn concurrent_proofs_in_one_block_are_each_counted_once() {
+    let mut f = fuel();
+    let now = GENESIS + 5 * MIN;
+    assert!(admit(&mut f, now, Some(deposit(0, ALICE, 4 * USDC, GENESIS + MIN)), 1_000, 1_000));
+    assert!(admit(&mut f, now, Some(deposit(1, BOB, 4 * USDC, GENESIS + 2 * MIN)), 1_000, 1_000));
+    assert!(!admit(&mut f, now, Some(deposit(0, ALICE, 4 * USDC, GENESIS + MIN)), 1_000, 1_000), "duplicate callback");
+    let s = f.get_season(0).unwrap();
+    assert_eq!((s.positions, s.progress_usdc.0), (2, 8 * USDC));
+    assert_invariants(&f);
 }
 
 // ------------------------- caps and reserves -------------------------
@@ -270,7 +346,7 @@ fn successful_season_levels_up_and_enables_claims_after_lock() {
     let mut f = fuel();
     admit_ok(&mut f, deposit(0, ALICE, 9 * USDC, GENESIS + MIN));
     admit_ok(&mut f, deposit(1, BOB, 2 * USDC, GENESIS + 2 * MIN));
-    set(BOB, GENESIS + SEASON);
+    set(BOB, GENESIS + CLOSE);
     let s = f.close_season(0);
     assert_eq!((s.status, s.level_after, f.get_reactor().level), (SeasonStatus::Success, Some(1), 1));
     assert_eq!(f.get_buckets().community_reserve.0, 11 * ONE_FUEL * 2 / 10);
@@ -278,7 +354,7 @@ fn successful_season_levels_up_and_enables_claims_after_lock() {
     // Alice's lock ended at GENESIS + MIN + LOCK (< season end): claimable now.
     assert_eq!(f.get_position(U64(0)).unwrap().reward_status, RewardStatus::Claimable);
     f.token.internal_register_account(&acc(ALICE));
-    set(BOB, GENESIS + SEASON); // anyone can trigger, FUEL goes to the creator
+    set(BOB, GENESIS + CLOSE); // anyone can trigger, FUEL goes to the creator
     assert_eq!(f.claim(U64(0)).0, 9 * ONE_FUEL * 8 / 10);
     assert_eq!(bal(&f, ALICE), 9 * ONE_FUEL * 8 / 10);
     assert_eq!(bal(&f, BOB), 0, "the caller gets nothing");
@@ -291,7 +367,7 @@ fn successful_season_levels_up_and_enables_claims_after_lock() {
 fn double_claim_is_rejected() {
     let mut f = fuel();
     admit_ok(&mut f, deposit(0, ALICE, 10 * USDC, GENESIS + MIN));
-    set(BOB, GENESIS + SEASON);
+    set(BOB, GENESIS + CLOSE);
     f.close_season(0);
     f.token.internal_register_account(&acc(ALICE));
     f.claim(U64(0));
@@ -304,7 +380,7 @@ fn claim_waits_for_the_lp_lock() {
     let mut f = fuel();
     // Confirmed 1 minute before the season ends: lock runs past the close.
     admit_ok(&mut f, deposit(0, ALICE, 10 * USDC, GENESIS + SEASON - MIN));
-    set(BOB, GENESIS + SEASON);
+    set(BOB, GENESIS + CLOSE);
     f.close_season(0);
     f.token.internal_register_account(&acc(ALICE));
     assert_eq!(f.get_position(U64(0)).unwrap().reward_status, RewardStatus::Locked);
@@ -333,7 +409,7 @@ fn unknown_position_cannot_be_claimed() {
 fn failed_transfer_keeps_the_reward_claimable() {
     let mut f = fuel();
     admit_ok(&mut f, deposit(0, ALICE, 10 * USDC, GENESIS + MIN));
-    set(BOB, GENESIS + SEASON);
+    set(BOB, GENESIS + CLOSE);
     f.close_season(0);
     // Creator not registered on FUEL: the claim reverts as a whole (nothing marked paid).
     let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f.claim(U64(0))));
@@ -341,7 +417,7 @@ fn failed_transfer_keeps_the_reward_claimable() {
     assert_invariants(&f);
     assert_eq!(f.get_position(U64(0)).unwrap().reward_status, RewardStatus::Claimable);
     f.token.internal_register_account(&acc(ALICE));
-    set(BOB, GENESIS + SEASON);
+    set(BOB, GENESIS + CLOSE);
     assert_eq!(f.claim(U64(0)).0, 8 * ONE_FUEL);
 }
 
@@ -350,7 +426,7 @@ fn failed_season_burns_at_most_10_fuel_once_and_releases_rewards() {
     let mut f = fuel();
     admit_ok(&mut f, deposit(0, ALICE, 3 * USDC, GENESIS + MIN)); // target is 10 USDC
     let before = f.get_buckets();
-    set(BOB, GENESIS + SEASON);
+    set(BOB, GENESIS + CLOSE);
     let s = f.close_season(0);
     assert_eq!((s.status, s.burned.0), (SeasonStatus::Failed, 10 * ONE_FUEL));
     let after = f.get_buckets();
@@ -373,7 +449,7 @@ fn burn_stops_when_the_burn_reserve_is_empty() {
     f.token.internal_withdraw(&acc(FUEL_ID), BURN_RESERVE - 4);
     f.burned_total = BURN_RESERVE - 4;
     admit_ok(&mut f, deposit(0, ALICE, 1 * USDC, GENESIS + MIN));
-    set(BOB, GENESIS + SEASON);
+    set(BOB, GENESIS + CLOSE);
     assert_eq!(f.close_season(0).burned.0, 4);
     assert_invariants(&f);
 }
@@ -399,10 +475,10 @@ fn season_cannot_close_early() {
 fn level_goes_up_then_down() {
     let mut f = fuel();
     admit_ok(&mut f, deposit(0, ALICE, 10 * USDC, GENESIS + MIN));
-    set(BOB, GENESIS + SEASON);
+    set(BOB, GENESIS + CLOSE);
     f.close_season(0);
-    admit_ok(&mut f, deposit(1, BOB, 1 * USDC, GENESIS + SEASON + MIN));
-    set(BOB, GENESIS + 2 * SEASON);
+    admit_ok(&mut f, deposit(1, BOB, 1 * USDC, GENESIS + CLOSE + MIN)); // season 1, after season 0 closed
+    set(BOB, GENESIS + SEASON + CLOSE);
     f.close_season(1);
     assert_eq!(f.get_reactor().level, 0);
     assert_eq!(f.get_reactor().seasons_touched, vec![0, 1]);
@@ -428,7 +504,7 @@ fn demo_walkthrough() {
     admit_ok(&mut f, deposit(2, BOB, 1 * USDC, GENESIS + 4 * MIN));
     let s = f.get_season(0).unwrap();
     println!("3. Reactor season 0 progress: {} / {} USDC, {} positions", s.progress_usdc.0 as f64 / 1e6, s.target_usdc.0 as f64 / 1e6, s.positions);
-    set(BOB, GENESIS + SEASON);
+    set(BOB, GENESIS + CLOSE);
     let closed = f.close_season(0);
     println!("4. close_season(0) by anyone after end: {:?}, level -> {:?}, burned {}", closed.status, closed.level_after, closed.burned.0);
     f.token.internal_register_account(&acc(ALICE));

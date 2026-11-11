@@ -263,6 +263,7 @@ impl Treasury {
             plan: None,
             lp_shares: U128(0),
             lp_verified: false,
+            usdc_swapped: U128(0),
             usdc_in_lp: U128(0),
             wnear_in_lp: U128(0),
             dust_usdc: U128(0),
@@ -379,6 +380,7 @@ impl Treasury {
                 let swap_in = d.plan.as_ref().expect("plan").swap_amount_in.0;
                 self.ref_expected_usdc -= swap_in;
                 self.ref_expected_wnear += wnear;
+                d.usdc_swapped = U128(swap_in);
                 let usdc_left = usdc.0 - swap_in;
                 d.status = DepositStatus::Swapped { usdc: U128(usdc_left), wnear: U128(wnear) };
                 self.emit_stage(&d, "swap_confirmed");
@@ -495,6 +497,7 @@ impl Treasury {
                     let out = actual_wnear - self.ref_expected_wnear;
                     self.ref_expected_usdc -= swap_in;
                     self.ref_expected_wnear = actual_wnear;
+                    d.usdc_swapped = U128(swap_in);
                     d.status = DepositStatus::Swapped { usdc: U128(usdc.0 - swap_in), wnear: U128(out) };
                 } else {
                     d.status = DepositStatus::InRef { usdc };
@@ -842,7 +845,9 @@ impl Treasury {
             env::panic_str("ERR_BAD_STAGE")
         };
         let minted = shares.0;
-        let verified = shares_now.is_some_and(|s| s >= self.recorded_shares + minted);
+        // Verified only if Ref confirmed both the shares AND the amounts consumed (deposit deltas);
+        // without the deposits view, usdc_in_lp is an upper bound and must not earn FUEL.
+        let verified = ref_deposits.is_some() && shares_now.is_some_and(|s| s >= self.recorded_shares + minted);
 
         let (used_usdc, used_wnear) = match &ref_deposits {
             Some(deps) => {

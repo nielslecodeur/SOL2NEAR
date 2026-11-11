@@ -18,6 +18,7 @@ Lead = 70 % (contracts, Ref/Rhea LP, FUEL, frontend); teammate = 30 % (`packages
 - `docs/FEASIBILITY.md` — verified facts vs hypotheses (H1–H11), blockers.
 - `docs/ARCHITECTURE.md` — Treasury state machine and invariants.
 - `CHECKPOINT.md` — current status and missing pieces.
+- **`docs/G2_READINESS.md`** — verified Ref audit, budget, exact transaction batches awaiting approval.
 
 ## Commands
 ```powershell

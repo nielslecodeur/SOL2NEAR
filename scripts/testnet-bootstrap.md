@@ -1,5 +1,8 @@
 # Testnet bootstrap — gate G2 (manual, NOT executed yet)
 
+> **Authoritative transaction list, amounts and approval batches: `docs/G2_READINESS.md` §6.**
+> Amounts there supersede the examples below. Seed the pool with 50 USDC + 13.44 wNEAR, not 10 + 2.688.
+
 > **TESTNET ONLY. Each command signs a transaction: run only after explicit approval from the lead.**
 > Keys stay in the Windows keychain of near-cli-rs (`sign-with-keychain`). Never paste a private key here.
 
@@ -72,9 +75,9 @@ view $T get_config
 ```powershell
 $FUEL="fuel.sol2near-dev.testnet"
 near account create-account fund-myself $FUEL '4 NEAR' autogenerate-new-keypair save-to-keychain sign-as $DEV network-config testnet sign-with-keychain send
-# genesis = now (ns); season 30 min, target 10 USDC, burn 10 FUEL, min lock 10 min, team cliff 1 h / vesting 10 h
+# genesis = now (ns); season 30 min, grace 5 min, target 5 USDC, burn 10 FUEL, min lock 10 min, team cliff 1 h / vesting 10 h
 $G = [string]([DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds() * 1000000)
-$cfg = "{`"config`":{`"treasury_id`":`"$T`",`"ref_exchange`":`"$REF`",`"pool_id`":<N>,`"ecosystem_id`":`"$DEV`",`"liquidity_id`":`"$DEV`",`"team_id`":`"$DEV`",`"genesis_ns`":`"$G`",`"season_duration_ns`":`"1800000000000`",`"season_target_usdc`":`"10000000`",`"season_reward_budget`":`"5000000000000000000000`",`"season_burn`":`"10000000000000000000`",`"min_lock_ns`":`"600000000000`",`"vault_cap`":`"2000000000000000000000`",`"team_cliff_ns`":`"3600000000000`",`"team_vesting_ns`":`"36000000000000`"}}"
+$cfg = "{`"config`":{`"treasury_id`":`"$T`",`"ref_exchange`":`"$REF`",`"pool_id`":<N>,`"ecosystem_id`":`"$DEV`",`"liquidity_id`":`"$DEV`",`"team_id`":`"$DEV`",`"genesis_ns`":`"$G`",`"season_duration_ns`":`"1800000000000`",`"registration_grace_ns`":`"300000000000`",`"season_target_usdc`":`"5000000`",`"season_reward_budget`":`"5000000000000000000000`",`"season_burn`":`"10000000000000000000`",`"min_lock_ns`":`"600000000000`",`"vault_cap`":`"2000000000000000000000`",`"team_cliff_ns`":`"3600000000000`",`"team_vesting_ns`":`"36000000000000`"}}"
 near contract deploy $FUEL use-file target/near/fuel/sol2near_fuel.wasm with-init-call new json-args $cfg prepaid-gas '100 Tgas' attached-deposit '0 NEAR' network-config testnet sign-with-keychain send
 view $FUEL get_reactor
 # after a Treasury deposit reaches LpConfirmed:

@@ -245,6 +245,7 @@ fn happy_path_confirms_lp_with_dust_and_lock() {
     assert!(d.lp_verified);
     assert_eq!(d.usdc_in_lp.0, 9_000_000 - 10);
     assert_eq!(d.dust_usdc.0, 10);
+    assert_eq!(d.usdc_swapped.0 + d.usdc_in_lp.0 + d.dust_usdc.0, d.lp_budget.0, "every LP-budget USDC accounted for");
     assert_eq!(d.dust_wnear.0, 7);
     assert_eq!(d.unlock_at, Some(U64(1_000 + LOCK_NS)));
     assert_eq!((d.pool_id, d.lp_confirmed_at), (Some(POOL), Some(U64(1_000))));
@@ -337,6 +338,25 @@ fn unverified_when_onchain_shares_do_not_cover() {
     assert_eq!(d.status, DepositStatus::LpConfirmed);
     assert!(!d.lp_verified, "claimed shares not backed on-chain -> unverified");
     assert!(!t.get_last_proof().unwrap().ok);
+}
+
+#[test]
+fn unverified_when_consumed_amounts_cannot_be_read() {
+    let ctx = Ctx { now: 1 };
+    let mut t = ready_treasury(&ctx);
+    deposit(&mut t, &ctx, ALICE, 20_000_000);
+    ctx.set(ALICE);
+    t.execute_lp(U64(0), Some(plan()));
+    ctx.set(TREASURY);
+    t.on_amm_deposit(U64(0), Ok(U128(18_000_000)));
+    t.on_swap(U64(0), Ok(U128(3)));
+    t.on_add_liquidity(U64(0), Ok(U128(5_000)));
+    // Shares are backed, but the deposits view failed: amounts used are unknown.
+    t.on_verified(U64(0), Ok(U128(5_000)), Err(PromiseError::Failed));
+    let d = t.get_deposit(U64(0)).unwrap();
+    assert_eq!(d.status, DepositStatus::LpConfirmed);
+    assert!(!d.lp_verified, "no FUEL eligibility without the consumed-amount reconciliation");
+    assert_eq!(d.usdc_in_lp.0, 9_000_000, "upper bound recorded");
 }
 
 // ------------------------- reconcile -------------------------

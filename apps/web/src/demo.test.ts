@@ -9,6 +9,7 @@ test("demo data respects contract invariants", () => {
   for (const d of s.deposits) {
     assert.equal(BigInt(d.lp_budget) + BigInt(d.reserve) + BigInt(d.community), BigInt(d.amount), `90/8/2 conserves deposit ${d.id}`);
     if (d.status !== "LpConfirmed") assert.equal(s.positions[d.id], null, "unconfirmed LP never earns");
+    else assert.equal(BigInt(d.usdc_swapped) + BigInt(d.usdc_in_lp) + BigInt(d.dust_usdc), BigInt(d.lp_budget), "USDC reconciles");
   }
   const b = s.reactor!.buckets;
   const n = (x: string) => BigInt(x);

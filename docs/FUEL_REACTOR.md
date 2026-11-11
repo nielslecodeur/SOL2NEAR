@@ -7,7 +7,7 @@ misses, rewards go back to the reserve, the Reactor levels down, and a small pre
 FUEL is burned for good. The price chart plays no part: every rule reads on-chain LP state.
 
 Contract: `contracts/fuel` (near-sdk 5.30.1 + near-contract-standards). Status: **implemented and
-unit-tested (27 tests), wasm built with cargo-near, NOT deployed** (see `docs/CHECKPOINT_A2.md`).
+unit-tested (31 tests), wasm built with cargo-near, NOT deployed** (see `docs/CHECKPOINT_A2.md`).
 
 ## 1. Supply: minted once, no mint method
 
@@ -48,7 +48,11 @@ check fails, nothing is written and a `position_rejected` event gives the reason
 | **Ref shares(Treasury) ≥ Treasury recorded shares and ≥ the position's shares** | `ERR_SHARES_NOT_BACKED_ON_REF` |
 | Proof fields present (confirmed_at, block, unlock_at) | `ERR_MISSING_PROOF_FIELDS` |
 | Lock `unlock_at − confirmed_at ≥ min_lock` | `ERR_LOCK_TOO_SHORT` |
-| Confirmed after genesis, and its season is still open | `ERR_BEFORE_GENESIS`, `ERR_SEASON_CLOSED` |
+| Treasury books reconcile: `lp_budget/reserve/community` = exact 90/8/2 of `amount` | `ERR_SPLIT_MISMATCH` |
+| Every LP-budget USDC is accounted for: `usdc_swapped + usdc_in_lp + dust_usdc == lp_budget` | `ERR_USDC_RECONCILIATION` |
+| Confirmed after genesis | `ERR_BEFORE_GENESIS` |
+| `register_position` was **called** before `end + registration_grace` of the confirmation season | `ERR_REGISTRATION_WINDOW_CLOSED` |
+| That season is still open (only hit if a callback lands > 60 s late) | `ERR_SEASON_CLOSED` |
 | Called back by FUEL itself (`#[private]` + explicit check) | `ERR_PRIVATE_CALLBACK` |
 
 The data comes only from the contracts' own view results. A caller cannot provide an amount, a USD
@@ -80,8 +84,13 @@ community = reward − creator                        // moves to the community 
   current season is derived from block time.
 - A position counts **once**, for the season of its `lp_confirmed_at`. Capital confirmed earlier
   stays visible in the Treasury, but it can never recharge a later season.
-- `close_season(k)`: anyone can call it once the season has ended. It is idempotent: a second call
-  fails, so a season burns at most once.
+- **Async policy, deterministic.** A position confirmed in season `k` counts for `k` if and only if
+  `register_position` was *called* before `end_k + registration_grace`. The request time is
+  recorded by FUEL itself and passed to its own callback. Calls made later are refused: never
+  retroactive, never moved to `k+1`.
+- `close_season(k)`: anyone can call it from `end_k + registration_grace + 60 s`. The extra 60 s
+  covers in-flight proof callbacks, which take 1–3 blocks. It is idempotent: a second call fails,
+  so a season burns at most once.
   - **SUCCESS** (`progress ≥ target`): `level + 1`; the community share moves to the community
     reserve; creators' rewards become claimable once their lock is over.
   - **FAILED**: `level − 1` (never below 0); every commitment returns to `pol_available`; burn
@@ -100,7 +109,8 @@ community = reward − creator                        // moves to the community 
 | Parameter | Bound enforced in `new()` | Testnet demo value | Production (hypothetical, not deployed) |
 |---|---|---|---|
 | `season_duration_ns` | ≥ 60 s | 30 min | 30 days |
-| `season_target_usdc` | > 0 | 10 USDC (`10000000`) | to be set from real demand |
+| `registration_grace_ns` | ≤ season duration | 5 min | 1 day |
+| `season_target_usdc` | > 0 | 5 USDC (`5000000`) | to be set from real demand |
 | `season_reward_budget` | ≤ 600 000 FUEL | 5 000 FUEL | — |
 | `season_burn` | ≤ 10 FUEL | 10 FUEL | ≤ 10 FUEL |
 | `min_lock_ns` | — | 10 min (= Treasury demo lock) | 30 days |

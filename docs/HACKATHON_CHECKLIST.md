@@ -66,14 +66,14 @@ Règle : **aucune fonctionnalité n'est annoncée sans preuve vérifiable**. Un 
 
 | Fonctionnalité annoncée | Preuve exigée | Statut |
 |---|---|---|
-| Logique Treasury (90/8/2, états, garde-fous) | `cargo test` → `33 passed` | ☑ unitaire |
+| Logique Treasury (90/8/2, états, garde-fous) | `cargo test` → `34 passed` | ☑ unitaire |
 | Build officiel | `cargo near build` + SHA-256 | ☑ `35e9a79a…8168` |
 | Route Solana Devnet → NEAR testnet | tx Solana + statut Tidepool `SUCCESS` + tx NEAR | ☐ (dry quote seulement) |
 | Dépôt NEP-141 dans Treasury | tx `ft_transfer_call` + `get_deposit` | ☐ |
 | Pool Ref créé | tx `add_simple_pool` + `get_pool` | ☐ G2 |
 | LP réelles détenues par Treasury | tx `add_liquidity` + `get_pool_shares(Treasury) > 0` | ☐ G2/G3 |
 | Proof of Liquidity | tx `verify_liquidity` + event `proof_of_liquidity` | ☐ |
-| FUEL : règles (supply, PoL, saisons, burn, claims) | `cargo test -p sol2near-fuel` → 27 passed ; walkthrough `demo_walkthrough -- --nocapture` | ☑ unitaire (VM mockée) |
+| FUEL : règles (supply, PoL, saisons, burn, claims) | `cargo test -p sol2near-fuel` → 31 passed ; walkthrough `demo_walkthrough -- --nocapture` | ☑ unitaire (VM mockée) |
 | FUEL : build | cargo-near + SHA-256 | ☑ `scripts/build-wasm.sh` |
 | FUEL : admission d'une vraie position | tx `register_position` + event `position_admitted` | ☐ (nécessite G2 + déploiements) |
 | FUEL : clôture de saison et claim | tx `close_season` + `claim` + event `reward_claimed` | ☐ |

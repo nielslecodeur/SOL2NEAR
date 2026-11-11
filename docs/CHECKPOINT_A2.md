@@ -8,9 +8,9 @@ Status: **READY WITH LIMITATIONS**. Contracts and UI are implemented, unit-teste
 
 | Check | Result |
 |---|---|
-| `cargo test --workspace` (Windows) | Treasury **33 passed**, FUEL **27 passed**, 0 failed |
+| `cargo test --workspace` (Windows) | Treasury **34 passed**, FUEL **31 passed** (after G2 fixes; see `docs/G2_READINESS.md`), 0 failed |
 | `cargo test -p sol2near-fuel demo_walkthrough -- --nocapture` | narrated 6-step demo passes (MOCKED VM) |
-| `bash scripts/build-wasm.sh` (WSL, cargo-near 0.22.0) | Treasury **250.1 KB**, SHA-256 `3b02210c05fa724257f0526d2413d12451e7f86547663e11afc9c216c1954c8e`; FUEL **253.5 KB**, SHA-256 `8b5b27289f7b87ac8114c1ebb5c60f634dc7db8703be6fd94c283c739d58821d` |
+| `bash scripts/build-wasm.sh` (WSL, cargo-near 0.22.0) | Treasury **250.3 KB**, SHA-256 `73b99075d8df832e32da2bd53c91e20194539a5a72a67c11ba373c44e0fb520e`; FUEL **256.8 KB**, SHA-256 `a33678f60eb25e3db83074db4d052bf6e102bca7fd953834c65115a8f409bbac` |
 | FUEL ABI | 23 functions, **no mint method**; `on_position_proof` and `ft_resolve_transfer` private |
 | `pnpm --filter @sol2near/web test` / `build` | 5 passed / built (160 KB JS, 52 KB gzip) |
 | `pnpm test:ts`, `pnpm typecheck` | near-client 6 passed; typecheck OK |

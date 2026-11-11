@@ -24,9 +24,9 @@ The rules (split, lock, token ids, pool, FUEL supply and season parameters) are 
 
 | Feature | Status | Proof |
 |---|---|---|
-| Treasury logic (split, state machine, guards, replay safety) | ✅ unit-tested (mocked VM) | `cargo test -p sol2near-treasury` → 33 passed |
-| FUEL token + Reactor (fixed supply, Proof of Liquidity, seasons, burn, claims, vesting) | ✅ unit-tested (mocked VM) | `cargo test -p sol2near-fuel` → 27 passed |
-| Official wasm builds | ✅ | `scripts/build-wasm.sh` (cargo-near 0.22.0): Treasury 250.1 KB `3b02210c…4c8e`, FUEL 253.5 KB `8b5b2728…821d` |
+| Treasury logic (split, state machine, guards, replay safety) | ✅ unit-tested (mocked VM) | `cargo test -p sol2near-treasury` → 34 passed |
+| FUEL token + Reactor (fixed supply, Proof of Liquidity, seasons, burn, claims, vesting) | ✅ unit-tested (mocked VM) | `cargo test -p sol2near-fuel` → 31 passed |
+| Official wasm builds | ✅ | `scripts/build-wasm.sh` (cargo-near 0.22.0): Treasury 250.3 KB `73b99075…520e`, FUEL 256.8 KB `a33678f6…bbac` |
 | Web dashboard (Dashboard / Vault / Reactor) | ✅ builds; live mode reads testnet; demo mode bannered SIMULATED | `pnpm --filter @sol2near/web build` |
 | Tidepool route Solana Devnet → NEAR testnet | ⚠️ quote only | dry quote, 2026-11-11 (`docs/FEASIBILITY.md` T6) |
 | Treasury / FUEL deployed on testnet | ❌ not yet | — |
@@ -43,7 +43,7 @@ Prerequisites: Rust stable (tested with 1.98) with the `wasm32-unknown-unknown` 
 | # | Command | Expected result | How to verify |
 |---|---|---|---|
 | 1 | `git clone https://github.com/nielslecodeur/SOL2NEAR && cd SOL2NEAR` | repo checked out | `LICENSE` (MIT) present |
-| 2 | `cargo test --workspace` (on Windows, set the CMake env from `docs/ARCHITECTURE.md` §7 first) | `33 passed` (treasury) and `27 passed` (fuel) | test names map to the rules in `docs/FUEL_REACTOR.md` §2–4 |
+| 2 | `cargo test --workspace` (on Windows, set the CMake env from `docs/ARCHITECTURE.md` §7 first) | `34 passed` (treasury) and `31 passed` (fuel) | test names map to the rules in `docs/FUEL_REACTOR.md` §2–4 |
 | 3 | `cargo test -p sol2near-fuel demo_walkthrough -- --nocapture` | 6 numbered steps: position admitted with its Ref/Treasury proof, a non-backed one refused, season progress, `close_season` → Success/level 1, claim paid, **second claim REJECTED** | output says "MOCKED NEAR VM (not testnet)" |
 | 4 | `bash scripts/build-wasm.sh` (Linux/WSL, cargo-near) | `Contract successfully built!` twice | sizes and SHA-256 printed. The FUEL ABI has no mint method |
 | 5 | `pnpm install && pnpm typecheck && pnpm test:ts && pnpm --filter @sol2near/web test` | all `fail 0` | the near-client test reproduces a live Ref `get_return` exactly |

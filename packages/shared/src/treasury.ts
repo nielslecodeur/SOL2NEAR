@@ -30,6 +30,7 @@ export interface TreasuryDeposit {
   plan: LpPlan | null;
   lp_shares: string;
   lp_verified: boolean;
+  usdc_swapped: string;
   usdc_in_lp: string;
   wnear_in_lp: string;
   dust_usdc: string;

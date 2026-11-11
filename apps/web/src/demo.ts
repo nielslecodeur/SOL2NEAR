@@ -12,13 +12,13 @@ const t = (offsetMin: number) => (now + BigInt(offsetMin) * MIN).toString();
 const F = (n: number) => (BigInt(Math.round(n * 100)) * 10n ** 16n).toString(); // FUEL, 2 decimals of precision
 
 const base = {
-  creator: "demo-creator.testnet", plan: null, lp_shares: "0", lp_verified: false, usdc_in_lp: "0", wnear_in_lp: "0",
+  creator: "demo-creator.testnet", plan: null, lp_shares: "0", lp_verified: false, usdc_swapped: "0", usdc_in_lp: "0", wnear_in_lp: "0",
   dust_usdc: "0", dust_wnear: "0", unlock_at: null, pool_id: null, lp_confirmed_at: null, lp_confirmed_block: null, last_error: null,
 };
 
 const deposits: TreasuryDeposit[] = [
   { ...base, id: "0", amount: "20000000", lp_budget: "18000000", reserve: "1600000", community: "400000", status: "LpConfirmed",
-    lp_shares: "1873120000000000000000000", lp_verified: true, usdc_in_lp: "8960000", wnear_in_lp: "2401000000000000000000000",
+    lp_shares: "1873120000000000000000000", lp_verified: true, usdc_swapped: "9039988", usdc_in_lp: "8960000", wnear_in_lp: "2401000000000000000000000",
     dust_usdc: "12", dust_wnear: "7", unlock_at: t(-5), pool_id: 3001, lp_confirmed_at: t(-15), lp_confirmed_block: "277270100",
     created_at: t(-20), updated_at: t(-15) },
   { ...base, id: "1", amount: "5000000", lp_budget: "4500000", reserve: "400000", community: "100000",
