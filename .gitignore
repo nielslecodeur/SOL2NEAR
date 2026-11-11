@@ -1,0 +1,27 @@
+# Rust
+target/
+**/*.rs.bk
+
+# Node
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+
+# Secrets — never commit keys, seeds, wallets or env files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*-keypair.json
+id.json
+.near-credentials/
+neardev/
+**/near-credentials/**
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

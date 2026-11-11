@@ -1,0 +1,11 @@
+{
+  "name": "sol2near",
+  "private": true,
+  "version": "0.1.0",
+  "description": "SOL2NEAR — cross-chain memecoin liquidity engine (testnet only)",
+  "packageManager": "pnpm@10.34.9",
+  "scripts": {
+    "test:contracts": "cargo test --workspace",
+    "build:shared": "pnpm --filter @sol2near/shared build"
+  }
+}

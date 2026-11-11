@@ -1,0 +1,15 @@
+[package]
+name = "sol2near-treasury"
+version = "0.1.0"
+edition = "2021"
+description = "SOL2NEAR Treasury: NEP-141 USDC intake, 90/8/2 allocation, Ref/Rhea LP execution and Proof of Liquidity (testnet)"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = "5.30"
+
+[dev-dependencies]
+near-sdk = { version = "5.30", features = ["unit-testing"] }
