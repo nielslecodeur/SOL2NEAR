@@ -1,4 +1,4 @@
-# G2 — Execution log, Batch A (NEAR testnet) — DONE
+# G2 — Execution log (NEAR testnet): Batch A done, Batch B done, Batch C in progress
 
 Executed 2026-11-11 23:26 → 23:45 UTC after the lead's « FAUCET FAIT + OK BATCH A ».
 Signer: `sol2near-dev.testnet` (keychain, near-cli-rs 0.31.1). Network: **NEAR testnet**. A5
@@ -115,4 +115,19 @@ C5 `close_season(0)` · C6 `claim(0)` · C7 second claim, expected to fail.
 | B0 | — (local) | near-cli testnet `rpc_url` changed from `archival-rpc.testnet.fastnear.com` to `https://test.rpc.fastnear.com/` |
 | B1 | [HJTW4c6u…yUpY](https://testnet.nearblocks.io/txns/HJTW4c6uNaSVmuzNRG84NcCQaRMeunAoiP3omquNyUpY) | Treasury deployed (wasm SHA-256 `73b99075…520e`), code_hash `8njzxUPU74wzskUUJ6QDjowp953JePSqL96ez5kqJ7F3`, 20.16 Tgas, storage 250 821 B (2.508 NEAR locked), config pool 2951 |
 | B2 | [6sMPV5RT…eVgy](https://testnet.nearblocks.io/txns/6sMPV5RToZRd77cjaUa32QgpU9f8poWFawpFAKSEeVgy) | `setup` SUCCESS, 26.15 Tgas; event `setup_done {pool_id 2951, usdc_pool_index 0}`; `get_config.ready = true` |
-| B3–B5, C1–C7 | — | **NOT executed yet** (session stopped: usage limit). Resume at B3. FUEL not deployed → no season clock running. |
+| B3 | [Gvur4kwn…FCAY](https://testnet.nearblocks.io/txns/Gvur4kwnyth3VHKBXB9JCtsw9581YcPD1RdPxnoNFCAY) | `fuel.sol2near-dev.testnet` created with 3 NEAR (2026-11-12, re-approved « OK B3->C7 + push ») |
+| B4 | [JBdFrx2j…rbBP](https://testnet.nearblocks.io/txns/JBdFrx2j7ToEWWY77aKpbpw8B6PivPhowM9ZZWQtrbBP) | FUEL deployed (SHA-256 `a33678f6…bbac`), 22.03 Tgas; 3 `ft_mint` (651k contract, 199k + 150k dev); supply 1 000 000; `genesis_ns` 1794469742578932153 = 07:49:02.578 UTC (final block time) |
+| B5 | — (not sent) | unnecessary: dev already registered on FUEL as allocation holder (`storage_balance_of` = 0.00125) |
+
+## 8. Batch C — first real Treasury + FUEL cycle
+
+| Step | Hash | Result |
+|---|---|---|
+| C1 | [AsD2o2aV…ZWzw](https://testnet.nearblocks.io/txns/AsD2o2aVxkSmhm4c3TVsLs9aZgKjMTog2KW42pieZWzw) | 20 USDC `ft_transfer_call` → Treasury, used 20000000; event `deposit_allocated` #0: **18 / 1.6 / 0.4** |
+| C2 | [4F2wXqzm…SSHA](https://testnet.nearblocks.io/txns/4F2wXqzmyBVaPqKa6mE3KMFjFv2S3U3GxXJYJfNsSSHA) | `execute_lp` (plan from `plan-lp.ts`: swap 8323187, min out 1971050059226938558048313, min amounts 9580044 / same) — **whole pipeline in one tx, 37.27 Tgas**: Ref `Swapped 8323187 usdc for 1990959655784786422271024 wnear`, `Liquidity added [9676812 usdc, 1990959540775334128929981 wnear], minted 165640253516145704019022 shares`; events amm_deposit_confirmed → swap_confirmed → lp_confirmed (verified) → proof_of_liquidity |
+| C3 | [8DCCtF7y…MrkA](https://testnet.nearblocks.io/txns/8DCCtF7yafVwXnGhziTAAHvxhS94nZiTPXZk5ry3MrkA) | `verify_liquidity`: `{onchain_shares = recorded_shares = 165640253516145704019022, ok: true}` at block 277334232 |
+| C4 | [CoAgrgQE…Lk6o](https://testnet.nearblocks.io/txns/CoAgrgQEhmktNEK1hvgZpwUHjsaTR6XvS9z1NSNpLk6o) | FUEL `register_position(0)` → `position_admitted` season 0: usdc_in_lp 9676812 → reward **9.676812 FUEL** (creator 7.7414496 / community 1.9353624) |
+
+State after C2 (read-only): deposit #0 `LpConfirmed`, `lp_verified: true`, pool 2951, confirmed block 277334178 (07:49:55 UTC), unlock 07:59:55 UTC; **Ref `get_pool_shares(2951, treasury)` = `mft_balance_of` = Treasury `recorded_shares` = 165640253516145704019022**; reconciliation `usdc_swapped 8323187 + usdc_in_lp 9676812 + dust 1 = 18000000` exact; Treasury Ref deposits (USDC 1, wNEAR 0.000000115009452293341043) = recorded dust exactly; Treasury USDC wallet 2.0 = reserve 1.6 + community 0.4; no job in flight.
+
+Zap cost on the shallow pool: 8.323187 USDC bought 1.990960 wNEAR (4.18 USDC/wNEAR vs Tidepool 3.56): a demo-pool effect, stated honestly.
