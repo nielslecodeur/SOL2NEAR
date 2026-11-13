@@ -133,6 +133,7 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
             history.update(r.id, c.ok
               ? { status: "confirmed", target: v.depositId, detail: `Deposit #${v.depositId} counted: ${usdc(v.used)} USDC (LP ${usdc(v.lp)} / reserve ${usdc(v.reserve)} / community ${usdc(v.community)})` }
               : { status: "submitted", detail: `Outcome says counted, Treasury state not visible yet: ${c.detail}` });
+            if (c.ok) setAmount(""); // a confirmed deposit clears the form: a second deposit must be typed again on purpose
           } else if (v.kind === "refused") history.update(r.id, { status: "refunded", detail: `Treasury refused (${v.reason}); ${usdc(v.refunded)} USDC returned by the token` });
           else if (v.kind === "refunded") history.update(r.id, { status: "refunded", detail: `${usdc(v.refunded)} USDC returned: ${v.detail}` });
           else history.update(r.id, { status: "failed", detail: v.detail });

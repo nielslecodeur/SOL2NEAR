@@ -27,7 +27,7 @@ The rules (split, lock, token ids, pool, FUEL supply and season parameters) are 
 | Treasury logic (split, state machine, guards, replay safety) | ✅ unit-tested (mocked VM) | `cargo test -p sol2near-treasury` → 34 passed |
 | FUEL token + Reactor (fixed supply, Proof of Liquidity, seasons, burn, claims, vesting) | ✅ unit-tested (mocked VM) | `cargo test -p sol2near-fuel` → 31 passed |
 | Official wasm builds | ✅ | `scripts/build-wasm.sh` (cargo-near 0.22.0): Treasury 250.3 KB `73b99075…520e`, FUEL 256.8 KB `a33678f6…bbac` |
-| NEAR wallet in the dashboard (Wallet Selector 10.1.4, testnet only): Treasury deposit, execute_lp, FUEL register / claim, each verified from the final outcome + contract state | ⚠️ built, unit-tested (41) and **validated in real Chrome** (12 Playwright tests: real Wallet Selector modal + testnet reads; deposit flow with a mocked wallet); **no deposit signed from the dashboard yet** | `docs/G4_NEAR_WALLET.md`, `docs/G5_BROWSER_VALIDATION.md` |
+| NEAR wallet in the dashboard (Wallet Selector 10.1.4, testnet only): Treasury deposit, execute_lp, FUEL register / claim, each verified from the final outcome + contract state | ⚠️ built, unit-tested (41) and **validated in real Chrome** (12 Playwright tests: real Wallet Selector modal + testnet reads; deposit flow with a mocked wallet); **first real deposit signed from the dashboard** (Meteor, 2 USDC, tx `FaBKjLRU…haHV`, verified on-chain); LP / FUEL from the dashboard not run yet | `docs/G4_NEAR_WALLET.md`, `docs/G5_BROWSER_VALIDATION.md`, `docs/G6_LIVE_WALLET_E2E.md` |
 | Web dashboard (Dashboard / Vault / Reactor) | ✅ builds; live mode reads testnet; demo mode bannered SIMULATED | `pnpm --filter @sol2near/web build` |
 | Tidepool route Solana Devnet → NEAR testnet | ⚠️ quote only | dry quote, 2026-11-11 (`docs/FEASIBILITY.md` T6) |
 | Treasury / FUEL deployed on testnet | ✅ `treasury.sol2near-dev.testnet`, `fuel.sol2near-dev.testnet` | B1 `HJTW4c6u…yUpY`, B4 `JBdFrx2j…rbBP` (see below) |
@@ -69,6 +69,7 @@ Full log with gas, costs and read-only checks: [`docs/G2_EXECUTION.md`](docs/G2_
 | C5 | `close_season(0)` → Success, level 1 | [DUuoq2XZ…haH9](https://testnet.nearblocks.io/txns/DUuoq2XZsmVbwp8zjzhW3gHRqjiDwokwbTMSNufdhaH9) |
 | C6 | `claim(0)` → 7.7414496 FUEL to the creator | [6g13fiwv…hXxu](https://testnet.nearblocks.io/txns/6g13fiwvEbSoHhYLXGkDcN9tEsPLG2LXic88bmP3hXxu) |
 | C7 | second `claim(0)` → rejected `ERR_ALREADY_CLAIMED` (expected failure) | [J8UEKyZy…AoWHi](https://testnet.nearblocks.io/txns/J8UEKyZyyYpHrzW8HTJiJ1tqtq23GdkX2VA8HdYAoWHi) |
+| G6-D | **from the dashboard**: `lowarena9362.testnet` (Meteor wallet) deposits 2 USDC → deposit #1, 1.8 / 0.16 / 0.04, verified by event + `get_deposit` (`docs/G6_LIVE_WALLET_E2E.md`) | [FaBKjLRU…haHV](https://testnet.nearblocks.io/txns/FaBKjLRUuYMgH4SgVgurTyUinDPvPvdH5Rxc69X1haHV) |
 
 Pool 2951 is shallow (≈ 100 USD of test liquidity), so the zap price is worse than the Tidepool quote. This is a demo-pool effect. The Solana Devnet → NEAR leg via Tidepool is still quote-only: the client exists (`packages/crosschain`) but no live transfer has run yet.
 
