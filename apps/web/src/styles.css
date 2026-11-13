@@ -102,3 +102,7 @@ h2 { margin: 6px 0; overflow-wrap: anywhere; }
 .checks li.ko b, .checks li.ko { color: var(--warn); }
 .observe { margin: 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
 .small { font-size: 12px; margin: 0; }
+/* V4.1 pilot card */
+.pilot { display: grid; gap: 10px; }
+.pilot details summary { cursor: pointer; color: var(--muted); }
+.pilot button.locked, .pilot button[disabled] { opacity: .55; cursor: not-allowed; justify-self: start; background: transparent; color: var(--muted); border: 1px dashed var(--line); }

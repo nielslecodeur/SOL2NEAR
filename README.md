@@ -29,11 +29,12 @@ The rules (split, lock, token ids, pool, FUEL supply and season parameters) are 
 | Official wasm builds | ✅ | `scripts/build-wasm.sh` (cargo-near 0.22.0): Treasury 250.3 KB `73b99075…520e`, FUEL 256.8 KB `a33678f6…bbac` |
 | NEAR wallet in the dashboard (Wallet Selector 10.1.4, testnet only): Treasury deposit, execute_lp, FUEL register / claim, each verified from the final outcome + contract state | ⚠️ built, unit-tested (41) and **validated in real Chrome** (12 Playwright tests: real Wallet Selector modal + testnet reads; deposit flow with a mocked wallet); ✅ **full path signed from the dashboard with a real wallet** (Meteor, `lowarena9362.testnet`): deposit → execute_lp → register_position → close_season (SUCCESS) → claim, every step verified on-chain (rows G6-* below) | `docs/G4_NEAR_WALLET.md`, `docs/G5_BROWSER_VALIDATION.md`, `docs/G6_LIVE_WALLET_E2E.md` |
 | Web dashboard (Dashboard / Vault / Reactor) | ✅ builds; live mode reads testnet; demo mode bannered SIMULATED | `pnpm --filter @sol2near/web build` |
-| Tidepool route Solana Devnet → NEAR testnet | ⚠️ quote only | dry quote, 2026-11-11 (`docs/FEASIBILITY.md` T6) |
+| Tidepool route Solana Devnet → NEAR testnet | ✅ **one real transfer** (G7, 2026-11-13): 2 USDC sent from the user's Solana devnet wallet arrived as 1.9948 USDC on `lowarena9362.testnet`, verified on both chains | G7-SOL `bGUicpgy…887R` (finalized) → G7-NEAR `J58H2uyu…RFqf` (settlement) · `docs/G7_CROSSCHAIN_LIVE.md` |
 | Treasury / FUEL deployed on testnet | ✅ `treasury.sol2near-dev.testnet`, `fuel.sol2near-dev.testnet` | B1 `HJTW4c6u…yUpY`, B4 `JBdFrx2j…rbBP` (see below) |
 | Ref pool + LP shares held by Treasury | ✅ pool **2951**, Treasury holds 165 640 253 516 145 704 019 022 shares | C2 `4F2wXqzm…SSHA`, C3 `verify_liquidity` ok |
 | Proof of Liquidity / FUEL admission on-chain | ✅ full cycle: admission → season close → single claim | C4–C7 (see below) |
-| Cross-chain package (Tidepool client + Solana deposit tx) — **G7: real bridge 2 USDC Solana devnet → 1.9948 USDC on NEAR, verified on both chains; U1–U4 verified** (`docs/G7_CROSSCHAIN_LIVE.md`) | ⚠️ unit-tested with mocks (quote echo checks, Solana confirmation, NEAR receipt check, reload-safe); wired into the live dashboard; **no live transfer yet**: our network's firewall sinkholes `usetidepool.tech` | `pnpm --filter @sol2near/crosschain test` → 34 passed · `docs/crosschain/CROSSCHAIN_HANDOFF.md` |
+| Cross-chain package (Tidepool client + Solana deposit tx) | ✅ used for the real G7 bridge from the dashboard (U1–U4 verified on real Tidepool data; U5, the quote signature, is not verifiable). Also unit-tested with mocks (quote echo checks, Solana confirmation, NEAR receipt check, reload-safe) | `pnpm --filter @sol2near/crosschain test` → 36 passed · `docs/G7_CROSSCHAIN_LIVE.md` · `docs/crosschain/CROSSCHAIN_HANDOFF.md` |
+| **V4.1 Classic memecoin pilot** (TreasuryV4 + S2NMEME sandbox test token): one allowlisted Ref Classic pool, on-chain guards (decimals, price impact, slippage, deadline), LP custody, exit and leftover recovery | ⚠️ **local only, NOT deployed**: 44 unit tests (mocked VM) + a full journey in a **local NEAR sandbox** against the real Ref and Tidepool USDC wasm (not testnet). Positions are `FUEL_NOT_ELIGIBLE` | `docs/V4_1_EXECUTION.md`, `docs/v4/sandbox-run.log` |
 
 A feature is only marked ✅ once a transaction hash or a reproducible command output backs it. **Unit tests use a mocked NEAR VM: they prove contract rules, not the live Ref / Tidepool integration.** Missing pieces are tracked in `docs/CHECKPOINT_A2.md`.
 
@@ -44,10 +45,10 @@ Prerequisites: Rust stable (tested with 1.98) with the `wasm32-unknown-unknown` 
 | # | Command | Expected result | How to verify |
 |---|---|---|---|
 | 1 | `git clone https://github.com/nielslecodeur/SOL2NEAR && cd SOL2NEAR` | repo checked out | `LICENSE` (MIT) present |
-| 2 | `cargo test --workspace` (on Windows, set the CMake env from `docs/ARCHITECTURE.md` §7 first) | `34 passed` (treasury) and `31 passed` (fuel) | test names map to the rules in `docs/FUEL_REACTOR.md` §2–4 |
+| 2 | `cargo test --workspace` (on Windows, set the CMake env from `docs/ARCHITECTURE.md` §7 first) | `34 passed` (treasury), `31 passed` (fuel), `44 passed` (treasury-v4, V4.1 pilot, not deployed), `3 passed` (sandbox-meme) | test names map to the rules in `docs/FUEL_REACTOR.md` §2–4 |
 | 3 | `cargo test -p sol2near-fuel demo_walkthrough -- --nocapture` | 6 numbered steps: position admitted with its Ref/Treasury proof, a non-backed one refused, season progress, `close_season` → Success/level 1, claim paid, **second claim REJECTED** | output says "MOCKED NEAR VM (not testnet)" |
 | 4 | `bash scripts/build-wasm.sh` (Linux/WSL, cargo-near) | `Contract successfully built!` twice | sizes and SHA-256 printed. The FUEL ABI has no mint method |
-| 5 | `pnpm install && pnpm typecheck && pnpm test:ts && pnpm --filter @sol2near/web test` | all `fail 0`: near-client 18, crosschain 36, web 48. Browser: `pnpm --filter @sol2near/web e2e` (local Google Chrome via Playwright) → 18 passed | the near-client test reproduces a live Ref `get_return` exactly; crosschain tests are **mocked** (Tidepool + Solana RPC) |
+| 5 | `pnpm install && pnpm typecheck && pnpm test:ts && pnpm --filter @sol2near/web test` | all `fail 0`: near-client 23, crosschain 36, web 48. Browser: `pnpm --filter @sol2near/web e2e` (local Google Chrome via Playwright) → 20 passed | the near-client test reproduces a live Ref `get_return` exactly; crosschain tests are **mocked** (Tidepool + Solana RPC) |
 | 6 | `pnpm --filter @sol2near/web dev`, open the URL, type `sol2near-dev.testnet` in *Creator account*, click **Load** | live testnet data: 20 USDC received, split 18 / 1.6 / 0.4, 0.1656 LP shares **BACKED ON REF**, deposit #0 `LP CONFIRMED`, FUEL `Claimed`; the FUEL Reactor tab shows season 0 Success. The cross-chain card shows Tidepool's live health | `SIMULATED / DEMO DATA` mode shows every screen with a striped SIMULATED banner |
 | 7 | `node scripts/probes/verify-testnet.mjs` (read-only, no keys) | `PASS` for Ref `state=Running`, pool 2951, LP shares held by the dev account **and the Treasury**, FUEL supply 1 000 000, season 0 Success, position 0 claimed once; `PASS` for Tidepool health, tokens and a **dry** quote when the sandbox is reachable | Tidepool is a community service with no SLA: on a network that filters its domain the 3 Tidepool checks print `FAIL … fetch failed`; on 2026-11-13 from an unfiltered network the probe printed `all checks passed` (Tidepool, Ref, Treasury LP, FUEL) |
 
@@ -81,7 +82,7 @@ Full log with gas, costs and read-only checks: [`docs/G2_EXECUTION.md`](docs/G2_
 | G7-NEAR | **Tidepool → NEAR**: settlement `ft_transfer` 1.9948 USDC to `lowarena9362.testnet`, verified by balance (+1994800) | [J58H2uyu…RFqf](https://testnet.nearblocks.io/txns/J58H2uyuGo4wJsjbNuX1AEEwszD4Z8CMAppCqCirRFqf) |
 | G7-TREAS | **NEAR → Treasury**: the user deposits the bridged balance (whole 87.9948 USDC incl. the 1.9948 bridged) → deposit #3, 79.19532 / 7.039584 / 1.759896. Path B complete | [J7uMjikj…Bdhz](https://testnet.nearblocks.io/txns/J7uMjikj935TeunPoHj2i7xrCSSDrYEAmvdHv7DYBdhz) |
 
-Pool 2951 is shallow (≈ 100 USD of test liquidity), so the zap price is worse than the Tidepool quote. This is a demo-pool effect. The Solana Devnet → NEAR leg via Tidepool is still quote-only: the client exists (`packages/crosschain`) but no live transfer has run yet.
+Pool 2951 is shallow (≈ 80 USDC + 14 wNEAR of test liquidity), so the zap price is worse than the Tidepool quote, and a large LP budget is refused by the price-impact guard (deposit #3: 29 % impact, LP not offered). This is a demo-pool effect. The Solana Devnet → NEAR leg via Tidepool ran for real once (G7-SOL → G7-NEAR). **G8 (one operation reconciled end to end: Solana → Treasury → LP → FUEL) is not done yet**: the bridged funds are in deposit #3, whose LP is blocked by the impact guard. Re-check every G6/G7 proof: `node scripts/probes/verify-g6-g7.mjs`.
 
 ## Repository
 
@@ -114,6 +115,7 @@ SOL2NEAR takes **0 %** during the hackathon.
 ## Key docs
 
 - `docs/HACKATHON_CHECKLIST.md`: official rules mapped to this project, with the final pre-submission check
+- `docs/V4_1_ARCHITECTURE.md`, `docs/V4_1_EXECUTION.md`: V4.1 Classic memecoin pilot (TreasuryV4, sandbox token), local validation and the deployment plan awaiting approval
 - `docs/V4_0_EXECUTION.md`: V4.0 Pool Explorer (dashboard `#/pools`, read-only). Verified Ref/RHEA memecoin pools with live checks; only the pilot pool 2951 is fundable by the deployed Treasury, everything else is observe only, with the reasons
 - `docs/SOL2NEAR_V3_Specification_Projet_Complete.md`: product, economics, scope
 - `docs/SOL2NEAR_V3_Workflow_Equipe_Prompt_B1.md`: team workflow

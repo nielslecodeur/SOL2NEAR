@@ -1,0 +1,68 @@
+﻿
+[A1] Ref new (wasm of ref-finance-101.testnet): OK · events []
+[A2] USDC new (wasm of usdc.tidepool-sandbox.testnet, local copy): OK · events []
+[A3] S2NMEME new (sandbox token, supply minted once to lp): OK · events ["nep141:ft_mint"]
+[A4] Ref storage lp.test.near: OK · events []
+[A4] Ref storage alice.test.near: OK · events []
+[A5] USDC mint 2000 to lp.test.near: OK · events ["nep141:ft_mint"]
+[A5] USDC mint 1000 to alice.test.near: OK · events ["nep141:ft_mint"]
+[B1] Ref register_tokens: OK · events []
+[B2] Ref add_simple_pool USDC/S2NMEME 30 bps: OK · events []
+[B3] seed deposit into Ref (usdc.test.near): OK · events ["nep141:ft_transfer"]
+[B3] seed deposit into Ref (s2nmeme.test.near): OK · events ["nep141:ft_transfer"]
+[B4] seed add_liquidity 1 000 USDC + 1 000 000 S2NMEME: OK · events []
+pool 0: {"amounts":["1000000000","1000000000000000000000000"],"amp":0,"pool_kind":"SIMPLE_POOL","shares_total_supply":"
+1000000000000000000000000","token_account_ids":["usdc.test.near","s2nmeme.test.near"],"total_fee":30}
+[init] treasury-bad.new: OK · events []
+[C0] setup with WRONG base decimals (24): OK · events ["sol2near:setup_failed"]
+[C0] wrong-decimals Treasury ready = false (expected false)
+[init] treasury-v4.new: OK · events []
+[C1] setup (storage, register_tokens, get_pool + ft_metadata checks): OK · events ["sol2near:setup_done"]
+[D0] used = 0, events ["nep141:ft_transfer", "sol2near:deposit_refused", "nep141:ft_transfer"]
+[D0] deposit of the wrong token (S2NMEME) is refunded: refused as expected (ERR_UNKNOWN_DEPOSIT)
+[D1] alice deposits 20 USDC: OK · events ["nep141:ft_transfer", "sol2near:deposit_allocated"]
+[D1] split 90/8/2: "18000000" / "1600000" / "400000"
+[E0] plan: swap 8973320 USDC-atomic -> Ref get_return 8867071669659872053870 S2NMEME-atomic
+[E1] bob executes alice's deposit: refused as expected (ERR_NOT_CREATOR)
+[E2] alice executes with a loose guard (min_swap_out = 50 % of quote): OK · events ["nep141:ft_transfer", 
+"sol2near:amm_deposit_confirmed", "sol2near:lp_job_failed"]
+[E2] status {"InRef":{"usdc":"18000000"}} · last_error "guard_slippage: min_swap_out 4433535834829936026935 < quote 
+8867071669659872053870 - 100 bps"
+[E3] alice resumes with a correct plan: OK · events ["sol2near:swap_confirmed", "sol2near:proof_of_liquidity", 
+"sol2near:lp_confirmed"]
+[E3] LpConfirmed: shares 8946400039999999999998 (Ref says Treasury holds 8946400039999999999998) · usdc_swapped 
+"8973320" usdc_in_lp "9026679" dust_usdc "1" · base_in_lp "8867071669659872053869" dust_base "1" · verified true · 
+locked true · fuel "FUEL_NOT_ELIGIBLE"
+[F1] alice deposits 900 USDC (LP budget 810 in a ~1 000 USDC pool): OK · events ["nep141:ft_transfer", 
+"sol2near:deposit_allocated"]
+[F2] execute_lp on deposit #1: OK · events ["nep141:ft_transfer", "sol2near:amm_deposit_confirmed", 
+"sol2near:lp_job_failed"]
+[F2] status {"InRef":{"usdc":"810000000"}} · last_error "guard_price_impact 2557 bps > 1000"
+[F3] alice aborts deposit #1 (budget stays hers): OK · events ["sol2near:lp_aborted"]
+[F4] withdraw_leftover USDC of #1 (real Ref withdraw, checked with get_deposits): OK · events ["nep141:ft_transfer", 
+"sol2near:leftover_recovered"]
+[F5] withdraw_reserve (8 % reserves + recovered 810 USDC): OK · events ["nep141:ft_transfer", 
+"sol2near:reserve_withdrawn"]
+[F5] alice USDC 80000000 -> 963600000 (+883600000) = reserve 883600000
+[G1] withdraw_lp during the lock: refused as expected (ERR_LP_LOCKED)
+[G2] bob withdraws alice's LP: refused as expected (ERR_NOT_CREATOR)
+[G3] sandbox time is past unlock_at 1794613591014696843
+[G3] alice mft_register for the pool shares: OK · events []
+[G4] withdraw_lp after the lock: OK · events ["sol2near:lp_withdraw_started", "sol2near:lp_withdrawn", 
+"sol2near:proof_of_liquidity"]
+[G4] Ref: alice holds 8946400039999999999998 shares, Treasury 0
+[G5] second withdraw_lp: refused as expected (ERR_NO_CONFIRMED_LP)
+[H1] alice remove_liquidity on Ref: OK · events []
+[H1] alice's Ref deposits after remove_liquidity: 
+{"s2nmeme.test.near":"8867071669659872053868","usdc.test.near":"9026678"}
+[H2] withdraw_leftover usdc.test.near (1): OK · events ["nep141:ft_transfer", "sol2near:leftover_recovered"]
+[H2] withdraw_leftover s2nmeme.test.near (1): OK · events ["nep141:ft_transfer", "sol2near:leftover_recovered"]
+[R] accounting {"base_balance_total":"1","community_total":"18400000","deposits_count":"2","pending_budget_total":"0","
+recorded_shares":"0","ref_expected_base":"0","ref_expected_usdc":"0","reserve_total":"1","total_received":"920000000"}
+[R] Treasury USDC on token 18400001 = reserve "1" + community "18400000" + pending "0"
+[R] Treasury S2NMEME on token 1 = base balances "1"
+[R] Treasury deposits on Ref: USDC 0 (expected "0"), S2NMEME 0 (expected "0")
+ALL V4.1 SANDBOX CHECKS PASSED (local sandbox, not testnet)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 29.21s
+
+

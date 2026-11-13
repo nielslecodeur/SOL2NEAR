@@ -68,7 +68,7 @@ Règle : **aucune fonctionnalité n'est annoncée sans preuve vérifiable**. Un 
 |---|---|---|
 | Logique Treasury (90/8/2, états, garde-fous) | `cargo test` → `34 passed` | ☑ unitaire |
 | Build officiel | `cargo near build` + SHA-256 | ☑ `35e9a79a…8168` |
-| Route Solana Devnet → NEAR testnet | tx Solana + statut Tidepool `SUCCESS` + tx NEAR | ☐ dry quote seulement (11/11) ; client `packages/crosschain` testé avec mocks ; Tidepool injoignable le 13/11 |
+| Route Solana Devnet → NEAR testnet | tx Solana + statut Tidepool `SUCCESS` + tx NEAR | ☑ G7 (13/11) : Solana `bGUicpgy…887R` → Tidepool `SUCCESS` → NEAR `J58H2uyu…RFqf` (1,9948 USDC) ; G8 (réconciliation bout en bout jusqu'au FUEL) ☐ |
 | Dépôt NEP-141 dans Treasury | tx `ft_transfer_call` + `get_deposit` | ☑ C1 `AsD2o2aV…ZWzw` |
 | Pool Ref créé | tx `add_simple_pool` + `get_pool` | ☑ A8 `BXcJeRyX…7f7B`, pool 2951 |
 | LP réelles détenues par Treasury | tx `add_liquidity` + `get_pool_shares(Treasury) > 0` | ☑ C2 `4F2wXqzm…SSHA`, 165 640 253 516 145 704 019 022 parts |

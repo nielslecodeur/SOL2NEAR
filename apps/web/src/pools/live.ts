@@ -7,10 +7,11 @@
  */
 import {
   addAmountsInPoolOrder, assessPool, normalizeClassic, normalizeDcl, POOL_REGISTRY, previewSwap, priceImpactBps, treasuryTarget,
-  type Assessment, type LivePool, type PoolDescriptor, type RawClassicPool, type RawDclPool, type TokenMeta, type TreasuryTarget,
+  fuelEligibility, pilotDeployment, V41_PILOT,
+  type Assessment, type FuelConfig, type FuelEligibility, type LivePool, type PilotDeployment, type PoolDescriptor, type RawClassicPool, type RawDclPool, type TokenMeta, type TreasuryTarget,
 } from "../../../../packages/near-client/src/index.ts";
 import { DEFAULT_SLIPPAGE_BPS, impactLevel, type ImpactLevel } from "../near/actions.ts";
-import { TREASURY_ACCOUNT_ID } from "../near/config.ts";
+import { FUEL_ACCOUNT_ID, TREASURY_ACCOUNT_ID } from "../near/config.ts";
 import { nearRpc, NEAR_RPC_URLS, type NearRpc } from "../near/rpc.ts";
 
 /** Public mainnet providers (CORS open), used ONLY for view calls on reference pools. */
@@ -81,8 +82,20 @@ export function poolReaders(testnet: NearRpc = nearRpc(NEAR_RPC_URLS), mainnet: 
     };
   }
 
-  return { readCatalog, readPool, preflight };
+  /** V4.1 pilot: deployment status of the PLANNED accounts + the DEPLOYED FUEL config (both live, read only). */
+  async function readPilot(): Promise<PilotState> {
+    const [deployment, reactor] = await Promise.all([
+      pilotDeployment({ codeHash: (id) => testnet.codeHash(id), view: (c, m, a) => testnet.view(c, m, a) }),
+      testnet.view<{ config: FuelConfig }>(FUEL_ACCOUNT_ID, "get_reactor"),
+    ]);
+    const poolId = deployment.state === "READY" ? deployment.poolId : null;
+    return { readAt: Date.now(), deployment, fuelConfig: reactor.config, fuel: fuelEligibility(reactor.config, V41_PILOT.treasuryId, poolId) };
+  }
+
+  return { readCatalog, readPool, preflight, readPilot };
 }
+
+export interface PilotState { readAt: number; deployment: PilotDeployment; fuelConfig: FuelConfig; fuel: FuelEligibility }
 
 export interface Preflight {
   readAt: number;

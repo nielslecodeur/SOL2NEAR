@@ -317,3 +317,38 @@ test.describe("@mock V4.0 Pool Explorer failure cases", () => {
     expect(errors.filter((e) => e.startsWith("pageerror"))).toEqual([]);
   });
 });
+
+// ---- V4.1 Classic pilot card: LOCKED, read-only. TreasuryV4 / S2NMEME are NOT deployed. ----
+test.describe("@live V4.1 pilot card (real testnet reads)", () => {
+  test("shows NOT DEPLOYED from live reads, FUEL_NOT_ELIGIBLE from the deployed FUEL config, every step LOCKED, nothing signable", async ({ page }) => {
+    await mockWallet(page, DEV);
+    const errors = watchErrors(page);
+    const fuelCfg = (await view<{ config: { treasury_id: string } }>("fuel.sol2near-dev.testnet", "get_reactor")).config;
+    await page.goto("/#/pools");
+    const pilot = page.getByLabel("V4.1 Classic pilot");
+    await expect(pilot).toContainText("NOT DEPLOYED", { timeout: 30_000 });
+    await expect(pilot).toContainText("treasury-v4.sol2near-dev.testnet");
+    await expect(pilot).toContainText("FUEL_NOT_ELIGIBLE");
+    await expect(pilot).toContainText(fuelCfg.treasury_id);
+    await expect(pilot).toContainText("SANDBOX TEST TOKEN · NO VALUE");
+    await expect(pilot).toContainText("Not a yield, not guaranteed");
+    const steps = pilot.getByLabel("Pilot journey").locator("li");
+    await expect(steps).toHaveCount(7);
+    await expect(steps.filter({ hasText: "LOCKED" })).toHaveCount(7);
+    await expect(pilot.getByRole("button", { name: /Fund the pilot pool/ })).toBeDisabled();
+    await pilot.getByText("Exact calls a creator would sign").click();
+    await expect(pilot).toContainText("treasury-v4.sol2near-dev.testnet.execute_lp");
+    expect(await page.evaluate(() => (window as any).__signCalls)).toBe(0);
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe("@mock V4.1 pilot card failure", () => {
+  test("testnet RPC down: the pilot card says the read failed and unlocks nothing", async ({ page }) => {
+    await page.route(/near-testnet\.drpc\.org|test\.rpc\.fastnear\.com/, (route) => route.abort("failed")); // MOCK testnet outage
+    await page.goto("/#/pools");
+    const pilot = page.getByLabel("V4.1 Classic pilot");
+    await expect(pilot).toContainText("Live read failed", { timeout: 30_000 });
+    await expect(pilot.getByRole("button", { name: /Fund the pilot pool/ })).toBeDisabled();
+  });
+});
