@@ -1,0 +1,124 @@
+{
+ "status": {
+  "SuccessValue": "dHJ1ZQ=="
+ },
+ "transaction": {
+  "hash": "CoAgrgQEhmktNEK1hvgZpwUHjsaTR6XvS9z1NSNpLk6o",
+  "signer_id": "sol2near-dev.testnet",
+  "receiver_id": "fuel.sol2near-dev.testnet"
+ },
+ "transaction_outcome": {
+  "id": "CoAgrgQEhmktNEK1hvgZpwUHjsaTR6XvS9z1NSNpLk6o",
+  "outcome": {
+   "status": {
+    "SuccessReceiptId": "FjnokX6kpgVvLXiAZiBC5pPmkbSzJDH49gES2YdM7aHV"
+   },
+   "logs": [],
+   "executor_id": "sol2near-dev.testnet"
+  }
+ },
+ "receipts_outcome": [
+  {
+   "id": "FjnokX6kpgVvLXiAZiBC5pPmkbSzJDH49gES2YdM7aHV",
+   "outcome": {
+    "executor_id": "fuel.sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessReceiptId": "FJdz5rPs5HkMVjGRb4cD2vAzM2NpzLAvYRciHyRnBKVc"
+    }
+   }
+  },
+  {
+   "id": "FDsQ793iRqMEJGUBDQX8H7f2Qyixy5CvhgxsUjSLAXnH",
+   "outcome": {
+    "executor_id": "treasury.sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": "eyJpZCI6IjAiLCJjcmVhdG9yIjoic29sMm5lYXItZGV2LnRlc3RuZXQiLCJhbW91bnQiOiIyMDAwMDAwMCIsImxwX2J1ZGdldCI6IjE4MDAwMDAwIiwicmVzZXJ2ZSI6IjE2MDAwMDAiLCJjb21tdW5pdHkiOiI0MDAwMDAiLCJzdGF0dXMiOiJMcENvbmZpcm1lZCIsInBsYW4iOnsic3dhcF9hbW91bnRfaW4iOiI4MzIzMTg3IiwibWluX3N3YXBfb3V0IjoiMTk3MTA1MDA1OTIyNjkzODU1ODA0ODMxMyIsIm1pbl9hbW91bnRzIjpbIjk1ODAwNDQiLCIxOTcxMDUwMDU5MjI2OTM4NTU4MDQ4MzEzIl19LCJscF9zaGFyZXMiOiIxNjU2NDAyNTM1MTYxNDU3MDQwMTkwMjIiLCJscF92ZXJpZmllZCI6dHJ1ZSwidXNkY19zd2FwcGVkIjoiODMyMzE4NyIsInVzZGNfaW5fbHAiOiI5Njc2ODEyIiwid25lYXJfaW5fbHAiOiIxOTkwOTU5NTQwNzc1MzM0MTI4OTI5OTgxIiwiZHVzdF91c2RjIjoiMSIsImR1c3Rfd25lYXIiOiIxMTUwMDk0NTIyOTMzNDEwNDMiLCJ1bmxvY2tfYXQiOiIxNzk0NDcwMzk1MDEwMzE0NDI5IiwicG9vbF9pZCI6Mjk1MSwibHBfY29uZmlybWVkX2F0IjoiMTc5NDQ2OTc5NTAxMDMxNDQyOSIsImxwX2NvbmZpcm1lZF9ibG9jayI6IjI3NzMzNDE3OCIsImxhc3RfZXJyb3IiOm51bGwsImNyZWF0ZWRfYXQiOiIxNzk0NDY5NzcyODM4MjY5MzQ4IiwidXBkYXRlZF9hdCI6IjE3OTQ0Njk3OTUwMTAzMTQ0MjkifQ=="
+    }
+   }
+  },
+  {
+   "id": "9kjxKBjui2WJ7ynSeNSQa7H5WeRvFe5wVfoVYTXjwXke",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "87Fzs4iSaYg5jqqZVv3djG9RhWyFMQQHEG5DAzNprFuK",
+   "outcome": {
+    "executor_id": "treasury.sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": "eyJ0b3RhbF9yZWNlaXZlZCI6IjIwMDAwMDAwIiwicmVzZXJ2ZV90b3RhbCI6IjE2MDAwMDAiLCJjb21tdW5pdHlfdG90YWwiOiI0MDAwMDAiLCJwZW5kaW5nX2J1ZGdldF90b3RhbCI6IjAiLCJyZWZfZXhwZWN0ZWRfdXNkYyI6IjEiLCJyZWZfZXhwZWN0ZWRfd25lYXIiOiIxMTUwMDk0NTIyOTMzNDEwNDMiLCJyZWNvcmRlZF9zaGFyZXMiOiIxNjU2NDAyNTM1MTYxNDU3MDQwMTkwMjIiLCJkZXBvc2l0c19jb3VudCI6IjEifQ=="
+    }
+   }
+  },
+  {
+   "id": "2zAtwGNSgUbNPrZkJdp53EuSB18Sn3CK31BZWvqsfL9m",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "9HkGU91yg21UWcLwokYcn3gyW6Fut2RcxjK7o5PGQiCb",
+   "outcome": {
+    "executor_id": "ref-finance-101.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": "IjE2NTY0MDI1MzUxNjE0NTcwNDAxOTAyMiI="
+    }
+   }
+  },
+  {
+   "id": "346bGM5sMYgNkprA37fKLy2xg9KktoC8tFWuRWwWkxvA",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "FJdz5rPs5HkMVjGRb4cD2vAzM2NpzLAvYRciHyRnBKVc",
+   "outcome": {
+    "executor_id": "fuel.sol2near-dev.testnet",
+    "logs": [
+     "EVENT_JSON:{\"standard\":\"sol2near\",\"version\":\"1.0.0\",\"event\":\"position_admitted\",\"data\":[{\"position_id\":\"0\",\"creator_id\":\"sol2near-dev.testnet\",\"season_id\":0,\"usdc_in_lp\":\"9676812\",\"lp_shares\":\"165640253516145704019022\",\"reward_total\":\"9676812000000000000\",\"creator_reward\":\"7741449600000000000\",\"community_reward\":\"1935362400000000000\",\"ref_treasury_shares\":\"165640253516145704019022\",\"treasury_recorded_shares\":\"165640253516145704019022\",\"confirmed_block\":\"277334178\"}]}"
+    ],
+    "status": {
+     "SuccessValue": "dHJ1ZQ=="
+    }
+   }
+  },
+  {
+   "id": "EBrQdHf1sBojzv81yqY9RmHnggMDVtZH7EKhcd8WmV9j",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "D6TSQJebtexe8kMVPLybFV2XvzsFa8Mqn98H7ENkQvXV",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  }
+ ]
+}

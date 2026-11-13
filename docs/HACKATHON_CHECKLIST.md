@@ -53,7 +53,7 @@ Légende : ☐ à faire · ☑ fait (avec preuve) · ⚠ point d'attention
 | Catégorie | À déclarer |
 |---|---|
 | Bibliothèques Rust | `near-sdk` 5.30.1 (feature `unit-testing` en dev), `near-contract-standards` 5.30.1 (implémentation NEP-141/145 de FUEL) |
-| Bibliothèques web | React 18.3.1, Vite 5.4.11, @vitejs/plugin-react 4.3.4 (aucune lib wallet) ; cross-chain : `@solana/web3.js` 1.98.4, `@solana/spl-token` 0.4.14 |
+| Bibliothèques web | React 18.3.1, Vite 5.4.11, @vitejs/plugin-react 4.3.4 ; wallet NEAR : NEAR Wallet Selector 10.1.4 (core, modal-ui, my-near-wallet, meteor-wallet), `@near-js/transactions` 2.5.1 ; cross-chain : `@solana/web3.js` 1.98.4, `@solana/spl-token` 0.4.14 |
 | Outils de build | cargo-near 0.22.0, wasm-opt (via cargo-near), near-cli-rs 0.31.1, pnpm 10, TypeScript 5.6.3 |
 | Services externes | Tidepool (sandbox communautaire), Ref/Rhea exchange testnet `ref-finance-101.testnet`, NEAR testnet RPC |
 | Templates / boilerplate | aucun |

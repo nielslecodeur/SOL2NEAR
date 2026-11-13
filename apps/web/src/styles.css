@@ -68,3 +68,21 @@ a.row:hover { background: rgba(0,236,151,.05); }
 footer { margin-top: 32px; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
 h2 { margin: 6px 0; overflow-wrap: anywhere; }
 .transfer { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 6px; }
+.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); font-weight: 500; }
+.nearpanel { display: grid; gap: 12px; }
+.walletbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.walletbar code { overflow-wrap: anywhere; }
+.grid4.small .stat b { font-size: 16px; }
+.stat b.tiny { font-size: 13px; }
+.steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.steps li { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; align-content: start; }
+.steps li div { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.paths { font-size: 13px; }
+.deposit { border-top: 1px solid var(--line); padding-top: 10px; }
+.problems { color: var(--warn); margin: 6px 0; padding-left: 18px; font-size: 14px; }
+.review { border: 1px solid var(--warn); border-radius: 12px; padding: 12px 14px; background: rgba(255,176,32,.06); }
+.review ul { margin: 6px 0; padding-left: 18px; font-size: 14px; overflow-wrap: anywhere; }
+.history { border-top: 1px solid var(--line); padding-top: 10px; display: grid; gap: 6px; }
+.histrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; }
+.histrow small { flex-basis: 100%; overflow-wrap: anywhere; }
+@media (max-width: 520px) { .steps { grid-template-columns: 1fr; } .row { min-width: 560px; } }

@@ -60,7 +60,7 @@ const STEP_LABEL: Record<TransferRecord["stage"], string> = {
   near_verified: "3 · USDC verified on NEAR · step 4 is yours: deposit into the Treasury",
 };
 
-export function BridgeLive({ nearAccount }: { nearAccount: string }) {
+export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onHealth?: (reachable: boolean) => void }) {
   const [health, setHealth] = useState("checking Tidepool…");
   const [solAddr, setSolAddr] = useState<string | null>(null);
   const [amount, setAmount] = useState("1");
@@ -83,8 +83,8 @@ export function BridgeLive({ nearAccount }: { nearAccount: string }) {
 
   useEffect(() => {
     tidepool.health().then(
-      (h) => setHealth(h.ok && h.solanaRouteOk ? "up · Solana devnet route ok" : `degraded · ok=${h.ok} solanaRoute=${h.solanaRouteOk}`),
-      (e) => setHealth(`unreachable · ${explain(e)}`),
+      (h) => { onHealth?.(true); setHealth(h.ok && h.solanaRouteOk ? "up · Solana devnet route ok" : `degraded · ok=${h.ok} solanaRoute=${h.solanaRouteOk}`); },
+      (e) => { onHealth?.(false); setHealth(`unreachable · ${explain(e)}`); },
     );
     // Resume every transfer a previous page load left in progress.
     for (const t of tidepool.transfers())

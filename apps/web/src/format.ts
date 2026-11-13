@@ -62,3 +62,11 @@ export function parseUnits(input: string, decimals: number): string | null {
   const v = BigInt(m[1]! + (m[2] ?? "").padEnd(decimals, "0"));
   return v > 0n ? v.toString() : null;
 }
+
+/** Exact atomic -> plain decimal string for an input field ("29900000", 6 -> "29.9"). No float, no separators. */
+export function toDecimalString(atomic: string | bigint, decimals: number): string {
+  const v = BigInt(atomic);
+  const base = 10n ** BigInt(decimals);
+  const frac = (v % base).toString().padStart(decimals, "0").replace(/0+$/, "");
+  return `${v / base}${frac ? "." + frac : ""}`;
+}

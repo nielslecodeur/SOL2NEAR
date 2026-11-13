@@ -1,0 +1,45 @@
+{
+ "status": {
+  "SuccessValue": "Ijc3NDE0NDk2MDAwMDAwMDAwMDAi"
+ },
+ "transaction": {
+  "hash": "6g13fiwvEbSoHhYLXGkDcN9tEsPLG2LXic88bmP3hXxu",
+  "signer_id": "sol2near-dev.testnet",
+  "receiver_id": "fuel.sol2near-dev.testnet"
+ },
+ "transaction_outcome": {
+  "id": "6g13fiwvEbSoHhYLXGkDcN9tEsPLG2LXic88bmP3hXxu",
+  "outcome": {
+   "status": {
+    "SuccessReceiptId": "5DT5NWDhsrvErcWz24EsK86FHxKUiHSVGjqYthjFuTSx"
+   },
+   "logs": [],
+   "executor_id": "sol2near-dev.testnet"
+  }
+ },
+ "receipts_outcome": [
+  {
+   "id": "5DT5NWDhsrvErcWz24EsK86FHxKUiHSVGjqYthjFuTSx",
+   "outcome": {
+    "executor_id": "fuel.sol2near-dev.testnet",
+    "logs": [
+     "EVENT_JSON:{\"standard\":\"nep141\",\"version\":\"1.0.0\",\"event\":\"ft_transfer\",\"data\":[{\"old_owner_id\":\"fuel.sol2near-dev.testnet\",\"new_owner_id\":\"sol2near-dev.testnet\",\"amount\":\"7741449600000000000\",\"memo\":\"FUEL proof-of-liquidity reward\"}]}",
+     "EVENT_JSON:{\"standard\":\"sol2near\",\"version\":\"1.0.0\",\"event\":\"reward_claimed\",\"data\":[{\"position_id\":\"0\",\"creator_id\":\"sol2near-dev.testnet\",\"amount\":\"7741449600000000000\"}]}"
+    ],
+    "status": {
+     "SuccessValue": "Ijc3NDE0NDk2MDAwMDAwMDAwMDAi"
+    }
+   }
+  },
+  {
+   "id": "BKzYfs8xgqKmxu55ixLy6iW56NgVBnV7DB9sgKXE5gUH",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  }
+ ]
+}

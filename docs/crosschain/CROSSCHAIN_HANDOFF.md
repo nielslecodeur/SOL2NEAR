@@ -35,7 +35,7 @@ is not bypassed. Details: [`FEASIBILITY.md` §4](FEASIBILITY.md).
 ## 4. Not done
 
 - No live Tidepool call from this package, and no real Solana → NEAR transfer.
-- No NEAR wallet in the web app: step 4 is a CLI command (`near … ft_transfer_call`), as proven in G2 C1.
+- Step 4 (the Treasury deposit) is now done in the dashboard with a NEAR wallet (G4, `docs/G4_NEAR_WALLET.md`). After a verified bridge, *Use this amount* pre-fills it, and a separate NEAR signature is required. The CLI command remains a fallback.
 - Quote signature verification (U5).
 
 ## 5. Token ids and decimals
@@ -56,7 +56,7 @@ Runtime: `@solana/web3.js` 1.98.4, `@solana/spl-token` 0.4.14. Dev: TypeScript 5
 
 | Suite | Result |
 |---|---|
-| `pnpm --filter @sol2near/crosschain test` | **34 passed, 0 failed** (mocked Tidepool, Solana RPC, NEAR RPC, wallet, storage) |
+| `pnpm --filter @sol2near/crosschain test` | **35 passed, 0 failed** (mocked Tidepool, Solana RPC, NEAR RPC, wallet, storage) |
 | `pnpm --filter @sol2near/web test` | 6 passed |
 | `pnpm typecheck` | OK (shared, near-client, crosschain, web) |
 | `pnpm --filter @sol2near/crosschain live:dry` | `FAIL GET /v0/health: fetch failed (ENOTFOUND)`: network sinkhole (§1) |
@@ -95,7 +95,7 @@ All test assets have **no value**: Solana **Devnet** and NEAR **testnet**.
 6. **Watch the card**: `Solana deposit confirmed` → `Tidepool processing` → `Tidepool SUCCESS · checking USDC on NEAR` → `USDC verified on NEAR`.
    - If it shows `REFUNDED`, the USDC returns to your Solana address.
    - The Solana and NEAR explorer links are shown.
-7. **Step 4 (Treasury)**: run the `ft_transfer_call` command shown by the card, then click **Load**. The new deposit appears and its status moves toward `LP CONFIRMED` once `execute_lp` runs.
+7. **Step 4 (Treasury)**: in *Your NEAR testnet account*, connect the same NEAR account, click *Use this amount*, review, then sign the deposit. The CLI command shown by the card is a fallback. The new deposit appears and its status moves toward `LP CONFIRMED` once `execute_lp` runs.
 8. **Record**: Solana signature, Tidepool status, NEAR tx hash, NEAR balance delta. Add them to the README proof table, and close U1–U4 (and U2) here.
 
 If the card shows `interrupted`, do not sign again. Check the wallet history and the Tidepool status first.
@@ -119,7 +119,7 @@ node scripts/probes/verify-testnet.mjs         # NEAR side, read-only
 | P1 | Tidepool is custodial, has a single maker and no SLA, and is flagged by a corporate firewall | test tokens only, never real funds |
 | P1 | Quote signature not verified (U5) | echo checks + NEAR balance check; production would use the official 1Click SDK |
 | P2 | The NEAR balance check counts any incoming USDC in the window | it can only over-count a real receipt, never invent a missing one; the NEAR tx link is shown |
-| P2 | Step 4 needs the CLI (no NEAR wallet in the UI) | exact command shown; proven in G2 C1 |
+| P2 | Step 4 from the dashboard is built but not yet executed on-chain | `docs/G4_NEAR_WALLET.md` §5 |
 
 ## 11. Recommendations
 

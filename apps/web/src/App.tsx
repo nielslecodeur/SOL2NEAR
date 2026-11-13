@@ -3,6 +3,7 @@ import type { BridgeResult } from "../../../packages/shared/src/crosschain.ts";
 import { explorerAccount, explorerBlock, FUEL_ACCOUNT_ID, loadTestnet, TREASURY_ACCOUNT_ID, type FuelPosition, type Season, type Snapshot } from "./chain.ts";
 import { demoSnapshot, mockCrosschain } from "./demo.ts";
 import { BridgeLive } from "./BridgeLive.tsx";
+import { NearPanel } from "./NearPanel.tsx";
 import { bridgeTone, depositStatus, duration, fuel, pct, usdc, wnear, type Tone } from "./format.ts";
 
 type Route = { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" };
@@ -30,12 +31,14 @@ export function App() {
     return () => removeEventListener("hashchange", on);
   }, []);
 
-  async function refresh() {
+  const [tidepoolOk, setTidepoolOk] = useState<boolean | null>(null);
+
+  async function refresh(forAccount = account) {
     setError(null);
     if (source === "demo") return setSnap(demoSnapshot());
     setLoading(true);
     try {
-      setSnap(await loadTestnet(account.trim()));
+      setSnap(await loadTestnet(forAccount.trim()));
     } catch (e) {
       setError(`Testnet read failed: ${(e as Error).message}`);
     } finally {
@@ -76,8 +79,16 @@ export function App() {
           <label htmlFor="acct">Creator account</label>
           <input id="acct" placeholder="you.testnet" value={account} onChange={(e) => setAccount(e.target.value)} />
           <button disabled={loading}>{loading ? "Reading…" : "Load"}</button>
-          <small>Watch mode: reads public contract state. The only signing is the Solana deposit, in your Phantom wallet (cross-chain card).</small>
+          <small>Watch mode reads public contract state for any account. Signing happens only in your own wallets (NEAR panel, cross-chain card), after a review step.</small>
         </form>
+      )}
+
+      {!demo && (
+        <NearPanel
+          tidepoolReachable={tidepoolOk}
+          onAccount={(id) => { if (id) { setAccount(id); localStorageSet("account", id); refresh(id); } }}
+          onChanged={() => refresh()}
+        />
       )}
 
       {error && <div className="banner err">{error}</div>}
@@ -87,7 +98,7 @@ export function App() {
         </div>
       )}
 
-      {snap && route.page === "dashboard" && <Dashboard snap={snap} account={account} />}
+      {snap && route.page === "dashboard" && <Dashboard snap={snap} account={account} onTidepool={setTidepoolOk} />}
       {snap && route.page === "vault" && <Vault snap={snap} id={route.id} />}
       {snap && route.page === "reactor" && <ReactorPage snap={snap} />}
 
@@ -99,7 +110,7 @@ export function App() {
   );
 }
 
-function Dashboard({ snap, account }: { snap: Snapshot; account: string }) {
+function Dashboard({ snap, account, onTidepool }: { snap: Snapshot; account: string; onTidepool: (ok: boolean) => void }) {
   // With a creator loaded: that creator's deposits. Without: the Treasury's global accounting.
   const creator = account.trim() && snap.deposits.length > 0 ? account.trim() : null;
   const sum = (k: "amount" | "lp_budget" | "reserve" | "community") => snap.deposits.reduce((s, d) => s + BigInt(d[k]), 0n);
@@ -135,7 +146,7 @@ function Dashboard({ snap, account }: { snap: Snapshot; account: string }) {
               ? <Badge tone="confirmed">BACKED ON REF</Badge> : <Badge tone="failed">NOT BACKED</Badge>)}
           </p>
         </div>
-        <BridgeCard demo={snap.source === "demo"} nearAccount={account} />
+        <BridgeCard demo={snap.source === "demo"} nearAccount={account} onTidepool={onTidepool} />
       </section>
       <section className="card">
         <h3>Vaults &amp; deposits</h3>
@@ -160,7 +171,7 @@ function Dashboard({ snap, account }: { snap: Snapshot; account: string }) {
   );
 }
 
-function BridgeCard({ demo, nearAccount }: { demo: boolean; nearAccount: string }) {
+function BridgeCard({ demo, nearAccount, onTidepool }: { demo: boolean; nearAccount: string; onTidepool: (ok: boolean) => void }) {
   const [r, setR] = useState<BridgeResult | null>(null);
   return (
     <div className="card">
@@ -172,7 +183,7 @@ function BridgeCard({ demo, nearAccount }: { demo: boolean; nearAccount: string 
           {r && <p><Badge tone={bridgeTone(r.status)}>{r.status}</Badge> {r.amountOut && `→ ${usdc(r.amountOut)} USDC`}</p>}
         </>
       ) : (
-        <BridgeLive nearAccount={nearAccount} />
+        <BridgeLive nearAccount={nearAccount} onHealth={onTidepool} />
       )}
     </div>
   );

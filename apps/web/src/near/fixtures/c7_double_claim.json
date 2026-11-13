@@ -1,0 +1,60 @@
+{
+ "status": {
+  "Failure": {
+   "ActionError": {
+    "index": 0,
+    "kind": {
+     "FunctionCallError": {
+      "ExecutionError": "Smart contract panicked: ERR_ALREADY_CLAIMED"
+     }
+    }
+   }
+  }
+ },
+ "transaction": {
+  "hash": "J8UEKyZyyYpHrzW8HTJiJ1tqtq23GdkX2VA8HdYAoWHi",
+  "signer_id": "sol2near-dev.testnet",
+  "receiver_id": "fuel.sol2near-dev.testnet"
+ },
+ "transaction_outcome": {
+  "id": "J8UEKyZyyYpHrzW8HTJiJ1tqtq23GdkX2VA8HdYAoWHi",
+  "outcome": {
+   "status": {
+    "SuccessReceiptId": "8CUrEFKrrJeinKhoAYfr9fP21JbjJTyEyMVmT2dqddf6"
+   },
+   "logs": [],
+   "executor_id": "sol2near-dev.testnet"
+  }
+ },
+ "receipts_outcome": [
+  {
+   "id": "8CUrEFKrrJeinKhoAYfr9fP21JbjJTyEyMVmT2dqddf6",
+   "outcome": {
+    "executor_id": "fuel.sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "Failure": {
+      "ActionError": {
+       "index": 0,
+       "kind": {
+        "FunctionCallError": {
+         "ExecutionError": "Smart contract panicked: ERR_ALREADY_CLAIMED"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "id": "4Y4Gw5Q83dRq1TPNYZ54RRwjTY3yen9TQZPrhyKPEriT",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  }
+ ]
+}

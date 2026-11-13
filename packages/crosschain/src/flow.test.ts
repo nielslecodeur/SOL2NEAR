@@ -205,3 +205,9 @@ test("NEAR RPC failure before signing -> nothing signed, retry allowed", async (
   assert.equal(w.asked, 0);
   assert.equal(c.transfers().length, 0);
 });
+
+test("received less than the quote's minAmountOut -> settlement_mismatch; at least min -> ok", async () => {
+  const { verifySettlement } = await import("./near.ts");
+  assert.throws(() => verifySettlement("5000000", "5987425", "987426"), (e) => failsWith("settlement_mismatch")(e));
+  assert.equal(verifySettlement("5000000", "5987426", "987426"), "987426");
+});

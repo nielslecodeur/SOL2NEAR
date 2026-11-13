@@ -1,0 +1,86 @@
+{
+ "status": {
+  "SuccessValue": "IjIwMDAwMDAwIg=="
+ },
+ "transaction": {
+  "hash": "AsD2o2aVxkSmhm4c3TVsLs9aZgKjMTog2KW42pieZWzw",
+  "signer_id": "sol2near-dev.testnet",
+  "receiver_id": "usdc.tidepool-sandbox.testnet"
+ },
+ "transaction_outcome": {
+  "id": "AsD2o2aVxkSmhm4c3TVsLs9aZgKjMTog2KW42pieZWzw",
+  "outcome": {
+   "status": {
+    "SuccessReceiptId": "CRZwafKPkHHx135Ha3auYEsbTeKHVvAFsSBdppS9Xxih"
+   },
+   "logs": [],
+   "executor_id": "sol2near-dev.testnet"
+  }
+ },
+ "receipts_outcome": [
+  {
+   "id": "CRZwafKPkHHx135Ha3auYEsbTeKHVvAFsSBdppS9Xxih",
+   "outcome": {
+    "executor_id": "usdc.tidepool-sandbox.testnet",
+    "logs": [
+     "EVENT_JSON:{\"standard\":\"nep141\",\"version\":\"1.0.0\",\"event\":\"ft_transfer\",\"data\":[{\"old_owner_id\":\"sol2near-dev.testnet\",\"new_owner_id\":\"treasury.sol2near-dev.testnet\",\"amount\":\"20000000\"}]}"
+    ],
+    "status": {
+     "SuccessReceiptId": "3B84QyEN3UZVJq2WWGCM6zZR19pDywQ69eV9VxhMA9KU"
+    }
+   }
+  },
+  {
+   "id": "6z8TKbVioMGGukHobgzdQ3SasX8wTP5wQ1eGb6ffauiK",
+   "outcome": {
+    "executor_id": "treasury.sol2near-dev.testnet",
+    "logs": [
+     "EVENT_JSON:{\"standard\":\"sol2near\",\"version\":\"1.0.0\",\"event\":\"deposit_allocated\",\"data\":[{\"deposit_id\":\"0\",\"creator\":\"sol2near-dev.testnet\",\"amount\":\"20000000\",\"lp_budget\":\"18000000\",\"reserve\":\"1600000\",\"community\":\"400000\"}]}"
+    ],
+    "status": {
+     "SuccessValue": "IjAi"
+    }
+   }
+  },
+  {
+   "id": "G6ocUvpDwj2BQ9pmyn1SW5UYLU8wqkfEUy15yaU15MSV",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "3B84QyEN3UZVJq2WWGCM6zZR19pDywQ69eV9VxhMA9KU",
+   "outcome": {
+    "executor_id": "usdc.tidepool-sandbox.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": "IjIwMDAwMDAwIg=="
+    }
+   }
+  },
+  {
+   "id": "D8zbMNCXoEPVZpykUnbJhqponWuuD6udWbqaDVzC3PUX",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "7kNhL38aFZ3h89vkJnvAiMC8TXteV9Bpjzs8ARj5MbaQ",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  }
+ ]
+}

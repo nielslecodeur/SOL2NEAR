@@ -1,0 +1,296 @@
+{
+ "status": {
+  "SuccessValue": "dHJ1ZQ=="
+ },
+ "transaction": {
+  "hash": "4F2wXqzmyBVaPqKa6mE3KMFjFv2S3U3GxXJYJfNsSSHA",
+  "signer_id": "sol2near-dev.testnet",
+  "receiver_id": "treasury.sol2near-dev.testnet"
+ },
+ "transaction_outcome": {
+  "id": "4F2wXqzmyBVaPqKa6mE3KMFjFv2S3U3GxXJYJfNsSSHA",
+  "outcome": {
+   "status": {
+    "SuccessReceiptId": "3uGx8WBQkaAsA7Kf88oy2TErdvHAM4YvPGu3PRv9sK1v"
+   },
+   "logs": [],
+   "executor_id": "sol2near-dev.testnet"
+  }
+ },
+ "receipts_outcome": [
+  {
+   "id": "3uGx8WBQkaAsA7Kf88oy2TErdvHAM4YvPGu3PRv9sK1v",
+   "outcome": {
+    "executor_id": "treasury.sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessReceiptId": "8JuJtAij5fL3fjB6677Xfrcmohu7G9D4iKxdvAsen2dX"
+    }
+   }
+  },
+  {
+   "id": "DNjz5cwjGSzgGvhuEBAwn23dQBKhJaoqubWmuWSvP6Tt",
+   "outcome": {
+    "executor_id": "usdc.tidepool-sandbox.testnet",
+    "logs": [
+     "EVENT_JSON:{\"standard\":\"nep141\",\"version\":\"1.0.0\",\"event\":\"ft_transfer\",\"data\":[{\"old_owner_id\":\"treasury.sol2near-dev.testnet\",\"new_owner_id\":\"ref-finance-101.testnet\",\"amount\":\"18000000\"}]}"
+    ],
+    "status": {
+     "SuccessReceiptId": "9nXg1a7wo19eu1QjY3WBwbTCsFki16TBuHyZGyzsQ2F1"
+    }
+   }
+  },
+  {
+   "id": "HsbM56zFg9PpkNRUzMHbWxGLYJz5XhA2nWKrZqUCqT6F",
+   "outcome": {
+    "executor_id": "ref-finance-101.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": "IjAi"
+    }
+   }
+  },
+  {
+   "id": "Fb7RECb31TT4bQvyd87SCpgsDziv4ioq3SZJ8DQ2AFqJ",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "9nXg1a7wo19eu1QjY3WBwbTCsFki16TBuHyZGyzsQ2F1",
+   "outcome": {
+    "executor_id": "usdc.tidepool-sandbox.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": "IjE4MDAwMDAwIg=="
+    }
+   }
+  },
+  {
+   "id": "FpKAre3FfqyvVR13LJXMVNi9a9AR6G8bwcXKfbcufrmc",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "8mjKAj6NSnc7jbhHmDq33VCm6wbWXTGMfQq3iew5xVLL",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "8JuJtAij5fL3fjB6677Xfrcmohu7G9D4iKxdvAsen2dX",
+   "outcome": {
+    "executor_id": "treasury.sol2near-dev.testnet",
+    "logs": [
+     "EVENT_JSON:{\"standard\":\"sol2near\",\"version\":\"1.0.0\",\"event\":\"amm_deposit_confirmed\",\"data\":[{\"deposit_id\":\"0\",\"creator\":\"sol2near-dev.testnet\",\"status\":{\"InRef\":{\"usdc\":\"18000000\"}},\"lp_shares\":\"0\"}]}"
+    ],
+    "status": {
+     "SuccessReceiptId": "6phyB28CmYH749igz6UqHVhP6wYMzDLS8EKrPWsZmuwj"
+    }
+   }
+  },
+  {
+   "id": "36imTpvFn1rU1MF2ZxkXNmq5i9i4VtqPJMbE5aZvPwq5",
+   "outcome": {
+    "executor_id": "ref-finance-101.testnet",
+    "logs": [
+     "Swapped 8323187 usdc.tidepool-sandbox.testnet for 1990959655784786422271024 wnear.tidepool-sandbox.testnet",
+     "Exchange ref-finance-101.testnet got 42752858788730952211 shares, No referral fee"
+    ],
+    "status": {
+     "SuccessValue": "IjE5OTA5NTk2NTU3ODQ3ODY0MjIyNzEwMjQi"
+    }
+   }
+  },
+  {
+   "id": "8fLwyBteVar7AiEhTtbr8r2GhrgE87dUCntxrTC91QFb",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "6phyB28CmYH749igz6UqHVhP6wYMzDLS8EKrPWsZmuwj",
+   "outcome": {
+    "executor_id": "treasury.sol2near-dev.testnet",
+    "logs": [
+     "EVENT_JSON:{\"standard\":\"sol2near\",\"version\":\"1.0.0\",\"event\":\"swap_confirmed\",\"data\":[{\"deposit_id\":\"0\",\"creator\":\"sol2near-dev.testnet\",\"status\":{\"Swapped\":{\"usdc\":\"9676813\",\"wnear\":\"1990959655784786422271024\"}},\"lp_shares\":\"0\"}]}"
+    ],
+    "status": {
+     "SuccessReceiptId": "Ezt29yFN6v9mtgpeVrr3jpg8XG1TG5miLmNJz3fZ77Ad"
+    }
+   }
+  },
+  {
+   "id": "CGZaDrmKPEcdJtKTLUGzMyNGuVUn5E4Pc6CFLv85cDjV",
+   "outcome": {
+    "executor_id": "ref-finance-101.testnet",
+    "logs": [
+     "Liquidity added [\"9676812 usdc.tidepool-sandbox.testnet\", \"1990959540775334128929981 wnear.tidepool-sandbox.testnet\"], minted 165640253516145704019022 shares"
+    ],
+    "status": {
+     "SuccessValue": "IjE2NTY0MDI1MzUxNjE0NTcwNDAxOTAyMiI="
+    }
+   }
+  },
+  {
+   "id": "BKgBvy2kgtFshYiARm9XUny7sfwycqcZUF7kX8kqWDWX",
+   "outcome": {
+    "executor_id": "treasury.sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "BcVoTU6eEzm4MUeTBQkAJJ2Z86Szt1mpmnQwbvYjq4JD",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "EBseHkETBzo74TipxZazcAxRoQ4wxwvM7Zgqj59nbW8U",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "Ezt29yFN6v9mtgpeVrr3jpg8XG1TG5miLmNJz3fZ77Ad",
+   "outcome": {
+    "executor_id": "treasury.sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessReceiptId": "D4TqHxSL87VkQ2RdYhUzQeHpmHhs5ns4po39WjKFiBzu"
+    }
+   }
+  },
+  {
+   "id": "FnoNx3k183n3J3TTpY4dXWFfFn5qA2H5jHYTC71mzWZv",
+   "outcome": {
+    "executor_id": "ref-finance-101.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": "IjE2NTY0MDI1MzUxNjE0NTcwNDAxOTAyMiI="
+    }
+   }
+  },
+  {
+   "id": "3dwASVKZftmJFKJLqbrrZoCDDnp8TbECM4ciXwsq1jWf",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "BSspd3FiE8MYPYbT1TxsGFDxZZRJtfbY9Yu9FQRmQY3G",
+   "outcome": {
+    "executor_id": "ref-finance-101.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": "eyJ3bmVhci50aWRlcG9vbC1zYW5kYm94LnRlc3RuZXQiOiIxMTUwMDk0NTIyOTMzNDEwNDMiLCJ1c2RjLnRpZGVwb29sLXNhbmRib3gudGVzdG5ldCI6IjEifQ=="
+    }
+   }
+  },
+  {
+   "id": "9cXKKfRVqKyC3ySQteWEPtA8c2MKQyAqNqUwQUiTBmZT",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "D4TqHxSL87VkQ2RdYhUzQeHpmHhs5ns4po39WjKFiBzu",
+   "outcome": {
+    "executor_id": "treasury.sol2near-dev.testnet",
+    "logs": [
+     "EVENT_JSON:{\"standard\":\"sol2near\",\"version\":\"1.0.0\",\"event\":\"proof_of_liquidity\",\"data\":[{\"pool_id\":2951,\"onchain_shares\":\"165640253516145704019022\",\"recorded_shares\":\"165640253516145704019022\",\"ok\":true,\"block_height\":\"277334178\"}]}",
+     "EVENT_JSON:{\"standard\":\"sol2near\",\"version\":\"1.0.0\",\"event\":\"lp_confirmed\",\"data\":[{\"deposit_id\":\"0\",\"creator\":\"sol2near-dev.testnet\",\"pool_id\":2951,\"shares\":\"165640253516145704019022\",\"verified\":true,\"usdc_in_lp\":\"9676812\",\"wnear_in_lp\":\"1990959540775334128929981\",\"dust_usdc\":\"1\",\"dust_wnear\":\"115009452293341043\",\"unlock_at\":\"1794470395010314429\"}]}"
+    ],
+    "status": {
+     "SuccessValue": "dHJ1ZQ=="
+    }
+   }
+  },
+  {
+   "id": "BpAXdGLiuYgddb5zAsCNx6un6Gvij9p14amN15PDfM9c",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "B2aBWmyKDmuCmfTAzNCcGgfHakgZnsCycPwcwf9WB7bp",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "3EVwv463xF3SBDGjGjtnG6MXAwFtY17xHy8YyPfWuC2b",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "DtAqPFRqN2RLkLoYLvowss6HYgtLpU8ozctsndeBocGR",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  },
+  {
+   "id": "CMXvh5o3kZ2XDQDCb6mDWPLfyiNy9byDJ9EouZ7FdAiV",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  }
+ ]
+}
