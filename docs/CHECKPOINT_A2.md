@@ -75,7 +75,7 @@ sandbox or testnet tests.
 | Ref pool + real LP (G2) | not done | Tidepool NEAR faucet (account ≥ 3 h, ~23:20 UTC) + your approval to sign |
 | Deploy Treasury + FUEL, `setup`, full cycle (G3) | not done | needs G2 pool id + approval; ≈ 3 NEAR (Treasury) + ≈ 3 NEAR (FUEL) of storage, and `sol2near-dev` holds ~5 NEAR, so another faucet claim may be needed |
 | Ref behaviour H3/H4/H5/H11 | unverified | G2 |
-| Tidepool live bridge | dry quote only | teammate module + live transfer approval |
+| Tidepool live bridge | dry quote only | `packages/crosschain` done (mocked tests); live transfer needs Tidepool reachable + approval |
 | Wallet signing in the UI | not built | A3: wallet selector, or near-cli commands meanwhile |
 | UI visual check in a browser | not done in this session | open `pnpm --filter @sol2near/web dev` |
 | Community reserve distribution | no method (by design) | rules to define |
@@ -103,7 +103,7 @@ Branch `feat/core`, created from `main@debc460`. Local commits for A2 are listed
 
 1. Faucet + G2 manual Ref sequence → pool id.
 2. Approval to deploy Treasury and FUEL (demo config in `scripts/testnet-bootstrap.md` §6–7) and to run one full cycle.
-3. Teammate `packages/crosschain` + handoff, then replacing the SIMULATED adapter.
+3. ~~`packages/crosschain` + handoff~~ (done 2026-11-13), then replacing the SIMULATED adapter.
 4. Wallet signing in the UI (deposit, `execute_lp`, `register_position`, `close_season`, `claim`).
 5. Demo video, X post (human), final rules check (`docs/HACKATHON_CHECKLIST.md` §9).
 

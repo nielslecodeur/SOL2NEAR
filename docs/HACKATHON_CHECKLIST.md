@@ -53,11 +53,11 @@ Légende : ☐ à faire · ☑ fait (avec preuve) · ⚠ point d'attention
 | Catégorie | À déclarer |
 |---|---|
 | Bibliothèques Rust | `near-sdk` 5.30.1 (feature `unit-testing` en dev), `near-contract-standards` 5.30.1 (implémentation NEP-141/145 de FUEL) |
-| Bibliothèques web | React 18.3.1, Vite 5.4.11, @vitejs/plugin-react 4.3.4 (aucune lib wallet) |
+| Bibliothèques web | React 18.3.1, Vite 5.4.11, @vitejs/plugin-react 4.3.4 (aucune lib wallet) ; cross-chain : `@solana/web3.js` 1.98.4, `@solana/spl-token` 0.4.14 |
 | Outils de build | cargo-near 0.22.0, wasm-opt (via cargo-near), near-cli-rs 0.31.1, pnpm 10, TypeScript 5.6.3 |
 | Services externes | Tidepool (sandbox communautaire), Ref/Rhea exchange testnet `ref-finance-101.testnet`, NEAR testnet RPC |
 | Templates / boilerplate | aucun |
-| Code généré par IA | code et docs rédigés avec **Claude Code (Anthropic)** sous la direction du lead, relus et testés ; même déclaration pour l'outil IA de l'équipier sur `packages/crosschain` |
+| Code généré par IA | code et docs rédigés avec **Claude Code (Anthropic)** sous la direction de l'auteur (projet solo depuis le 2026-11-13), relus et testés, y compris `packages/crosschain` |
 | Docs de conception | spec V3 et workflow écrits par l'équipe (`docs/`) |
 
 ## 5. Preuves de fonctionnement réel

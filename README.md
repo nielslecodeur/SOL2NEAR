@@ -32,7 +32,7 @@ The rules (split, lock, token ids, pool, FUEL supply and season parameters) are 
 | Treasury / FUEL deployed on testnet | ✅ `treasury.sol2near-dev.testnet`, `fuel.sol2near-dev.testnet` | B1 `HJTW4c6u…yUpY`, B4 `JBdFrx2j…rbBP` (see below) |
 | Ref pool + LP shares held by Treasury | ✅ pool **2951**, Treasury holds 165 640 253 516 145 704 019 022 shares | C2 `4F2wXqzm…SSHA`, C3 `verify_liquidity` ok |
 | Proof of Liquidity / FUEL admission on-chain | ✅ full cycle: admission → season close → single claim | C4–C7 (see below) |
-| Cross-chain package | ⏳ teammate (SIMULATED adapter in the UI meanwhile) | `packages/crosschain` |
+| Cross-chain package (Tidepool client + Solana deposit tx) | ⚠️ unit-tested with mocks; **no live transfer yet** (Tidepool unreachable 2026-11-13), UI still on the SIMULATED adapter | `pnpm --filter @sol2near/crosschain test` → 21 passed · `docs/crosschain/CROSSCHAIN_HANDOFF.md` |
 
 A feature is only marked ✅ once a transaction hash or a reproducible command output backs it. **Unit tests use a mocked NEAR VM: they prove contract rules, not the live Ref / Tidepool integration.** Missing pieces are tracked in `docs/CHECKPOINT_A2.md`.
 
@@ -69,7 +69,7 @@ Full log with gas, costs and read-only checks: [`docs/G2_EXECUTION.md`](docs/G2_
 | C6 | `claim(0)` → 7.7414496 FUEL to the creator | [6g13fiwv…hXxu](https://testnet.nearblocks.io/txns/6g13fiwvEbSoHhYLXGkDcN9tEsPLG2LXic88bmP3hXxu) |
 | C7 | second `claim(0)` → rejected `ERR_ALREADY_CLAIMED` (expected failure) | [J8UEKyZy…AoWHi](https://testnet.nearblocks.io/txns/J8UEKyZyyYpHrzW8HTJiJ1tqtq23GdkX2VA8HdYAoWHi) |
 
-Pool 2951 is shallow (≈ 100 USD of test liquidity), so the zap price is worse than the Tidepool quote. This is a demo-pool effect. The Solana Devnet → NEAR leg via Tidepool is still quote-only until the teammate's cross-chain package lands.
+Pool 2951 is shallow (≈ 100 USD of test liquidity), so the zap price is worse than the Tidepool quote. This is a demo-pool effect. The Solana Devnet → NEAR leg via Tidepool is still quote-only: the client exists (`packages/crosschain`) but no live transfer has run yet.
 
 ## Repository
 
@@ -78,8 +78,8 @@ apps/web/              read-only dashboard: Dashboard, Vault detail, FUEL Reacto
 contracts/treasury/    Treasury: USDC intake, 90/8/2, Ref LP pipeline, Proof of Liquidity (lead)
 contracts/fuel/        FUEL: fixed-supply NEP-141 + Reactor seasons gated by Ref-verified LP (lead)
 packages/near-client/  LP plan from live Ref views (lead)
-packages/shared/       shared constants + TypeScript interfaces (lead ⇄ teammate)
-packages/crosschain/   Tidepool / Solana Devnet module (teammate)
+packages/shared/       shared constants + TypeScript interfaces
+packages/crosschain/   Tidepool / Solana Devnet client: quotes, unsigned SPL deposit tx, status tracking
 docs/                  spec V3, workflow, feasibility, architecture, hackathon checklist
 scripts/               testnet runbooks (manual, approval required)
 tests/                 end-to-end (checkpoint 2)
@@ -94,10 +94,10 @@ SOL2NEAR takes **0 %** during the hackathon.
 ## Prior work, libraries, templates, AI assistance
 
 - **Prior work:** none. The repository was created on 2026-11-11, inside the hackathon window, and all code was written during the hackathon.
-- **Libraries:** `near-sdk` 5.30.1 and `near-contract-standards` 5.30.1 (the NEP-141/145 implementation used by FUEL), React 18.3.1 and Vite 5.4.11 (web, no wallet library). Dev and build tools: cargo-near 0.22.0 (runs wasm-opt), near-cli-rs 0.31.1, TypeScript 5.6.3, @vitejs/plugin-react 4.3.4, @types/node 22.10.2, pnpm 10, Node's built-in test runner.
+- **Libraries:** `near-sdk` 5.30.1 and `near-contract-standards` 5.30.1 (the NEP-141/145 implementation used by FUEL), React 18.3.1 and Vite 5.4.11 (web, no wallet library), `@solana/web3.js` 1.98.4 and `@solana/spl-token` 0.4.14 (cross-chain package). Dev and build tools: cargo-near 0.22.0 (runs wasm-opt), near-cli-rs 0.31.1, TypeScript 5.6.3, @vitejs/plugin-react 4.3.4, @types/node 22.10.2, pnpm 10, Node's built-in test runner.
 - **External services:** Tidepool (community testnet sandbox, `www.usetidepool.tech`), Ref/Rhea exchange testnet `ref-finance-101.testnet`, NEAR testnet RPC.
 - **Templates / boilerplate:** none.
-- **AI assistance:** code and documentation were written with **Claude Code (Anthropic)** under the direction of the team, then reviewed and tested by the team. The teammate's module declares its own tooling in `docs/crosschain/CROSSCHAIN_HANDOFF.md`.
+- **AI assistance:** code and documentation were written with **Claude Code (Anthropic)** under the direction of the author (solo project), then reviewed and tested by the author. This includes the cross-chain package.
 
 ## Key docs
 

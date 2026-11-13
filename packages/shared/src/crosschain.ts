@@ -1,7 +1,7 @@
 /**
- * PROPOSED public contract of `packages/crosschain` (owned by the cross-chain developer).
- * The lead consumes ONLY this interface. The teammate may refine it in
- * docs/crosschain/INTERFACE.md; once agreed it must not change without a documented reason.
+ * Public contract of `packages/crosschain`, implemented unchanged by createTidepoolClient().
+ * The frontend consumes ONLY this interface. Extras are documented in docs/crosschain/INTERFACE.md;
+ * it must not change without a documented reason.
  *
  * Rules: amounts are integer strings in atomic units (never floats); no private keys anywhere;
  * signatures always go through the user's wallet; no Tidepool status is ever invented.

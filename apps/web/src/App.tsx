@@ -159,12 +159,12 @@ function BridgeCard({ demo }: { demo: boolean }) {
       <h3>Cross-chain transfer (Solana Devnet → NEAR)</h3>
       {demo ? (
         <>
-          <p className="muted">SIMULATED adapter: the real Tidepool module (teammate) is not merged yet.</p>
+          <p className="muted">SIMULATED adapter: the real Tidepool client (packages/crosschain) is not wired into the UI yet.</p>
           <button onClick={() => mockCrosschain.watch("SIMULATED-deposit-address", setR)}>Run simulated transfer</button>
           {r && <p><Badge tone={bridgeTone(r.status)}>{r.status}</Badge> {r.amountOut && `→ ${usdc(r.amountOut)} USDC`}</p>}
         </>
       ) : (
-        <p className="muted">Not integrated yet: waiting for <code>packages/crosschain</code> (branch <code>feat/crosschain</code>). No status is shown rather than an invented one.</p>
+        <p className="muted">Not integrated yet: the Tidepool client exists in <code>packages/crosschain</code> but no live transfer has been run. No status is shown rather than an invented one.</p>
       )}
     </div>
   );

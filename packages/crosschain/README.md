@@ -1,10 +1,30 @@
-# packages/crosschain — owned by the cross-chain developer (B1)
+# @sol2near/crosschain
 
-Reserved for the teammate (branch `feat/crosschain`). The lead does not write code here.
+Solana Devnet USDC → NEAR testnet USDC through **Tidepool**. Tidepool is a community 1Click-compatible sandbox,
+**not the official NEAR Intents service**. Testnet / devnet only: test tokens have no value.
 
-- Brief: `docs/SOL2NEAR_V3_Workflow_Equipe_Prompt_B1.md` (prompt B1).
-- Proposed public interface to implement: `packages/shared/src/crosschain.ts` (`CrosschainClient`).
-  Refine it in `docs/crosschain/INTERFACE.md` if the real API requires it.
-- Verified Tidepool facts (2026-11-11): `docs/FEASIBILITY.md` §2.1 — notably, settlement on NEAR is a
-  plain `ft_transfer` to `nearRecipient`, so the recipient must be the **user's** NEAR account.
-- Deliverable: `docs/crosschain/CROSSCHAIN_HANDOFF.md`.
+```ts
+import { createTidepoolClient } from "@sol2near/crosschain";
+const tidepool = createTidepoolClient();
+const preview = await tidepool.quote({ amountAtomic: "1000000", solanaRefundAddress, nearRecipient }, { dry: true });
+```
+
+| Command | What it does |
+|---|---|
+| `pnpm --filter @sol2near/crosschain test` | 21 unit tests (mocked Tidepool + Solana RPC) |
+| `pnpm --filter @sol2near/crosschain typecheck` | `tsc` on `src/` and `examples/` |
+| `pnpm --filter @sol2near/crosschain live:dry` | read-only live check: health, route, one dry quote |
+
+| File | Role |
+|---|---|
+| `src/http.ts` | network calls and error mapping |
+| `src/quote.ts` | quote body, validation, expiry |
+| `src/solana.ts` | unsigned SPL deposit tx, devnet reads |
+| `src/wallet.ts` | wallet boundary (no keys here) |
+| `src/status.ts` | status parsing and polling |
+| `src/errors.ts` | `CrosschainFailure` |
+| `src/client.ts` | public client |
+
+API: [`docs/crosschain/INTERFACE.md`](../../docs/crosschain/INTERFACE.md).
+Facts and assumptions: [`docs/crosschain/FEASIBILITY.md`](../../docs/crosschain/FEASIBILITY.md).
+Status: [`docs/crosschain/CROSSCHAIN_HANDOFF.md`](../../docs/crosschain/CROSSCHAIN_HANDOFF.md).

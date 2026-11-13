@@ -1,7 +1,7 @@
 # SOL2NEAR — instructions for coding agents
 
 NEAR Hackathon 2026 (tracks `memecoins` + `defi`), deadline **2026-11-14T23:59:00Z**.
-Lead = 70 % (contracts, Ref/Rhea LP, FUEL, frontend); teammate = 30 % (`packages/crosschain`, `docs/crosschain`).
+Solo project since 2026-11-13: the lead owns everything, including `packages/crosschain` and `docs/crosschain` (planned teammate did not join).
 
 ## Hard rules
 - **TESTNET / DEVNET ONLY.** No mainnet, no real funds, never handle or print private keys / seed phrases.
@@ -9,7 +9,6 @@ Lead = 70 % (contracts, Ref/Rhea LP, FUEL, frontend); teammate = 30 % (`packages
 - Never invent an API, a pool, a transaction or a proof. A feature is "working" only with a transaction hash or a reproducible command output.
 - Fees always come from real quotes (Tidepool `/v0/quote`, Ref `get_return` / `predict_add_simple_liquidity`), never hard-coded.
 - Tidepool is a **community sandbox**, not official NEAR Intents — say so wherever it appears.
-- Do not edit the teammate's folders (`packages/crosschain/`, `docs/crosschain/`).
 
 ## Required reading
 - **`docs/HACKATHON_CHECKLIST.md`** — official rules (https://nearhackathon.com/HACKATHON.md) mapped to our workflow, including the **final rules check before submission**. Re-read the live rules before submitting.
@@ -31,6 +30,8 @@ cargo test --workspace                      # Treasury + FUEL
 wsl -d Ubuntu -- bash scripts/build-wasm.sh
 
 # TypeScript
-pnpm typecheck; pnpm test:ts; pnpm --filter @sol2near/web test; pnpm --filter @sol2near/web build
+pnpm typecheck; pnpm test:ts;   # near-client + crosschain (mocked)
+pnpm --filter @sol2near/crosschain live:dry   # read-only Tidepool check
+ pnpm --filter @sol2near/web test; pnpm --filter @sol2near/web build
 ```
 FUEL rules: `docs/FUEL_REACTOR.md`. Current status: `docs/CHECKPOINT_A2.md`.

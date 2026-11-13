@@ -2,7 +2,7 @@
 
 > **Update 2026-11-13:** M1, M2 and M4–M7 are now resolved on testnet (pool 2951, Treasury + FUEL deployed, full
 > cycle C1–C7 executed). Proof: `docs/G2_EXECUTION.md`. Still open: M3 half (H11 proven, H5 refund on unregistered deposit not tested), M8 (near-workspaces integration
-> tests) and M10 (cross-chain package, teammate).
+> tests) and M10 (cross-chain package: written and unit-tested on 2026-11-13, no live transfer yet; see `docs/crosschain/CROSSCHAIN_HANDOFF.md`).
 
 Last update: 2026-11-11 21:40 UTC. Status: **READY WITH LIMITATIONS — code, tests and official
 build done; nothing deployed; real Ref/Rhea LP not yet proven on-chain.**
@@ -52,7 +52,7 @@ build done; nothing deployed; real Ref/Rhea LP not yet proven on-chain.**
 | M7 | Full on-chain cycle deposit → LP → `verify_liquidity` never executed | M5 | G3 |
 | M8 | Integration tests against real Ref (near-workspaces import of `ref-finance-101.testnet`) | not written | G3 |
 | M9 | FUEL contract, frontend, community-vault rules, dust withdrawal | checkpoint 2 | — |
-| M10 | Cross-chain package | teammate (`feat/crosschain`) | B1 |
+| M10 | Cross-chain package | written 2026-11-13 (solo), live transfer pending | B1 |
 
 Until M4/M7 have transaction hashes, the README and demo must state that **LP integration is unproven**.
 
