@@ -4,6 +4,10 @@ Date: 2026-11-11 (late evening UTC). Branch: `feat/core` (local commits, **not p
 Status: **READY WITH LIMITATIONS**. Contracts and UI are implemented, unit-tested and built.
 **Nothing is deployed, so no transaction proves the Ref LP or FUEL flow yet.**
 
+> **Update 2026-11-13:** superseded for on-chain status. Treasury and FUEL are deployed on testnet and the full
+> cycle (deposit → Treasury LP on Ref pool 2951 → verify → FUEL admission → season close → single claim)
+> ran with transaction hashes: see `docs/G2_EXECUTION.md` and the README "On-chain proof" table.
+
 ## 1. Verified results (commands re-run on this checkpoint)
 
 | Check | Result |

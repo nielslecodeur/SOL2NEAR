@@ -29,9 +29,9 @@ The rules (split, lock, token ids, pool, FUEL supply and season parameters) are 
 | Official wasm builds | ✅ | `scripts/build-wasm.sh` (cargo-near 0.22.0): Treasury 250.3 KB `73b99075…520e`, FUEL 256.8 KB `a33678f6…bbac` |
 | Web dashboard (Dashboard / Vault / Reactor) | ✅ builds; live mode reads testnet; demo mode bannered SIMULATED | `pnpm --filter @sol2near/web build` |
 | Tidepool route Solana Devnet → NEAR testnet | ⚠️ quote only | dry quote, 2026-11-11 (`docs/FEASIBILITY.md` T6) |
-| Treasury / FUEL deployed on testnet | ❌ not yet | — |
-| Ref pool + LP shares held by Treasury | ❌ not yet | — |
-| Proof of Liquidity / FUEL admission on-chain | ❌ not yet | — |
+| Treasury / FUEL deployed on testnet | ✅ `treasury.sol2near-dev.testnet`, `fuel.sol2near-dev.testnet` | B1 `HJTW4c6u…yUpY`, B4 `JBdFrx2j…rbBP` (see below) |
+| Ref pool + LP shares held by Treasury | ✅ pool **2951**, Treasury holds 165 640 253 516 145 704 019 022 shares | C2 `4F2wXqzm…SSHA`, C3 `verify_liquidity` ok |
+| Proof of Liquidity / FUEL admission on-chain | ✅ full cycle: admission → season close → single claim | C4–C7 (see below) |
 | Cross-chain package | ⏳ teammate (SIMULATED adapter in the UI meanwhile) | `packages/crosschain` |
 
 A feature is only marked ✅ once a transaction hash or a reproducible command output backs it. **Unit tests use a mocked NEAR VM: they prove contract rules, not the live Ref / Tidepool integration.** Missing pieces are tracked in `docs/CHECKPOINT_A2.md`.
@@ -50,7 +50,26 @@ Prerequisites: Rust stable (tested with 1.98) with the `wasm32-unknown-unknown` 
 | 6 | `pnpm --filter @sol2near/web dev` and open the URL | dashboard with a TESTNET badge. Live mode says the contracts are not deployed yet. Switch to `SIMULATED / DEMO DATA` to see every screen | a striped SIMULATED banner is on every demo screen |
 | 7 | `node scripts/probes/verify-testnet.mjs` (read-only, no keys) | `PASS` lines for Tidepool health, tokens, a **dry** quote (fee read from the quote), Ref `state=Running`, then `all checks passed` | `INFO` lines list what is not deployed yet |
 
-On-chain steps (pool creation, Treasury deploy, full cycle) will be added here **with their transaction hashes** once executed. Until then they are not claimed.
+### On-chain proof (NEAR testnet, 2026-11-11 → 2026-11-13)
+
+Full log with gas, costs and read-only checks: [`docs/G2_EXECUTION.md`](docs/G2_EXECUTION.md).
+
+| Step | What | Transaction |
+|---|---|---|
+| A8 | Ref `add_simple_pool` USDC(tp)/wNEAR(tp) → pool **2951** | [BXcJeRyX…7f7B](https://testnet.nearblocks.io/txns/BXcJeRyXUUEwniGP46KJeYRjWHxgHcPK2RCQdpYZ7f7B) |
+| A9 | seed liquidity 50 USDC + 14.0392 wNEAR | [5MahUPdU…fBRp](https://testnet.nearblocks.io/txns/5MahUPdUvWNSbD14RuijZXGTpHmA66ZpN67yR1EHfBRp) |
+| B1 | deploy Treasury (wasm `73b99075…520e`) | [HJTW4c6u…yUpY](https://testnet.nearblocks.io/txns/HJTW4c6uNaSVmuzNRG84NcCQaRMeunAoiP3omquNyUpY) |
+| B2 | Treasury `setup` (`ready = true`) | [6sMPV5RT…eVgy](https://testnet.nearblocks.io/txns/6sMPV5RToZRd77cjaUa32QgpU9f8poWFawpFAKSEeVgy) |
+| B4 | deploy FUEL (wasm `a33678f6…bbac`), supply 1 000 000 | [JBdFrx2j…rbBP](https://testnet.nearblocks.io/txns/JBdFrx2j7ToEWWY77aKpbpw8B6PivPhowM9ZZWQtrbBP) |
+| C1 | deposit 20 USDC → split 18 / 1.6 / 0.4 | [AsD2o2aV…ZWzw](https://testnet.nearblocks.io/txns/AsD2o2aVxkSmhm4c3TVsLs9aZgKjMTog2KW42pieZWzw) |
+| C2 | `execute_lp`: swap + add_liquidity, LP shares held by the Treasury | [4F2wXqzm…SSHA](https://testnet.nearblocks.io/txns/4F2wXqzmyBVaPqKa6mE3KMFjFv2S3U3GxXJYJfNsSSHA) |
+| C3 | `verify_liquidity`: on-chain shares = recorded shares | [8DCCtF7y…MrkA](https://testnet.nearblocks.io/txns/8DCCtF7yafVwXnGhziTAAHvxhS94nZiTPXZk5ry3MrkA) |
+| C4 | FUEL `register_position(0)` → reward 9.676812 FUEL | [CoAgrgQE…Lk6o](https://testnet.nearblocks.io/txns/CoAgrgQEhmktNEK1hvgZpwUHjsaTR6XvS9z1NSNpLk6o) |
+| C5 | `close_season(0)` → Success, level 1 | [DUuoq2XZ…haH9](https://testnet.nearblocks.io/txns/DUuoq2XZsmVbwp8zjzhW3gHRqjiDwokwbTMSNufdhaH9) |
+| C6 | `claim(0)` → 7.7414496 FUEL to the creator | [6g13fiwv…hXxu](https://testnet.nearblocks.io/txns/6g13fiwvEbSoHhYLXGkDcN9tEsPLG2LXic88bmP3hXxu) |
+| C7 | second `claim(0)` → rejected `ERR_ALREADY_CLAIMED` (expected failure) | [J8UEKyZy…AoWHi](https://testnet.nearblocks.io/txns/J8UEKyZyyYpHrzW8HTJiJ1tqtq23GdkX2VA8HdYAoWHi) |
+
+Pool 2951 is shallow (≈ 100 USD of test liquidity), so the zap price is worse than the Tidepool quote. This is a demo-pool effect. The Solana Devnet → NEAR leg via Tidepool is still quote-only until the teammate's cross-chain package lands.
 
 ## Repository
 

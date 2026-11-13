@@ -1,5 +1,9 @@
 # CHECKPOINT A1 — Core protocol (lead)
 
+> **Update 2026-11-13:** M1, M2 and M4–M7 are now resolved on testnet (pool 2951, Treasury + FUEL deployed, full
+> cycle C1–C7 executed). Proof: `docs/G2_EXECUTION.md`. Still open: M3 half (H11 proven, H5 refund on unregistered deposit not tested), M8 (near-workspaces integration
+> tests) and M10 (cross-chain package, teammate).
+
 Last update: 2026-11-11 21:40 UTC. Status: **READY WITH LIMITATIONS — code, tests and official
 build done; nothing deployed; real Ref/Rhea LP not yet proven on-chain.**
 
