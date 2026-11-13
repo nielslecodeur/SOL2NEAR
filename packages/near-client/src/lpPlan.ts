@@ -99,6 +99,18 @@ export function previewSwap(
   };
 }
 
+/**
+ * Price impact of the zap swap in basis points: how much less than the pool's spot price (before fee) we get.
+ * The pool fee is included, since it is a real cost. Slippage guards only cover the pool *moving* after the plan;
+ * this number is the cost already inside the plan (G7: deposit #3's 79 USDC budget in an ~80 USDC pool).
+ */
+export function priceImpactBps(pool: PoolSnapshot, usdcToken: string, swapAmountIn: bigint, expectedOut: bigint): number {
+  const iu = tokenIndex(pool, usdcToken);
+  const ideal = (swapAmountIn * BigInt(pool.amounts[1 - iu])) / BigInt(pool.amounts[iu]);
+  if (ideal <= 0n) return 10_000;
+  return Number(((ideal - expectedOut) * BPS) / ideal);
+}
+
 /** Pool reserves after our own swap (input for predict_add_simple_liquidity). */
 export function reservesAfterSwap(pool: PoolSnapshot, usdcToken: string, p: SwapPreview): [bigint, bigint] {
   const iu = tokenIndex(pool, usdcToken);

@@ -284,3 +284,15 @@ test("bridge amount guard: REAL dry quotes 2026-11-13 - 1 USDC is not depositabl
   assert.equal(bridgeCoversTreasuryMin("1974852", "1000000"), true);
   assert.equal(bridgeCoversTreasuryMin("1000000", "1000000"), true);
 });
+
+test("execute_lp price impact: real C2 needs acknowledgement, deposit #3 is blocked, small zaps pass", async () => {
+  const { impactLevel, planFromPool } = await import("./actions.ts");
+  const pool = (u: string, w: string) => ({ token_account_ids: ["usdc.tidepool-sandbox.testnet", "wnear.tidepool-sandbox.testnet"] as [string, string], amounts: [u, w] as [string, string], total_fee: 30 });
+  const c2 = planFromPool(pool("50100000", "14011261544480306269299018"), 18_000_000n);
+  assert.equal(c2.preview.priceImpactBps, 1446);
+  assert.equal(impactLevel(c2.preview.priceImpactBps), "ack");
+  assert.equal(impactLevel(planFromPool(pool("68099999", "14011261429470853975957975"), 1_800_000n).preview.priceImpactBps), "ok"); // G6 #1 1.59 %
+  assert.equal(impactLevel(planFromPool(pool("69899998", "14011261394573939721611473"), 10_800_000n).preview.priceImpactBps), "warn"); // G6 #2 7.20 %
+  assert.equal(impactLevel(planFromPool(pool("80699997", "14011261309647048936214624"), 79_195_320n).preview.priceImpactBps), "block"); // deposit #3
+  assert.deepEqual([impactLevel(299), impactLevel(300), impactLevel(999), impactLevel(1000), impactLevel(1999), impactLevel(2000)], ["ok", "warn", "warn", "ack", "ack", "block"]);
+});

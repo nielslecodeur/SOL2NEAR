@@ -71,3 +71,13 @@ test("guards reject bad inputs", () => {
   const pool: PoolSnapshot = { token_account_ids: [WNEAR, "x.testnet"], amounts: ["1", "1"], total_fee: 30 };
   assert.throws(() => previewSwap(1_000_000n, pool, USDC, 100), /ERR_TOKEN_NOT_IN_POOL/);
 });
+
+test("priceImpactBps: REAL pool states of the proven LPs and the risky deposit #3", async () => {
+  const { priceImpactBps } = await import("./lpPlan.ts");
+  const pool = (u: string, w: string): PoolSnapshot => ({ token_account_ids: [USDC, WNEAR], amounts: [u, w], total_fee: 30 });
+  const impact = (p: PoolSnapshot, budget: bigint) => { const s = previewSwap(budget, p, USDC, 100); return priceImpactBps(p, USDC, s.swapAmountIn, s.expectedOut); };
+  assert.equal(impact(pool("50100000", "14011261544480306269299018"), 18_000_000n), 1446); // G2 C2: 14.46 %
+  assert.equal(impact(pool("68099999", "14011261429470853975957975"), 1_800_000n), 159); // G6 #1: 1.59 %
+  assert.equal(impact(pool("69899998", "14011261394573939721611473"), 10_800_000n), 720); // G6 #2: 7.20 %
+  assert.ok(impact(pool("80699997", "14011261309647048936214624"), 79_195_320n) > 2000); // #3 on the pool of 2026-11-13 21:5x
+});

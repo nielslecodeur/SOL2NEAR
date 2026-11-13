@@ -7,7 +7,7 @@ import { webStorageStore, type TransferRecord } from "../../../packages/crosscha
 import type { FuelPosition, Season } from "./chain.ts";
 import { formatUnits, fuel as fmtFuel, toDecimalString, usdc } from "./format.ts";
 import {
-  analyzeAction, claimCall, closeSeasonCall, executeLpCall, fuelStorageCall, planLp, registerPositionCall, type ActionKind,
+  analyzeAction, claimCall, closeSeasonCall, executeLpCall, fuelStorageCall, impactLevel, planLp, registerPositionCall, type ActionKind,
 } from "./near/actions.ts";
 import { FUEL_ACCOUNT_ID, MIN_NEAR_FOR_GAS, TREASURY_ACCOUNT_ID, USDC_TOKEN_ID, explorerTx } from "./near/config.ts";
 import {
@@ -60,7 +60,8 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
   const [data, setData] = useState<AccountData | null>(null);
   const [records, setRecords] = useState<TxRecord[]>([]);
   const [amount, setAmount] = useState("");
-  const [review, setReview] = useState<{ kind: TxKind; call: TxCall; lines: string[]; amount?: string; target?: string } | null>(null);
+  const [review, setReview] = useState<{ kind: TxKind; call: TxCall; lines: string[]; amount?: string; target?: string; ack?: string } | null>(null);
+  const [acked, setAcked] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
@@ -199,7 +200,8 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
   const dashboardDeposit = records.find((r) => r.kind === "deposit" && r.status === "confirmed");
 
   /** Opens the review step: nothing is signed before the user confirms it. */
-  function prepare(kind: TxKind, call: TxCall, lines: string[], extra: { amount?: string; target?: string } = {}) {
+  function prepare(kind: TxKind, call: TxCall, lines: string[], extra: { amount?: string; target?: string; ack?: string } = {}) {
+    setAcked(false);
     if (!accountId) return;
     const blocking = history.blocking(accountId, kind, extra.target);
     if (blocking) { setError(`A previous ${kind} is not resolved yet (${blocking.status}). Wait for verification, or dismiss it after checking your wallet history.`); return; }
@@ -240,11 +242,18 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
     setBusy(true);
     try {
       const { plan, preview } = await planLp(rpc, data.ctx.cfg.config.pool_id, BigInt(d.lp_budget));
+      const pct = (preview.priceImpactBps / 100).toFixed(2);
+      const level = impactLevel(preview.priceImpactBps);
+      if (level === "block") {
+        setError(`LP not offered: the zap would swap ${usdc(preview.swapUsdcIn)} USDC with a ${pct} % price impact in pool ${data.ctx.cfg.config.pool_id} (limit 20 %). The pool is too shallow for this budget; the USDC stays safe in the Treasury and the deposit stays resumable.`);
+        return;
+      }
       prepare("execute_lp", executeLpCall(d.id, plan), [
+        `Price impact of the swap: ${pct} % vs the pool's spot price (fee included)${level === "ok" ? "" : level === "warn" ? " — noticeable on this shallow demo pool" : " — HIGH"}`,
         `Treasury.execute_lp(deposit_id ${d.id}) on ${TREASURY_ACCOUNT_ID}, 300 Tgas, no deposit`,
         `Plan from the live Ref pool ${data.ctx.cfg.config.pool_id}: swap ${usdc(preview.swapUsdcIn)} USDC → ≥ ${plan.min_swap_out} wNEAR (atomic), then add ~${usdc(preview.usdcLeftForLp)} USDC as liquidity (1 % slippage guards)`,
-        "If the pool moves past the guards, the step fails cleanly and the deposit stays resumable.",
-      ], { target: d.id });
+        "If the pool moves past the guards, the step fails cleanly and the deposit stays resumable. The guards do not cover the price impact above, which is already in the plan.",
+      ], { target: d.id, ...(level === "ack" && { ack: `I accept a ${pct} % price impact on this swap` }) });
     } catch (e) {
       setError(`Could not compute the LP plan: ${(e as Error).message}`);
     } finally {
@@ -376,8 +385,11 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
           <h3>Review before signing ({review.kind})</h3>
           <ul>{review.lines.map((l) => <li key={l}>{l}</li>)}</ul>
           <p className="muted">Network: NEAR testnet only. Your wallet shows the same call; nothing is sent until you approve it there.</p>
+          {review.ack && (
+            <label className="ack"><input type="checkbox" checked={acked} onChange={(e) => setAcked(e.target.checked)} /> {review.ack}</label>
+          )}
           <div className="watch">
-            <button disabled={busy} onClick={sign}>{busy ? "Waiting for wallet…" : "Confirm & open wallet"}</button>
+            <button disabled={busy || (!!review.ack && !acked)} onClick={sign}>{busy ? "Waiting for wallet…" : "Confirm & open wallet"}</button>
             <button className="ghost" disabled={busy} onClick={() => setReview(null)}>Cancel</button>
           </div>
         </div>

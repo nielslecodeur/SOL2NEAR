@@ -8,6 +8,7 @@ import {
   addAmountsInPoolOrder,
   minAmountsFromPredict,
   previewSwap,
+  priceImpactBps,
   toTreasuryPlan,
   type PoolSnapshot,
 } from "../../../../packages/near-client/src/lpPlan.ts";
@@ -28,7 +29,20 @@ export function planFromPool(pool: PoolSnapshot, lpBudget: bigint, slippageBps =
   const p = previewSwap(lpBudget, pool, USDC_TOKEN_ID, slippageBps);
   const provided = addAmountsInPoolOrder(pool, USDC_TOKEN_ID, p.usdcLeft, p.expectedOut);
   const plan = toTreasuryPlan(p, minAmountsFromPredict([provided[0].toString(), provided[1].toString()], slippageBps));
-  return { plan, preview: { swapUsdcIn: p.swapAmountIn, expectedWnearOut: p.expectedOut, usdcLeftForLp: p.usdcLeft, poolFeeUsdc: p.poolFeeIn } };
+  const impact = priceImpactBps(pool, USDC_TOKEN_ID, p.swapAmountIn, p.expectedOut);
+  return { plan, preview: { swapUsdcIn: p.swapAmountIn, expectedWnearOut: p.expectedOut, usdcLeftForLp: p.usdcLeft, poolFeeUsdc: p.poolFeeIn, priceImpactBps: impact } };
+}
+
+/**
+ * Thresholds for the zap's price impact on the shallow demo pool. Proven LPs were at 1.6 %, 7.2 % and 14.5 %;
+ * deposit #3 (79 USDC budget in an ~80 USDC pool) would be > 20 %.
+ */
+export const IMPACT_WARN_BPS = 300;
+export const IMPACT_ACK_BPS = 1000;
+export const IMPACT_BLOCK_BPS = 2000;
+export type ImpactLevel = "ok" | "warn" | "ack" | "block";
+export function impactLevel(bps: number): ImpactLevel {
+  return bps >= IMPACT_BLOCK_BPS ? "block" : bps >= IMPACT_ACK_BPS ? "ack" : bps >= IMPACT_WARN_BPS ? "warn" : "ok";
 }
 
 export const executeLpCall = (depositId: string, plan: unknown): TxCall => ({

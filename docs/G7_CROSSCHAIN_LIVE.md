@@ -84,7 +84,12 @@ Solana devnet wallet → (deposit `bGUicpgy…`) → Tidepool → (settlement `J
 The LP budget of deposit #3 (79.2 USDC) is larger than pool 2951 (~70 USDC / ~14 wNEAR). The zap would swap ~37 USDC, a
 price impact of roughly 35 %. The slippage guards only protect against the pool *moving* between the plan and execution,
 not against a bad price that is already in the plan.
-- **Recommendation**: show the price impact in the `execute_lp` review and warn or refuse above a threshold. Meanwhile, do not deploy #3.
+- **Fixed (G7)**: `priceImpactBps` (near-client) is computed for every LP plan and shown in the review.
+  - ≥ 3 %: warning.
+  - ≥ 10 %: an explicit checkbox is required before signing.
+  - ≥ 20 %: **the LP is not offered**.
+
+  These limits were set after measuring the proven LPs: 1.59 %, 7.20 % and 14.46 %. Live check: *Deploy liquidity* on deposit #3 shows "29.13 % price impact (limit 20 %)" and opens no review and no wallet.
 - The funds are safe in the Treasury; the creator reserve (7.04 USDC) is withdrawable.
 
 ## 6. Original runbook (kept for reference)

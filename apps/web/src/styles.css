@@ -86,3 +86,4 @@ h2 { margin: 6px 0; overflow-wrap: anywhere; }
 .histrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px; }
 .histrow small { flex-basis: 100%; overflow-wrap: anywhere; }
 @media (max-width: 520px) { .steps { grid-template-columns: 1fr; } .row { min-width: 560px; } }
+.ack { display: flex; gap: 8px; align-items: center; color: var(--warn); font-weight: 600; margin: 6px 0; }
