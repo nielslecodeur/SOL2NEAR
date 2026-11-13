@@ -122,6 +122,19 @@ test.describe("@live real testnet reads, real Wallet Selector", () => {
     expect(errors.filter((e) => e.startsWith("pageerror"))).toEqual([]);
   });
 
+  test("dev server (README step 6): renders, no JS error, real wallet modal opens", async ({ page }) => {
+    // Regression G6: the dev server rendered a blank page (`Buffer`/`global`/`process` not defined) while the
+    // production build worked. src/polyfills.ts fixes it.
+    const errors = watchErrors(page);
+    await page.goto("http://127.0.0.1:4184/");
+    const connect = nearPanel(page).getByRole("button", { name: "Connect NEAR wallet" });
+    await expect(connect).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("BACKED ON REF")).toBeVisible();
+    await connect.click();
+    await expect(page.getByText("MyNearWallet", { exact: true })).toBeVisible({ timeout: 20_000 });
+    expect(errors).toEqual([]);
+  });
+
   test("mobile 390px: no horizontal page scroll", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");

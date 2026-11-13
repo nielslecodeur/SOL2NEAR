@@ -8,10 +8,19 @@ export default defineConfig({
   workers: 1,
   reporter: [["list"]],
   use: { channel: "chrome", headless: true, baseURL: "http://127.0.0.1:4181", screenshot: "only-on-failure" },
-  webServer: {
-    command: "npx vite preview --outDir dist-e2e --port 4181 --strictPort --host 127.0.0.1",
-    url: "http://127.0.0.1:4181",
-    reuseExistingServer: false,
-    timeout: 60_000,
-  },
+  webServer: [
+    {
+      command: "npx vite preview --outDir dist-e2e --port 4181 --strictPort --host 127.0.0.1",
+      url: "http://127.0.0.1:4181",
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
+    {
+      // The Vite DEV server, exactly what README step 6 runs (`pnpm --filter @sol2near/web dev`).
+      command: "npx vite --port 4184 --strictPort --host 127.0.0.1",
+      url: "http://127.0.0.1:4184",
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
+  ],
 });
