@@ -26,7 +26,7 @@ Date: 2026-11-13. Solo project. **Status: deposit PASS · execute_lp PASS · FUE
 | **D** | **Deposit 2 USDC — signed by the user in Meteor** | **PASS** | tx [`FaBKjLRUuYMgH4SgVgurTyUinDPvPvdH5Rxc69X1haHV`](https://testnet.nearblocks.io/txns/FaBKjLRUuYMgH4SgVgurTyUinDPvPvdH5Rxc69X1haHV) |
 | **E1** | **`execute_lp(1)`**, signed by the user in Meteor (scenario 1: deposit #1 alone) | **PASS** | tx [`CniqxoxZ5qzJBLZ9RCwJ9nH4evbNwaGV6Y1nE4aDbRdN`](https://testnet.nearblocks.io/txns/CniqxoxZ5qzJBLZ9RCwJ9nH4evbNwaGV6Y1nE4aDbRdN), §2 E1 |
 | E2 | `storage_deposit` on FUEL for `lowarena9362.testnet` | NOT_RUN | only needed for a claim; not needed in scenario 1 |
-| E3 | `register_position(1)` | **NOT ADMITTED (window expired)** | approved by the user at ~17:38 UTC and sent to Meteor (dashboard record `awaiting_signature`). The registration deadline for season 67 was 17:54:02 UTC. At 18:59 UTC: `get_position(1)` = null and season 67 has no record. Whether it was never signed or signed and rejected cannot be told from contract state (a rejected position writes nothing). Deposit #1 can no longer be admitted (positions count only in their LP confirmation season)  |
+| E3 | `register_position(1)` | **REJECTED by FUEL (window expired)** | signed by the user in Meteor; tx [`3HsEr7b3Mr1zYLmLi3q6ApgcthXarUTwe9tg5xxXQRzF`](https://testnet.nearblocks.io/txns/3HsEr7b3Mr1zYLmLi3q6ApgcthXarUTwe9tg5xxXQRzF) included 18:10:57 UTC (block 277545024), after the season 67 deadline of 17:54:02. Event `position_rejected {position_id "1", reason ERR_REGISTRATION_WINDOW_CLOSED}`, nothing written. **The request was sent at 18:10:46 without re-checking the clock (assistant error)**; the dashboard now shows a countdown and disables the button once the window closed. Deposit #1 can no longer enter FUEL |
 | E4 | `close_season` / `claim` | NOT APPLICABLE | season 67 is empty: it cannot be closed, so nothing is burned |
 
 ### E1 — on-chain verification of `execute_lp(1)` (independent RPC)
@@ -105,15 +105,17 @@ The positions must be confirmed and registered within one 30-min season (+5 min 
 
 ## 7. Lessons from E3
 
-- **Operational**: when the dashboard hands a request to the wallet, nothing on the page can tell whether the wallet window is still open. The registration window (season end + 5 min) was missed while the request sat in the wallet.
-- **Recommended code improvement (not done yet)**:
-  - show the live deadline on the *Register for FUEL* button, with a countdown to season end + grace;
-  - mark an `awaiting_signature` register request as expired once that deadline has passed.
+- **Operational**: about 30 min passed between the LP verification (17:37 UTC) and the approval to register. The request was then sent at 18:10 without re-checking the deadline (17:54:02), so FUEL correctly rejected it. Nothing on the page showed the deadline.
+- **Fixed in `d8a09db`**:
+  - *Register for FUEL* shows a live countdown and is disabled once the window has closed;
+  - the review states the deadline;
+  - stale requests are marked `expired`;
+  - a *Close season* action was added.
 - **Dashboard dev server**: it was stopped at the end of the session by Claude Code because the machine was low on memory (not a dashboard failure). Restart it with `pnpm --filter @sol2near/web dev`.
 
 ## 8. Remaining
 
 - Disconnect test.
 - A FUEL demonstration from the dashboard needs a **new** deposit: deposit → `execute_lp` → `register_position` must all fall within one 30-min season (+5 min grace). For a SUCCESS season, aim for ≥ 5 USDC in LP (≈ 12 USDC deposit, §5); then FUEL storage + claim after the season ends and the LP lock expires.
-- The dashboard record `register_position #1` is still `awaiting_signature`: dismiss it after checking the Meteor history.
+- The dashboard record `register_position #1` shows `failed: rejected: ERR_REGISTRATION_WINDOW_CLOSED` (verified on-chain).
 - MyNearWallet redirect flow: only Meteor was used live.
