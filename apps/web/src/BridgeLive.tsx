@@ -77,12 +77,15 @@ export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onH
   const [transfers, setTransfers] = useState<TransferRecord[]>(() => tidepool.transfers());
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const abort = useRef(new AbortController());
+  // One controller per mount, created in the effect: React's dev StrictMode mounts, unmounts (abort) and mounts
+  // again, so a controller created once at first render stayed aborted and every tracking failed (G7, live).
+  const abort = useRef<AbortController | null>(null);
   const refresh = () => setTransfers(tidepool.transfers().sort((a, b) => b.updatedAt - a.updatedAt));
 
   /** Tidepool status until terminal, then the NEAR balance check. Safe to call again after a reload. */
   async function follow(depositAddress: string) {
-    const r = await tidepool.track(depositAddress, refresh, { signal: abort.current.signal });
+    const signal = (abort.current ??= new AbortController()).signal;
+    const r = await tidepool.track(depositAddress, refresh, { signal });
     refresh();
     if (r.status === "SUCCESS") {
       await tidepool.verifyOnNear(depositAddress);
@@ -96,11 +99,13 @@ export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onH
       (h) => { onHealth?.(true); setHealth(h.ok && h.solanaRouteOk ? "up · Solana devnet route ok" : `degraded · ok=${h.ok} solanaRoute=${h.solanaRouteOk}`); },
       (e) => { onHealth?.(false); setHealth(`unreachable from this network (${explain(e)}). Path B is unavailable here; the direct NEAR deposit still works.`); },
     );
-    // Resume every transfer a previous page load left in progress.
+    const ctrl = new AbortController();
+    abort.current = ctrl;
+    // Resume every transfer a previous page load left in progress. An abort (unmount) is not an error to show.
     for (const t of tidepool.transfers())
       if (t.stage === "solana_confirmed" || t.stage === "sent" || t.stage === "bridge_success")
-        follow(t.depositAddress).catch((e) => setError(explain(e)));
-    return () => abort.current.abort();
+        follow(t.depositAddress).catch((e) => { if (!ctrl.signal.aborted) setError(explain(e)); });
+    return () => ctrl.abort();
   }, []);
 
   const atomic = parseUnits(amount, 6);
@@ -155,16 +160,18 @@ export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onH
             <p>
               <span className={`badge ${t.result ? bridgeTone(t.result.status) : isFinished(t) ? "failed" : "pending"}`}>{STEP_LABEL[t.stage]}</span>{" "}
               {usdc(t.quote.amountIn)} USDC → <code>{t.quote.nearRecipient ?? "?"}</code>
-              {t.nearReceived && <> · received <b>{usdc(t.nearReceived)}</b> USDC on NEAR</>}
+              {t.nearReceived && <> · received <b>{exact(t.nearReceived)}</b> USDC on NEAR (verified balance increase)</>}
               {t.result?.refundedAmount && <> · refunded {usdc(t.result.refundedAmount)} USDC</>}{" "}
               {t.signature && <a href={`https://explorer.solana.com/tx/${t.signature}?cluster=devnet`} target="_blank" rel="noreferrer">Solana tx</a>}{" "}
               {links?.near.map((u) => <a key={u} href={u} target="_blank" rel="noreferrer">NEAR tx</a>)}
             </p>
             {t.stage === "near_verified" && (
               <p className="muted">
-                Step 4 (your NEAR wallet): <code>near contract call-function as-transaction usdc.tidepool-sandbox.testnet ft_transfer_call json-args
+                Step 4: connect <b>{t.quote.nearRecipient}</b> in <i>Your NEAR testnet account</i> above, click <i>Use this amount</i>,
+                review, then sign the Treasury deposit in your NEAR wallet (a separate signature). CLI fallback:{" "}
+                <code>near contract call-function as-transaction usdc.tidepool-sandbox.testnet ft_transfer_call json-args
                 {` '{"receiver_id":"${TREASURY_ACCOUNT_ID}","amount":"${t.nearReceived}","msg":"{\\"action\\":\\"deposit\\"}"}'`} prepaid-gas '100 Tgas'
-                attached-deposit '1 yoctoNEAR' sign-as {t.quote.nearRecipient} network-config testnet</code>. Then click Load: the deposit appears in the table above once the Treasury has counted it.
+                attached-deposit '1 yoctoNEAR' sign-as {t.quote.nearRecipient} network-config testnet</code>
               </p>
             )}
           </div>

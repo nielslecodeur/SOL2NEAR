@@ -33,7 +33,7 @@ The rules (split, lock, token ids, pool, FUEL supply and season parameters) are 
 | Treasury / FUEL deployed on testnet | ✅ `treasury.sol2near-dev.testnet`, `fuel.sol2near-dev.testnet` | B1 `HJTW4c6u…yUpY`, B4 `JBdFrx2j…rbBP` (see below) |
 | Ref pool + LP shares held by Treasury | ✅ pool **2951**, Treasury holds 165 640 253 516 145 704 019 022 shares | C2 `4F2wXqzm…SSHA`, C3 `verify_liquidity` ok |
 | Proof of Liquidity / FUEL admission on-chain | ✅ full cycle: admission → season close → single claim | C4–C7 (see below) |
-| Cross-chain package (Tidepool client + Solana deposit tx) — G7: U1/U2/U3 verified on a real third-party transfer, our own live bridge pending (`docs/G7_CROSSCHAIN_LIVE.md`) | ⚠️ unit-tested with mocks (quote echo checks, Solana confirmation, NEAR receipt check, reload-safe); wired into the live dashboard; **no live transfer yet**: our network's firewall sinkholes `usetidepool.tech` | `pnpm --filter @sol2near/crosschain test` → 34 passed · `docs/crosschain/CROSSCHAIN_HANDOFF.md` |
+| Cross-chain package (Tidepool client + Solana deposit tx) — **G7: real bridge 2 USDC Solana devnet → 1.9948 USDC on NEAR, verified on both chains; U1–U4 verified** (`docs/G7_CROSSCHAIN_LIVE.md`) | ⚠️ unit-tested with mocks (quote echo checks, Solana confirmation, NEAR receipt check, reload-safe); wired into the live dashboard; **no live transfer yet**: our network's firewall sinkholes `usetidepool.tech` | `pnpm --filter @sol2near/crosschain test` → 34 passed · `docs/crosschain/CROSSCHAIN_HANDOFF.md` |
 
 A feature is only marked ✅ once a transaction hash or a reproducible command output backs it. **Unit tests use a mocked NEAR VM: they prove contract rules, not the live Ref / Tidepool integration.** Missing pieces are tracked in `docs/CHECKPOINT_A2.md`.
 
@@ -77,6 +77,8 @@ Full log with gas, costs and read-only checks: [`docs/G2_EXECUTION.md`](docs/G2_
 | G6-CLOSE | `close_season(70)` → **Success**, level 1 → 2, 0 burned | [ELiyFHpW…Ay3s](https://testnet.nearblocks.io/txns/ELiyFHpWnJSMrQamjP1cxYZsRXnUNBg5t32r1nMjAy3s) |
 | G6-CLAIM | `claim(2)` → 4.4688424 FUEL to `lowarena9362.testnet` | [8CRvXVJg…A7F8](https://testnet.nearblocks.io/txns/8CRvXVJgk7sEiapJZSYiiFhhMRANPxZL9rGmAsFsA7F8) |
 | G6-REJ | `register_position(1)` after its window → `position_rejected ERR_REGISTRATION_WINDOW_CLOSED` (expected refusal) | [3HsEr7b3…XQRzF](https://testnet.nearblocks.io/txns/3HsEr7b3Mr1zYLmLi3q6ApgcthXarUTwe9tg5xxXQRzF) |
+| G7-SOL | **Solana devnet → Tidepool**: user deposit of 2 USDC to the live-quote deposit address (signed in the user's Solana wallet from the dashboard) | [bGUicpgy…887R](https://explorer.solana.com/tx/bGUicpgyYtePFP3BcEXYHQ9me67uqFjFQWmS8FsKWhYSzwpcVDv5SZyyLxYneLX93Bic4JZRFrWvphQUkEs887R?cluster=devnet) |
+| G7-NEAR | **Tidepool → NEAR**: settlement `ft_transfer` 1.9948 USDC to `lowarena9362.testnet`, verified by balance (+1994800) | [J58H2uyu…RFqf](https://testnet.nearblocks.io/txns/J58H2uyuGo4wJsjbNuX1AEEwszD4Z8CMAppCqCirRFqf) |
 
 Pool 2951 is shallow (≈ 100 USD of test liquidity), so the zap price is worse than the Tidepool quote. This is a demo-pool effect. The Solana Devnet → NEAR leg via Tidepool is still quote-only: the client exists (`packages/crosschain`) but no live transfer has run yet.
 

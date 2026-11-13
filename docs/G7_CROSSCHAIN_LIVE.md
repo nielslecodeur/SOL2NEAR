@@ -2,8 +2,9 @@
 
 Date: 2026-11-13. Solo project. Tidepool is a **community 1Click-compatible sandbox, not official NEAR Intents**.
 
-**Status: READY FOR LIVE BRIDGE TEST.** Everything that needs no signature is done (§1–§3). The real transfer needs your Solana
-wallet and your approval (§4). **No Solana transaction and no live quote has been made by SOL2NEAR yet.**
+**Status: BRIDGE LEG PROVEN LIVE (2026-11-13 21:38–21:40 UTC).** 2 USDC from the user's Solana devnet wallet arrived on
+`lowarena9362.testnet` as **1.9948 USDC**, verified on NEAR. The Treasury deposit of the bridged USDC (step 6) is next and
+needs a separate NEAR signature.
 
 ## 1. U1–U5 verified on REAL Tidepool data (read-only, without moving funds)
 
@@ -21,10 +22,10 @@ The third party's own addresses are redacted in the saved fixture.
 
 | # | Point | Status now |
 |---|---|---|
-| U1 | Live quote has `quote.depositAddress`, `quote.deadline` (and `timeWhenInactive`), no `depositMemo` for this route | ✅ **verified on a real Tidepool quote echo** |
+| U1 | Live quote has `quote.depositAddress`, `quote.deadline` (and `timeWhenInactive`), no `depositMemo` for this route | ✅ **verified** on a real quote echo, then on **our own live quote** (deposit address `5gUT7A3Z…vNpU`, deadline 22:08:31 UTC, every echo check passed) |
 | U2 | The SPL deposit goes to the **ATA of `depositAddress`**, created idempotently by the payer | ✅ **verified**: a real deposit built exactly like `buildSplDepositTx` was recognised by Tidepool (its origin tx) and swept by the deposit-address key |
 | U3 | Status shape `{correlationId, quoteResponse, status, updatedAt, swapDetails{…TxHashes[{hash, explorerUrl}], amountIn/Out, refundedAmount…}}` (+ an extra `tidepool` field) | ✅ **verified**; the real response parses (test) |
-| U4 | `POST /v0/deposit/submit` | ⏳ only on our own live transfer (submitting someone else's tx would write to Tidepool) |
+| U4 | `POST /v0/deposit/submit {txHash, depositAddress}` | ✅ **verified on our own transfer**: HTTP 200, same shape as the status (`correlationId, quoteResponse, status, updatedAt, swapDetails, tidepool`), idempotent (re-submitting returned `SUCCESS` and changed nothing) |
 | U5 | Quote signature | ❌ not verifiable (key not published); compensated by echo checks + NEAR balance check |
 
 ## 2. Bugs found with the real data, fixed
@@ -47,7 +48,30 @@ likely **not Phantom** but a wallet imitating Phantom's API. Its Devnet support 
 - This is not dangerous: the deposit transaction uses a devnet blockhash and the devnet-only mint, so on mainnet it cannot move anything.
 - It can make the test fail, though. **Recommended: Phantom with Testnet mode → Solana Devnet.**
 
-## 4. The real transfer: what needs you (not done)
+## 4. Our real transfer (2026-11-13), all verified
+
+| Step | Evidence |
+|---|---|
+| Prerequisites | Solana devnet wallet `4NKELSMWVaGu12xPZm1H5fppzNHDKycttYaAS44NE4z5` (0.5 SOL). Tidepool faucet (app.usetidepool.tech, Solana card): **100 USDC** on its ATA `AFDH7pLE…97M1`, tx `eEBHJaPJ…U6X` |
+| Wallet | connected in the dashboard. The provider confirmed the same public key |
+| Dry quote | 2 USDC → 1.9948 (guaranteed min 1.974852) ✓ ≥ Treasury min 1 USDC |
+| Live quote | deposit address `5gUT7A3ZdqgnEe5eKTwQRBrwTcm3EJmNfRiCZTG2vNpU`, deadline 22:08:31 UTC, echo ✓. NEAR baseline read: 86 USDC |
+| **Solana deposit (signed by the user)** | [`bGUicpgyYtePFP3BcEXYHQ9me67uqFjFQWmS8FsKWhYSzwpcVDv5SZyyLxYneLX93Bic4JZRFrWvphQUkEs887R`](https://explorer.solana.com/tx/bGUicpgyYtePFP3BcEXYHQ9me67uqFjFQWmS8FsKWhYSzwpcVDv5SZyyLxYneLX93Bic4JZRFrWvphQUkEs887R?cluster=devnet), confirmed |
+| Tidepool | `SUCCESS` at 21:39:08 UTC (~30 s): deposited 2000000, amountOut **1994800**, no refund |
+| **NEAR settlement** | [`J58H2uyuGo4wJsjbNuX1AEEwszD4Z8CMAppCqCirRFqf`](https://testnet.nearblocks.io/txns/J58H2uyuGo4wJsjbNuX1AEEwszD4Z8CMAppCqCirRFqf), signed by `maker.tidepool-sandbox.testnet`: verifier `ft_withdraw`, then **`ft_transfer` verifier → lowarena9362.testnet 1994800** (T9 confirmed) |
+| Receipt check | independent RPC: USDC 86000000 → **87994800** (+1994800 ≥ min 1974852). The dashboard's own `verifyOnNear` gives `near_verified`, received 1994800 |
+
+Bug found live and fixed: the bridge card's AbortController was created once. React dev StrictMode mount → unmount
+(abort) → mount left it aborted, so tracking failed at once ("signal is aborted without reason"), although the bridge
+itself succeeded. The controller is now created per mount, and an abort is not shown as an error. After a reload, the card
+resumed the stored transfer and verified the NEAR receipt itself.
+
+## 5. Remaining for path B
+
+Deposit the bridged **1.9948 USDC** into the Treasury from the dashboard. This needs the NEAR wallet (Meteor) connected
+again and a NEAR signature. Optionally, then LP and FUEL.
+
+## 6. Original runbook (kept for reference)
 
 1. **Solana wallet on Devnet** (Phantom recommended: Settings → Developer settings → Testnet mode → Solana Devnet).
 2. **Devnet SOL** ≈ 0.01 for fees and ≈ 0.002 for the ATA rent, from faucet.solana.com.
@@ -61,7 +85,7 @@ likely **not Phantom** but a wallet imitating Phantom's API. Its Devnet support 
 Path B is then proven for real: Solana → Tidepool → NEAR → Treasury. U4 is closed at step 4 (the submit call), and the
 NEAR settlement tx is recorded.
 
-## 5. Tests (2026-11-13)
+## 7. Tests (2026-11-13)
 
 | Suite | Result |
 |---|---|
