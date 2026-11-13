@@ -4,7 +4,8 @@ import { bridgeTone, depositStatus, duration, formatUnits, fuel, pct, usdc } fro
 
 test("formatUnits is exact on large atomic values", () => {
   assert.equal(usdc("18000000"), "18");
-  assert.equal(usdc("1600001"), "1.6");
+  assert.equal(usdc("1600001"), "1.600001"); // exact (was truncated to 1.6)
+  assert.equal(usdc("121994800"), "121.9948"); // Treasury total after deposit #3 (G7)
   assert.equal(fuel("600000000000000000000000"), "600,000");
   assert.equal(fuel("4468842400000000000"), "4.4688424"); // real claim of position 2 (G6), not truncated to 4.46
   assert.equal(formatUnits("123456789012345678901234567", 24, 6), "123.456789");

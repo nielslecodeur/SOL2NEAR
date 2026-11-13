@@ -10,7 +10,8 @@ export function formatUnits(atomic: string | bigint, decimals: number, maxFracti
   return `${neg ? "-" : ""}${whole}${frac ? "." + frac : ""}`;
 }
 
-export const usdc = (a: string | bigint) => formatUnits(a, 6, 2);
+/** All 6 USDC decimals, trailing zeros removed: a balance or total is never shown rounded (121.9948, not 121.99). */
+export const usdc = (a: string | bigint) => formatUnits(a, 6, 6);
 /** Up to 7 decimals: rewards are 1 FUEL per USDC (6 decimals) split 80/20, e.g. 4.4688424 — never shown rounded. */
 export const fuel = (a: string | bigint) => formatUnits(a, 18, 7);
 export const wnear = (a: string | bigint) => formatUnits(a, 24, 4);
