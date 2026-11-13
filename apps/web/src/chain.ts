@@ -1,34 +1,21 @@
 /** Read-only NEAR testnet access (JSON-RPC view calls). No wallet, no keys, no signing. */
-import { FUEL_ACCOUNT_ID, NEAR_RPC_URL, REF_EXCHANGE_ID, TREASURY_ACCOUNT_ID } from "../../../packages/shared/src/accounts.ts";
+import { FUEL_ACCOUNT_ID, REF_EXCHANGE_ID, TREASURY_ACCOUNT_ID } from "../../../packages/shared/src/accounts.ts";
+import { nearRpc } from "./near/rpc.ts";
 import type { TreasuryAccounting, TreasuryDeposit } from "../../../packages/shared/src/treasury.ts";
 
 export { FUEL_ACCOUNT_ID, TREASURY_ACCOUNT_ID };
 export const explorerAccount = (id: string) => `https://testnet.nearblocks.io/address/${id}`;
 export const explorerBlock = (h: string | number) => `https://testnet.nearblocks.io/blocks/${h}`;
 
-export async function view<T>(contract: string, method: string, args: object = {}): Promise<T> {
-  const res = await fetch(NEAR_RPC_URL, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      jsonrpc: "2.0", id: "web", method: "query",
-      params: { request_type: "call_function", finality: "final", account_id: contract, method_name: method, args_base64: btoa(JSON.stringify(args)) },
-    }),
-  });
-  const json = await res.json();
-  const err = json.error ?? json.result?.error;
-  if (err) throw new Error(typeof err === "string" ? err : JSON.stringify(err.cause ?? err).slice(0, 200));
-  return JSON.parse(new TextDecoder().decode(new Uint8Array(json.result.result)));
+const rpc = nearRpc();
+
+/** Read-only view call, with provider failover (see near/rpc.ts). */
+export function view<T>(contract: string, method: string, args: object = {}): Promise<T> {
+  return rpc.view<T>(contract, method, args);
 }
 
 export async function isDeployed(account: string): Promise<boolean> {
-  const res = await fetch(NEAR_RPC_URL, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", id: "web", method: "query", params: { request_type: "view_account", finality: "final", account_id: account } }),
-  });
-  const json = await res.json();
-  return !!json.result && json.result.code_hash !== "11111111111111111111111111111111";
+  return (await rpc.codeHash(account)) !== null;
 }
 
 // Shapes of the FUEL views (contracts/fuel).

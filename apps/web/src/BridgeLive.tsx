@@ -84,7 +84,7 @@ export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onH
   useEffect(() => {
     tidepool.health().then(
       (h) => { onHealth?.(true); setHealth(h.ok && h.solanaRouteOk ? "up · Solana devnet route ok" : `degraded · ok=${h.ok} solanaRoute=${h.solanaRouteOk}`); },
-      (e) => { onHealth?.(false); setHealth(`unreachable · ${explain(e)}`); },
+      (e) => { onHealth?.(false); setHealth(`unreachable from this network (${explain(e)}). Path B is unavailable here; the direct NEAR deposit still works.`); },
     );
     // Resume every transfer a previous page load left in progress.
     for (const t of tidepool.transfers())

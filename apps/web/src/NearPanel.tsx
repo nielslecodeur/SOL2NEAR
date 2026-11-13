@@ -16,10 +16,23 @@ import {
 import { applyWalletReturn, isOpen, parseWalletReturn, txHistory, type TxKind, type TxRecord } from "./near/history.ts";
 import { pipeline, type StepState } from "./near/pipeline.ts";
 import { nearRpc } from "./near/rpc.ts";
-import { WalletError } from "./near/errors.ts";
+import { WalletError, isRejection } from "./near/errors.ts";
+import { isTestnetAccount } from "./near/config.ts";
 import type { NearWallet } from "./near/wallet.ts";
 
 const rpc = nearRpc();
+
+/**
+ * The real wallet (Wallet Selector, own chunk). Only the e2e build (`vite build --mode e2e`, VITE_E2E=1) may
+ * substitute a mocked wallet from the test runner; in the production build this branch is compiled out.
+ */
+function loadWallet(): Promise<NearWallet> {
+  if (import.meta.env.VITE_E2E === "1") {
+    const mock = (window as unknown as { __SOL2NEAR_E2E_WALLET__?: NearWallet }).__SOL2NEAR_E2E_WALLET__;
+    if (mock) return Promise.resolve(mock);
+  }
+  return import("./near/wallet.ts").then((m) => m.getNearWallet());
+}
 const safeStorage = (() => { try { localStorage.setItem("sol2near.probe", "1"); return localStorage; } catch { return null; } })();
 const history = txHistory(safeStorage);
 const near = (y: bigint) => (Number(y / 10n ** 20n) / 1e4).toLocaleString("en-US", { maximumFractionDigits: 4 });
@@ -48,15 +61,22 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
+  const [fatal, setFatal] = useState<string | null>(null);
   const pollRef = useRef<number | null>(null);
 
   // Wallet: restore the session, apply a browser-wallet redirect result, follow account changes.
   useEffect(() => {
     let unsub = () => {};
-    // The wallet selector (and its dependencies) is loaded on demand, in its own chunk.
-    import("./near/wallet.ts").then((m) => m.getNearWallet()).then((w) => {
+    loadWallet().then((w) => {
       setWallet(w);
-      const set = (id: string | null) => { setAccountId(id); onAccount(id); };
+      const set = (id: string | null) => {
+        if (id && !isTestnetAccount(id)) {
+          setWalletError(`${id} is not a NEAR testnet account. SOL2NEAR never uses mainnet: switch your wallet to testnet.`);
+          id = null;
+        }
+        setAccountId(id);
+        onAccount(id);
+      };
       set(w.accountId);
       if (w.accountId) {
         const ret = parseWalletReturn(location.search);
@@ -66,7 +86,7 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
         }
       }
       unsub = w.subscribe(set);
-    }, (e) => setWalletError(`Wallet selector failed to load: ${(e as Error).message}`));
+    }, (e) => setFatal(`Wallet selector failed to load: ${(e as Error).message}`));
     return () => unsub();
   }, []);
 
@@ -166,7 +186,8 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
       setReview(null);
       await verifyOpen();
     } catch (e) {
-      if (e instanceof WalletError && e.rejected) history.update(rec.id, { status: "rejected", detail: "Rejected in the wallet: nothing was sent." });
+      const rejected = e instanceof WalletError ? e.rejected : isRejection(e);
+      if (rejected) history.update(rec.id, { status: "rejected", detail: "Rejected in the wallet: nothing was sent." });
       else history.update(rec.id, { detail: `Wallet/RPC error: ${(e as Error).message}. It may have been sent: check your wallet history before trying again.` });
       setRecords(history.list(accountId));
       setReview(null);
@@ -198,7 +219,7 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
     }
   }
 
-  if (walletError) return <div className="card"><h3>Your NEAR account</h3><p className="badge failed">{walletError}</p></div>;
+  if (fatal) return <div className="card"><h3>Your NEAR testnet account</h3><p className="banner err">{fatal}</p></div>;
   return (
     <section className="card nearpanel">
       <h3>Your NEAR testnet account</h3>
@@ -210,6 +231,8 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
           </>
         ) : <button onClick={() => wallet?.connect()} disabled={!wallet}>{wallet ? "Connect NEAR wallet" : "Loading wallets…"}</button>}
       </div>
+      {walletError && <p className="banner err">{walletError}</p>}
+      {accountId && !data && !error && <p className="muted">Reading your balances on NEAR testnet…</p>}
       {accountId && data && (
         <div className="grid4 small">
           <div className="stat"><small>NEAR (gas)</small><b>{data.ctx.nearBalance !== null ? near(data.ctx.nearBalance) : "—"}</b>{data.ctx.nearBalance !== null && data.ctx.nearBalance < MIN_NEAR_FOR_GAS && <span className="badge failed">too low for gas</span>}</div>
@@ -226,7 +249,7 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
       </ol>
       <p className="muted paths">
         <b>Path A · direct NEAR deposit</b>: wallet → Treasury → Ref → FUEL. Proven on testnet by CLI (G2 C1–C7){dashboardDeposit?.txHash ? <>; from this dashboard: <a href={explorerTx(dashboardDeposit.txHash)} target="_blank" rel="noreferrer">verified deposit</a></> : "; from this dashboard: not executed yet"}.{" "}
-        <b>Path B · full cross-chain</b>: Solana → Tidepool → NEAR → Treasury. {transfer?.stage === "near_verified" ? "Bridge verified on NEAR for this account." : "Not demonstrated: Tidepool is unreachable from the development network."} A direct NEAR deposit never proves a Solana origin.
+        <b>Path B · full cross-chain</b>: Solana → Tidepool → NEAR → Treasury. {transfer?.stage === "near_verified" ? "Bridge verified on NEAR for this account." : tidepoolReachable === false ? "Not demonstrated: Tidepool is unreachable from this network." : "Not demonstrated yet: no live Solana → NEAR transfer has been run."} A direct NEAR deposit never proves a Solana origin.
       </p>
 
       {accountId && data && (
@@ -254,13 +277,20 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
         </div>
       )}
 
-      {accountId && latest && (
+      {accountId && latest && (() => {
+        const canLp = steps[3]!.state === "READY" || steps[3]!.state === "FAILED";
+        const canRegister = steps[4]!.state === "READY" && !data?.position;
+        const canClaim = data?.position?.reward_status === "Claimable";
+        return (
         <div className="deposit">
           <h3>Deposit #{latest.id}: next actions</h3>
+          {!canLp && !canRegister && !canClaim && (
+            <p className="muted">Nothing to sign for this deposit right now: {steps[4]!.state === "CONFIRMED" ? "LP confirmed and FUEL reward claimed." : steps[4]!.detail}</p>
+          )}
           <div className="watch">
-            {steps[3]!.state === "READY" || steps[3]!.state === "FAILED"
+            {canLp
               ? <button disabled={busy} onClick={() => prepareLp(latest)}>Deploy liquidity (execute_lp)</button> : null}
-            {steps[4]!.state === "READY" && !data?.position
+            {canRegister
               ? <button disabled={busy} onClick={() => prepare("register_position", registerPositionCall(latest.id), [`FUEL.register_position(${latest.id}) on ${FUEL_ACCOUNT_ID}, 100 Tgas`, "Permissionless: FUEL reads the Treasury record and Ref shares; rewards go to the recorded creator."], { target: latest.id })}>Register for FUEL</button> : null}
             {data?.position?.reward_status === "Claimable" && !data.fuelRegistered
               ? <button disabled={busy} onClick={() => prepare("fuel_storage", fuelStorageCall(accountId, data.fuelStorageMin), [`FUEL.storage_deposit(${accountId}), deposit ${near(BigInt(data.fuelStorageMin))} NEAR (storage_balance_bounds.min)`, "Needed once so the FUEL contract can hold your balance."])}>Register on FUEL (storage)</button> : null}
@@ -271,7 +301,8 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
             <p className="muted">FUEL committed (not earned yet): {fmtFuel(data.position.position.creator_reward)} to you · status {data.position.reward_status}.</p>
           )}
         </div>
-      )}
+        );
+      })()}
 
       {review && (
         <div className="review" role="dialog" aria-label="Review before signing">

@@ -25,3 +25,8 @@ neardev/
 Thumbs.db
 .vscode/
 .idea/
+
+# e2e (Playwright)
+apps/web/dist-e2e/
+apps/web/test-results/
+apps/web/playwright-report/

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { BridgeResult } from "../../../packages/shared/src/crosschain.ts";
 import { explorerAccount, explorerBlock, FUEL_ACCOUNT_ID, loadTestnet, TREASURY_ACCOUNT_ID, type FuelPosition, type Season, type Snapshot } from "./chain.ts";
 import { demoSnapshot, mockCrosschain } from "./demo.ts";
@@ -33,16 +33,24 @@ export function App() {
 
   const [tidepoolOk, setTidepoolOk] = useState<boolean | null>(null);
 
-  async function refresh(forAccount = account) {
+  // Only the latest request may update the screen: a slower earlier read (other account, or testnet
+  // data arriving after a switch to demo) must never overwrite it.
+  // `refresh` always reads the CURRENT account: the initial effect may run after a fast first click.
+  const requestSeq = useRef(0);
+  const accountRef = useRef(account);
+  accountRef.current = account;
+  async function refresh(forAccount = accountRef.current) {
+    const seq = ++requestSeq.current;
     setError(null);
     if (source === "demo") return setSnap(demoSnapshot());
     setLoading(true);
     try {
-      setSnap(await loadTestnet(forAccount.trim()));
+      const s = await loadTestnet(forAccount.trim());
+      if (seq === requestSeq.current) setSnap(s);
     } catch (e) {
-      setError(`Testnet read failed: ${(e as Error).message}`);
+      if (seq === requestSeq.current) setError(`Testnet read failed: ${(e as Error).message}`);
     } finally {
-      setLoading(false);
+      if (seq === requestSeq.current) setLoading(false);
     }
   }
 

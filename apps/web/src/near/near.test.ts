@@ -186,7 +186,7 @@ test("Treasury: wrong signer or partial use is a mismatch, not a success", () =>
 });
 
 test("Treasury: contribution confirmed against get_deposit; pending tx stays pending", async () => {
-  const rpc = (dep: unknown, tx: TxOutcome | null = null): NearRpc => ({ view: async () => dep as never, nearBalance: async () => 0n, txStatus: async () => tx });
+  const rpc = (dep: unknown, tx: TxOutcome | null = null): NearRpc => ({ view: async () => dep as never, nearBalance: async () => 0n, codeHash: async () => null, txStatus: async () => tx });
   assert.deepEqual(await confirmInTreasury(rpc({ creator: DEV, amount: "20000000", status: "LpConfirmed" }), "0", DEV, "20000000"), { ok: true, status: "LpConfirmed" });
   assert.equal((await confirmInTreasury(rpc(null), "9", DEV, "1")).ok, false);
   assert.equal((await confirmInTreasury(rpc({ creator: "x.testnet", amount: "20000000" }), "0", DEV, "20000000")).ok, false);
@@ -206,11 +206,29 @@ test("Treasury: double submission blocked while a deposit is unresolved", () => 
   assert.equal(h.blocking(DEV, "deposit"), undefined);
 });
 
+test("RPC failover: provider trouble -> next provider; chain answers are not retried", async () => {
+  const seen: string[] = [];
+  const f = (byHost: Record<string, () => Response | Promise<Response>>) => async (u: string) => { const h = new URL(u).host; seen.push(h); return byHost[h]!(); };
+  const ok = new Response(JSON.stringify({ result: { result: Array.from(new TextEncoder().encode('"42"')) } }));
+  // drpc free-plan timeout (seen in G2) -> fastnear answers
+  const r1 = nearRpc(["https://a.example", "https://b.example"], f({ "a.example": () => new Response(JSON.stringify({ error: { message: "Request timeout on the free plan, please upgrade", code: 30 } })), "b.example": () => ok.clone() }));
+  assert.equal(await r1.view("c", "m"), "42");
+  // network failure and HTTP 503 -> next provider
+  assert.equal(await nearRpc(["https://a.example", "https://b.example"], f({ "a.example": () => { throw new TypeError("fetch failed"); }, "b.example": () => ok.clone() })).view("c", "m"), "42");
+  assert.equal(await nearRpc(["https://a.example", "https://b.example"], f({ "a.example": () => new Response("", { status: 503 }), "b.example": () => ok.clone() })).view("c", "m"), "42");
+  // every provider down -> one clear error
+  await assert.rejects(nearRpc(["https://a.example", "https://b.example"], async () => { throw new TypeError("fetch failed"); }).view("c", "m"), /every provider failed/);
+  // a real chain error (contract panic) is NOT retried elsewhere
+  seen.length = 0;
+  await assert.rejects(nearRpc(["https://a.example", "https://b.example"], f({ "a.example": () => new Response(JSON.stringify({ result: { error: "wasm execution failed: ERR_X" } })), "b.example": () => ok.clone() })).view("c", "m"), /ERR_X/);
+  assert.deepEqual(seen, ["a.example"]);
+});
+
 test("RPC: unknown tx -> null (pending), other errors throw, unknown account -> null", async () => {
   const fake = (body: unknown) => async () => new Response(JSON.stringify(body));
   assert.equal(await nearRpc("http://x", fake({ error: { cause: { name: "UNKNOWN_TRANSACTION" } } })).txStatus("H", DEV), null);
   await assert.rejects(nearRpc("http://x", fake({ error: { cause: { name: "INTERNAL_ERROR" } } })).txStatus("H", DEV), /INTERNAL_ERROR/);
-  await assert.rejects(nearRpc("http://x", async () => { throw new TypeError("fetch failed"); }).view("a", "b"), /fetch failed/);
+  await assert.rejects(nearRpc("http://x", async () => { throw new TypeError("fetch failed"); }).view("a", "b"), /every provider failed.*fetch failed/);
   assert.equal(await nearRpc("http://x", fake({ error: { cause: { name: "UNKNOWN_ACCOUNT" } } })).nearBalance("nobody.testnet"), null);
 });
 

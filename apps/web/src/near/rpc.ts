@@ -17,24 +17,49 @@ export interface NearRpc {
   view<T>(contract: string, method: string, args?: object): Promise<T>;
   /** Liquid NEAR (yocto) of an account, or null if it does not exist. */
   nearBalance(accountId: string): Promise<bigint | null>;
+  /** Code hash of a deployed contract, or null if the account has no contract / does not exist. */
+  codeHash(accountId: string): Promise<string | null>;
   /** Final outcome of a tx, or null while it is unknown / not final yet (never treated as a failure). */
   txStatus(hash: string, signerId: string): Promise<TxOutcome | null>;
 }
 
-export function nearRpc(url = NEAR_RPC_URL, doFetch: FetchLike = (u, i) => fetch(u, i)): NearRpc {
+/** Public testnet providers, tried in order (both listed by docs.near.org; rpc.testnet.near.org was deprecated). */
+export const NEAR_RPC_URLS = [NEAR_RPC_URL, "https://test.rpc.fastnear.com"];
+
+/** Provider-side trouble (not an answer about the chain): worth trying the next provider. */
+const PROVIDER_TROUBLE = /free plan|rate limit|too many requests|timeout|\b429\b|\b50[234]\b/i;
+
+export function nearRpc(urls: string | string[] = NEAR_RPC_URLS, doFetch: FetchLike = (u, i) => fetch(u, i)): NearRpc {
+  const list = Array.isArray(urls) ? urls : [urls];
+  async function callOne(url: string, method: string, params: unknown): Promise<{ result?: any; error?: any }> {
+    const res = await doFetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: "sol2near", method, params }),
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
   async function call(method: string, params: unknown) {
-    let json: { result?: any; error?: any };
-    try {
-      const res = await doFetch(url, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ jsonrpc: "2.0", id: "sol2near", method, params }),
-        signal: AbortSignal.timeout(30_000),
-      });
-      json = await res.json();
-    } catch (e) {
-      throw new RpcError(`NEAR RPC ${method}: ${(e as Error).message}`);
+    let json: { result?: any; error?: any } | undefined;
+    let lastProblem = "";
+    for (const url of list) {
+      try {
+        json = await callOne(url, method, params);
+      } catch (e) {
+        lastProblem = `${new URL(url).host}: ${(e as Error).message}`;
+        continue; // network error, timeout, 429, 5xx: next provider
+      }
+      const err = json.error ?? json.result?.error;
+      if (err && PROVIDER_TROUBLE.test(JSON.stringify(err)) && !/UNKNOWN_TRANSACTION/.test(JSON.stringify(err))) {
+        lastProblem = `${new URL(url).host}: ${JSON.stringify(err).slice(0, 120)}`;
+        json = undefined;
+        continue;
+      }
+      break;
     }
+    if (!json) throw new RpcError(`NEAR RPC ${method}: every provider failed (${lastProblem})`);
     const err = json.error ?? json.result?.error;
     if (err) {
       const text = typeof err === "string" ? err : JSON.stringify(err.cause ?? err);
@@ -49,6 +74,15 @@ export function nearRpc(url = NEAR_RPC_URL, doFetch: FetchLike = (u, i) => fetch
         args_base64: btoa(JSON.stringify(args)),
       });
       return JSON.parse(new TextDecoder().decode(new Uint8Array(r.result))) as T;
+    },
+    async codeHash(accountId) {
+      try {
+        const r = await call("query", { request_type: "view_account", finality: "final", account_id: accountId });
+        return r.code_hash && r.code_hash !== "11111111111111111111111111111111" ? r.code_hash : null;
+      } catch (e) {
+        if (/UNKNOWN_ACCOUNT|does not exist/.test((e as Error).message)) return null;
+        throw e;
+      }
     },
     async nearBalance(accountId) {
       try {

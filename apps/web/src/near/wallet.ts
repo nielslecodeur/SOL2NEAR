@@ -32,9 +32,11 @@ export const getNearWallet = () => (singleton ??= create());
 async function create(): Promise<NearWallet> {
   const selector: WalletSelector = await setupWalletSelector({
     network: NETWORK_ID,
+    // Same public providers as the rest of the app (rpc.testnet.near.org answered -429 "deprecated" in G2).
+    fallbackRpcUrls: ["https://test.rpc.fastnear.com", "https://near-testnet.drpc.org"],
     modules: [setupMyNearWallet(), setupMeteorWallet()],
   });
-  const modal: WalletSelectorModal = setupModal(selector, {});
+  const modal: WalletSelectorModal = setupModal(selector, { theme: "dark", description: "SOL2NEAR runs on NEAR testnet only. Test tokens have no value." });
   const current = () => {
     const a = selector.store.getState().accounts.find((x) => x.active)?.accountId ?? null;
     return a && isTestnetAccount(a) ? a : null; // a mainnet account is never exposed to the app

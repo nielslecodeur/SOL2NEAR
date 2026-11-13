@@ -57,7 +57,9 @@ New guarantees added on 2026-11-13 (unit-tested with mocks):
 - Tidepool `SUCCESS` is not trusted alone: the recipient's balance on `usdc.tidepool-sandbox.testnet` must rise by at least `minAmountOut`, otherwise `settlement_mismatch`.
 - Every transfer is persisted. A reload never re-signs, and an interrupted signing is blocked (`interrupted`).
 
-## 4. Why Tidepool is unreachable here (diagnosed 2026-11-13)
+## 4. Why Tidepool was unreachable (diagnosed 2026-11-13)
+
+> Update 2026-11-13 ~17:45 UTC: the development machine moved to another network (DNS 192.168.0.254). Tidepool resolves there and `live:dry` passed: health ok, route listed, live **dry** quote 1 USDC → 0.9974 (min 0.987426), correlationId `434815b1-8a6f-43dd-b104-4c7b566664b8`, with the echoed `quoteRequest` matching our request. This closes the dry-quote part of U1. The live-quote fields (`depositAddress`, `deadline`), U2, U3 and U4 still need a live quote and transfer.
 
 | Check | Result |
 |---|---|

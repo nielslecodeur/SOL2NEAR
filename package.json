@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "SOL2NEAR — cross-chain memecoin liquidity engine (testnet only)",
+  "description": "SOL2NEAR \u2014 cross-chain memecoin liquidity engine (testnet only)",
   "packageManager": "pnpm@10.34.9",
   "scripts": {
     "test:contracts": "cargo test --workspace",
@@ -11,5 +11,10 @@
     "typecheck": "pnpm -r typecheck",
     "verify:testnet": "node scripts/probes/verify-testnet.mjs",
     "build:shared": "pnpm --filter @sol2near/shared build"
+  },
+  "pnpm": {
+    "overrides": {
+      "js-sha256": "0.11.1"
+    }
   }
 }

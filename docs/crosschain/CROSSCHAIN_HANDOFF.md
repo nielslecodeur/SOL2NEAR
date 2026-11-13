@@ -3,7 +3,9 @@
 Last update: 2026-11-13 (G3: Tidepool diagnosis and hardening). **Solo project**: the author owns every module.
 Tidepool is a **community 1Click-compatible sandbox, not the official NEAR Intents service**. Testnet / devnet only.
 
-**Status: BLOCKED — EXTERNAL DEPENDENCY** for the live transfer. The network used for development sinkholes
+**Update 2026-11-13 (G5):** from another network Tidepool is reachable: `live:dry` passed (health, route, live dry quote `434815b1-…`, echo checks OK) and `verify-testnet.mjs` printed all checks passed. A live transfer is now possible with your approval.
+
+~~**Status: BLOCKED — EXTERNAL DEPENDENCY** for the live transfer.~~ The network used for development sinkholes
 `usetidepool.tech` (§1). The code is **ready for a first live devnet test** from a network that reaches Tidepool.
 
 ## 1. Tidepool diagnosis
