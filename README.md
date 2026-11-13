@@ -79,6 +79,7 @@ Full log with gas, costs and read-only checks: [`docs/G2_EXECUTION.md`](docs/G2_
 | G6-REJ | `register_position(1)` after its window → `position_rejected ERR_REGISTRATION_WINDOW_CLOSED` (expected refusal) | [3HsEr7b3…XQRzF](https://testnet.nearblocks.io/txns/3HsEr7b3Mr1zYLmLi3q6ApgcthXarUTwe9tg5xxXQRzF) |
 | G7-SOL | **Solana devnet → Tidepool**: user deposit of 2 USDC to the live-quote deposit address (signed in the user's Solana wallet from the dashboard) | [bGUicpgy…887R](https://explorer.solana.com/tx/bGUicpgyYtePFP3BcEXYHQ9me67uqFjFQWmS8FsKWhYSzwpcVDv5SZyyLxYneLX93Bic4JZRFrWvphQUkEs887R?cluster=devnet) |
 | G7-NEAR | **Tidepool → NEAR**: settlement `ft_transfer` 1.9948 USDC to `lowarena9362.testnet`, verified by balance (+1994800) | [J58H2uyu…RFqf](https://testnet.nearblocks.io/txns/J58H2uyuGo4wJsjbNuX1AEEwszD4Z8CMAppCqCirRFqf) |
+| G7-TREAS | **NEAR → Treasury**: the user deposits the bridged balance (whole 87.9948 USDC incl. the 1.9948 bridged) → deposit #3, 79.19532 / 7.039584 / 1.759896. Path B complete | [J7uMjikj…Bdhz](https://testnet.nearblocks.io/txns/J7uMjikj935TeunPoHj2i7xrCSSDrYEAmvdHv7DYBdhz) |
 
 Pool 2951 is shallow (≈ 100 USD of test liquidity), so the zap price is worse than the Tidepool quote. This is a demo-pool effect. The Solana Devnet → NEAR leg via Tidepool is still quote-only: the client exists (`packages/crosschain`) but no live transfer has run yet.
 

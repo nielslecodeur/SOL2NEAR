@@ -2,7 +2,7 @@
 
 Date: 2026-11-13. Solo project. Tidepool is a **community 1Click-compatible sandbox, not official NEAR Intents**.
 
-**Status: BRIDGE LEG PROVEN LIVE (2026-11-13 21:38–21:40 UTC).** 2 USDC from the user's Solana devnet wallet arrived on
+**Status: PATH B PROVEN END TO END (2026-11-13 21:38–21:46 UTC): Solana devnet → Tidepool → NEAR → Treasury.** Bridge leg first: 2 USDC from the user's Solana devnet wallet arrived on
 `lowarena9362.testnet` as **1.9948 USDC**, verified on NEAR. The Treasury deposit of the bridged USDC (step 6) is next and
 needs a separate NEAR signature.
 
@@ -66,10 +66,26 @@ Bug found live and fixed: the bridge card's AbortController was created once. Re
 itself succeeded. The controller is now created per mount, and an abort is not shown as an error. After a reload, the card
 resumed the stored transfer and verified the NEAR receipt itself.
 
-## 5. Remaining for path B
+## 5. Path B completed: Treasury deposit (signed by the user in Meteor, 2026-11-13 21:45:44 UTC)
 
-Deposit the bridged **1.9948 USDC** into the Treasury from the dashboard. This needs the NEAR wallet (Meteor) connected
-again and a NEAR signature. Optionally, then LP and FUEL.
+| Check | Result |
+|---|---|
+| Tx | [`J7uMjikj935TeunPoHj2i7xrCSSDrYEAmvdHv7DYBdhz`](https://testnet.nearblocks.io/txns/J7uMjikj935TeunPoHj2i7xrCSSDrYEAmvdHv7DYBdhz), `FINAL`, `ft_transfer_call` → Treasury, msg `{"action":"deposit"}`, 1 yocto, returned `"87994800"` (fully used) |
+| Treasury event | `deposit_allocated` **#3**, creator lowarena9362.testnet, 87994800 → 79195320 / 7039584 / 1759896 |
+| Amount note | the user deposited the **whole balance** (87.9948 USDC, "Max"), not only the bridged 1.9948. The balance went 86 → 87.9948 through the bridge, then → 0. USDC is fungible, so the deposit *contains* the bridged amount; it does not "tag" it |
+| Treasury after | 4 deposits, total received 121.9948 USDC, pending LP budget 79.19532 |
+
+**Path B is proven end to end on testnet:**
+
+Solana devnet wallet → (deposit `bGUicpgy…`) → Tidepool → (settlement `J58H2uyu…`) → NEAR wallet → (deposit `J7uMjikj…`) → Treasury.
+
+### Risk found: do not `execute_lp(3)` as is
+
+The LP budget of deposit #3 (79.2 USDC) is larger than pool 2951 (~70 USDC / ~14 wNEAR). The zap would swap ~37 USDC, a
+price impact of roughly 35 %. The slippage guards only protect against the pool *moving* between the plan and execution,
+not against a bad price that is already in the plan.
+- **Recommendation**: show the price impact in the `execute_lp` review and warn or refuse above a threshold. Meanwhile, do not deploy #3.
+- The funds are safe in the Treasury; the creator reserve (7.04 USDC) is withdrawable.
 
 ## 6. Original runbook (kept for reference)
 
