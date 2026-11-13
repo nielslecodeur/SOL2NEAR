@@ -195,6 +195,22 @@ test.describe("@mock mocked wallet (e2e hook) + real testnet reads", () => {
     await expect(nearPanel(page).locator(".histrow").first()).toContainText("rejected");
   });
 
+  test("balances received after connecting appear with Refresh (G6 regression)", async ({ page }) => {
+    await mockWallet(page, DEV);
+    await page.goto("/");
+    const panel = nearPanel(page);
+    await expect(panel.getByText("accepted by Treasury")).toBeVisible();
+    // MOCK: from now on the RPC reports 123 USDC for the account (as if the faucet had just paid it)
+    await page.route(/near-testnet\.drpc\.org|test\.rpc\.fastnear\.com/, async (route) => {
+      const body = route.request().postData() ?? "";
+      if (body.includes("ft_balance_of") && body.includes(Buffer.from(JSON.stringify({ account_id: DEV })).toString("base64")))
+        return route.fulfill({ json: { jsonrpc: "2.0", id: "sol2near", result: { result: Array.from(Buffer.from('"123000000"')), logs: [], block_height: 1, block_hash: "x" } } });
+      return route.continue();
+    });
+    await panel.getByRole("button", { name: "Refresh", exact: true }).click();
+    await expect(panel.locator(".stat", { hasText: "USDC on NEAR" }).locator("b")).toHaveText("123");
+  });
+
   test("mainnet account from the wallet is refused", async ({ page }) => {
     await mockWallet(page, "alice.near");
     await page.goto("/");

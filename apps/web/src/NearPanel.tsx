@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { TreasuryDeposit } from "../../../packages/shared/src/treasury.ts";
 import { webStorageStore, type TransferRecord } from "../../../packages/crosschain/src/store.ts";
 import type { FuelPosition } from "./chain.ts";
-import { fuel as fmtFuel, toDecimalString, usdc } from "./format.ts";
+import { formatUnits, fuel as fmtFuel, toDecimalString, usdc } from "./format.ts";
 import {
   analyzeAction, claimCall, executeLpCall, fuelStorageCall, planLp, registerPositionCall, type ActionKind,
 } from "./near/actions.ts";
@@ -35,7 +35,8 @@ function loadWallet(): Promise<NearWallet> {
 }
 const safeStorage = (() => { try { localStorage.setItem("sol2near.probe", "1"); return localStorage; } catch { return null; } })();
 const history = txHistory(safeStorage);
-const near = (y: bigint) => (Number(y / 10n ** 20n) / 1e4).toLocaleString("en-US", { maximumFractionDigits: 4 });
+/** Exact NEAR display (no float): 5 decimals is enough for the 0.00125 NEAR storage deposit. */
+const near = (y: bigint) => formatUnits(y, 24, 5);
 const TONE: Record<StepState, string> = { NOT_STARTED: "neutral", READY: "refunded", PENDING: "pending", CONFIRMED: "confirmed", FAILED: "failed", BLOCKED: "failed" };
 
 interface AccountData {
@@ -62,6 +63,7 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
   const [error, setError] = useState<string | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
   const [fatal, setFatal] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const pollRef = useRef<number | null>(null);
 
   // Wallet: restore the session, apply a browser-wallet redirect result, follow account changes.
@@ -153,7 +155,10 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
     pollRef.current = window.setInterval(() => {
       if (accountId && history.list(accountId).some((r) => r.status === "submitted")) verifyOpen();
     }, 5000);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+    // Balances change outside the dashboard (faucet, other wallets): re-read when the tab regains focus.
+    const onFocus = () => { if (accountId) load(); };
+    window.addEventListener("focus", onFocus);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); window.removeEventListener("focus", onFocus); };
   }, [accountId]);
 
   const latest = data?.deposits[data.deposits.length - 1] ?? null;
@@ -227,6 +232,7 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
         {accountId ? (
           <>
             <span className="badge confirmed">testnet</span> <code>{accountId}</code>
+            <button className="ghost" onClick={() => { setRefreshing(true); load().finally(() => setRefreshing(false)); }} disabled={busy || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button>
             <button className="ghost" onClick={() => wallet?.disconnect()} disabled={busy}>Disconnect</button>
           </>
         ) : <button onClick={() => wallet?.connect()} disabled={!wallet}>{wallet ? "Connect NEAR wallet" : "Loading wallets…"}</button>}
@@ -252,6 +258,14 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
         <b>Path B · full cross-chain</b>: Solana → Tidepool → NEAR → Treasury. {transfer?.stage === "near_verified" ? "Bridge verified on NEAR for this account." : tidepoolReachable === false ? "Not demonstrated: Tidepool is unreachable from this network." : "Not demonstrated yet: no live Solana → NEAR transfer has been run."} A direct NEAR deposit never proves a Solana origin.
       </p>
 
+      {accountId && data && !data.fuelRegistered && (
+        <p className="muted">
+          FUEL storage is not registered for this account: claiming a reward will need it. It is a separate, one-time
+          transaction you can do any time before claiming.{" "}
+          <button className="ghost" disabled={busy} onClick={() => prepare("fuel_storage", fuelStorageCall(accountId, data.fuelStorageMin), [`FUEL.storage_deposit({"account_id":"${accountId}","registration_only":true}) on ${FUEL_ACCOUNT_ID}`, `Attached: ${near(BigInt(data.fuelStorageMin))} NEAR (storage_balance_bounds.min), 30 Tgas`, "Needed once so the FUEL contract can hold your FUEL balance."])}>Register on FUEL (storage)</button>
+        </p>
+      )}
+
       {accountId && data && (
         <div className="deposit">
           <h3>Deposit to Treasury</h3>
@@ -262,10 +276,12 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
             <input aria-label="USDC amount" placeholder="USDC amount" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" />
             <button className="ghost" onClick={() => data.ctx.usdcBalance !== null && setAmount(toDecimalString(data.ctx.usdcBalance, 6))}>Max</button>
             <button disabled={busy || !check?.ok} onClick={() => check?.ok && prepare("deposit", check.call, [
+              `From (signer): ${accountId} — NEAR testnet; this account becomes the deposit's creator`,
               `Token: ${USDC_TOKEN_ID} (Tidepool test USDC, no value), 6 decimals`,
               `Amount: ${usdc(check.amount)} USDC = ${check.amount} atomic`,
               `Call: ft_transfer_call → receiver ${TREASURY_ACCOUNT_ID}, msg {"action":"deposit"}, 1 yoctoNEAR, 100 Tgas (unused gas refunded; testnet fee < 0.01 NEAR)`,
               `Split by the contract rule: LP ${usdc(check.split.lp)} · creator reserve ${usdc(check.split.reserve)} · community ${usdc(check.split.community)}`,
+              `Storage: you ✓ and Treasury ✓ on ${USDC_TOKEN_ID}, so no storage transaction is needed before this deposit`,
             ], { amount: check.amount.toString() })}>Deposit to Treasury</button>
           </div>
           {check?.ok && (
@@ -292,8 +308,6 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
               ? <button disabled={busy} onClick={() => prepareLp(latest)}>Deploy liquidity (execute_lp)</button> : null}
             {canRegister
               ? <button disabled={busy} onClick={() => prepare("register_position", registerPositionCall(latest.id), [`FUEL.register_position(${latest.id}) on ${FUEL_ACCOUNT_ID}, 100 Tgas`, "Permissionless: FUEL reads the Treasury record and Ref shares; rewards go to the recorded creator."], { target: latest.id })}>Register for FUEL</button> : null}
-            {data?.position?.reward_status === "Claimable" && !data.fuelRegistered
-              ? <button disabled={busy} onClick={() => prepare("fuel_storage", fuelStorageCall(accountId, data.fuelStorageMin), [`FUEL.storage_deposit(${accountId}), deposit ${near(BigInt(data.fuelStorageMin))} NEAR (storage_balance_bounds.min)`, "Needed once so the FUEL contract can hold your balance."])}>Register on FUEL (storage)</button> : null}
             {data?.position?.reward_status === "Claimable" && data.fuelRegistered
               ? <button disabled={busy} onClick={() => prepare("claim", claimCall(latest.id), [`FUEL.claim(${latest.id}), 50 Tgas`, `Pays ${fmtFuel(data.position!.position.creator_reward)} FUEL to ${data.position!.position.creator_id}`], { target: latest.id })}>Claim {fmtFuel(data.position.position.creator_reward)} FUEL</button> : null}
           </div>
