@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { analyzeAction, claimCall, executeLpCall, fuelStorageCall, planFromPool, registerPositionCall } from "./actions.ts";
+import { analyzeAction, claimCall, closeSeasonCall, executeLpCall, fuelStorageCall, planFromPool, registerPositionCall } from "./actions.ts";
 import { GAS, TREASURY_ACCOUNT_ID, USDC_TOKEN_ID, isTestnetAccount } from "./config.ts";
 import {
   DEPOSIT_MSG, analyzeDeposit, checkDeposit, confirmInTreasury, depositCall, previewSplit, type DepositContext,
@@ -257,4 +257,11 @@ test("FUEL calls use the proven gas and exact args", () => {
   assert.deepEqual(claimCall("3").args, { position_id: "3" });
   assert.deepEqual(fuelStorageCall(DEV, "1250000000000000000000"), { receiverId: "fuel.sol2near-dev.testnet", methodName: "storage_deposit", args: { account_id: DEV, registration_only: true }, gas: 30n * 10n ** 12n, deposit: 1250000000000000000000n });
   assert.deepEqual(depositCall(1n).args.receiver_id, TREASURY_ACCOUNT_ID);
+});
+
+test("close_season: exact call; REAL C5 outcome -> season 0 SUCCESS", () => {
+  assert.deepEqual(closeSeasonCall(67), { receiverId: "fuel.sol2near-dev.testnet", methodName: "close_season", args: { season_id: 67 }, gas: 50n * 10n ** 12n, deposit: 0n });
+  const v = analyzeAction("close_season", fx("c5_close_season"), DEV);
+  assert.equal(v.ok, true);
+  assert.match(v.detail, /season 0 closed: Success \(progress 9676812 \/ 5000000, burned 0, level 1\)/);
 });

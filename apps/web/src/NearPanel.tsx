@@ -4,17 +4,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { TreasuryDeposit } from "../../../packages/shared/src/treasury.ts";
 import { webStorageStore, type TransferRecord } from "../../../packages/crosschain/src/store.ts";
-import type { FuelPosition } from "./chain.ts";
+import type { FuelPosition, Season } from "./chain.ts";
 import { formatUnits, fuel as fmtFuel, toDecimalString, usdc } from "./format.ts";
 import {
-  analyzeAction, claimCall, executeLpCall, fuelStorageCall, planLp, registerPositionCall, type ActionKind,
+  analyzeAction, claimCall, closeSeasonCall, executeLpCall, fuelStorageCall, planLp, registerPositionCall, type ActionKind,
 } from "./near/actions.ts";
 import { FUEL_ACCOUNT_ID, MIN_NEAR_FOR_GAS, TREASURY_ACCOUNT_ID, USDC_TOKEN_ID, explorerTx } from "./near/config.ts";
 import {
   analyzeDeposit, checkDeposit, confirmInTreasury, loadDepositContext, type DepositContext, type TxCall,
 } from "./near/deposit.ts";
 import { applyWalletReturn, isOpen, parseWalletReturn, txHistory, type TxKind, type TxRecord } from "./near/history.ts";
-import { pipeline, type StepState } from "./near/pipeline.ts";
+import { fuelWindow, pipeline, type FuelCalendar, type StepState } from "./near/pipeline.ts";
 import { nearRpc } from "./near/rpc.ts";
 import { WalletError, isRejection } from "./near/errors.ts";
 import { isTestnetAccount } from "./near/config.ts";
@@ -46,6 +46,8 @@ interface AccountData {
   fuelRegistered: boolean;
   fuelStorageMin: string;
   inFlight: unknown;
+  calendar: FuelCalendar;
+  positionSeason: Season | null;
 }
 
 export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
@@ -64,6 +66,9 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
   const [walletError, setWalletError] = useState<string | null>(null);
   const [fatal, setFatal] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  // 1 s clock for FUEL deadlines (registration window, season close).
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => { const t = window.setInterval(() => setNowMs(Date.now()), 1000); return () => clearInterval(t); }, []);
   const pollRef = useRef<number | null>(null);
 
   // Wallet: restore the session, apply a browser-wallet redirect result, follow account changes.
@@ -109,8 +114,12 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
         rpc.view<unknown>(TREASURY_ACCOUNT_ID, "get_in_flight"),
       ]);
       const latest = deposits[deposits.length - 1];
-      const position = latest ? await rpc.view<FuelPosition | null>(FUEL_ACCOUNT_ID, "get_position", { position_id: latest.id }) : null;
-      setData({ ctx, deposits, position, fuelRegistered: fuelReg !== null, fuelStorageMin: bounds.min, inFlight });
+      const [position, reactor] = await Promise.all([
+        latest ? rpc.view<FuelPosition | null>(FUEL_ACCOUNT_ID, "get_position", { position_id: latest.id }) : Promise.resolve(null),
+        rpc.view<{ config: FuelCalendar }>(FUEL_ACCOUNT_ID, "get_reactor"),
+      ]);
+      const positionSeason = position ? await rpc.view<Season | null>(FUEL_ACCOUNT_ID, "get_season", { season_id: position.position.season_id }) : null;
+      setData({ ctx, deposits, position, fuelRegistered: fuelReg !== null, fuelStorageMin: bounds.min, inFlight, calendar: reactor.config, positionSeason });
       setError(null);
     } catch (e) {
       setError(`Could not read NEAR testnet: ${(e as Error).message}. Nothing was sent.`);
@@ -163,11 +172,29 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
   }, [accountId]);
 
   const latest = data?.deposits[data.deposits.length - 1] ?? null;
+
+  // A register request still waiting for a signature after its window closed can no longer be admitted.
+  useEffect(() => {
+    if (!accountId || !data) return;
+    for (const r of history.list(accountId)) {
+      if (r.kind !== "register_position" || r.status !== "awaiting_signature" || !r.target) continue;
+      const d = data.deposits.find((x) => x.id === r.target);
+      if (!d?.lp_confirmed_at) continue;
+      const w = fuelWindow(d.lp_confirmed_at, data.calendar);
+      if (BigInt(nowMs) * 1_000_000n > w.registerDeadline + 60_000_000_000n) {
+        history.update(r.id, { status: "expired", detail: `No signature reached the chain before the season ${w.seasonId} registration deadline. If you did sign, check your wallet history: FUEL would have rejected it (ERR_REGISTRATION_WINDOW_CLOSED).` });
+        setRecords(history.list(accountId));
+      }
+    }
+  }, [accountId, data, Math.floor(nowMs / 15000)]);
   const open = records.filter(isOpen);
+  const nowNs = BigInt(nowMs) * 1_000_000n;
   const steps = pipeline({
     accountId, transfer, tidepoolReachable, usdcBalance: data?.ctx.usdcBalance ?? null, deposit: latest,
     openTx: open, treasuryBusy: !!data?.inFlight, position: data?.position ?? null,
+    calendar: data?.calendar ?? null, positionSeason: data?.positionSeason ?? null, nowNs,
   });
+  const lpWindow = latest?.lp_confirmed_at && data ? fuelWindow(latest.lp_confirmed_at, data.calendar) : null;
   const check = data ? checkDeposit(amount, data.ctx) : null;
   const dashboardDeposit = records.find((r) => r.kind === "deposit" && r.status === "confirmed");
 
@@ -298,17 +325,28 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
         const canLp = steps[3]!.state === "READY" || steps[3]!.state === "FAILED";
         const canRegister = steps[4]!.state === "READY" && !data?.position;
         const canClaim = data?.position?.reward_status === "Claimable";
+        const canClose = steps[4]!.state === "READY" && data?.position?.reward_status === "Pending" && !!data.positionSeason;
+        const secsLeft = lpWindow ? Math.max(0, Number((lpWindow.registerDeadline - nowNs) / 1_000_000_000n)) : null;
         return (
         <div className="deposit">
           <h3>Deposit #{latest.id}: next actions</h3>
-          {!canLp && !canRegister && !canClaim && (
+          {!canLp && !canRegister && !canClaim && !canClose && (
             <p className="muted">Nothing to sign for this deposit right now: {steps[4]!.state === "CONFIRMED" ? "LP confirmed and FUEL reward claimed." : steps[4]!.detail}</p>
           )}
           <div className="watch">
             {canLp
               ? <button disabled={busy} onClick={() => prepareLp(latest)}>Deploy liquidity (execute_lp)</button> : null}
             {canRegister
-              ? <button disabled={busy} onClick={() => prepare("register_position", registerPositionCall(latest.id), [`FUEL.register_position(${latest.id}) on ${FUEL_ACCOUNT_ID}, 100 Tgas`, "Permissionless: FUEL reads the Treasury record and Ref shares; rewards go to the recorded creator."], { target: latest.id })}>Register for FUEL</button> : null}
+              ? <button disabled={busy || secsLeft === 0} onClick={() => prepare("register_position", registerPositionCall(latest.id), [
+                  `FUEL.register_position({"position_id":"${latest.id}"}) on ${FUEL_ACCOUNT_ID}, 100 Tgas, 0 NEAR attached`,
+                  "Permissionless: FUEL reads the Treasury record and Ref shares; rewards go to the recorded creator.",
+                  lpWindow ? `Deadline: approve in your wallet before ${new Date(Number(lpWindow.registerDeadline / 1_000_000n)).toISOString().slice(11, 19)} UTC (season ${lpWindow.seasonId} end + 5 min grace), or FUEL rejects it with ERR_REGISTRATION_WINDOW_CLOSED.` : "Approve quickly: the registration window is the LP confirmation season + 5 min.",
+                ], { target: latest.id })}>Register for FUEL{secsLeft !== null ? ` · ${Math.floor(secsLeft / 60)}m ${String(secsLeft % 60).padStart(2, "0")}s left` : ""}</button> : null}
+            {canClose
+              ? <button disabled={busy} onClick={() => prepare("close_season", closeSeasonCall(data!.positionSeason!.id), [
+                  `FUEL.close_season({"season_id":${data!.positionSeason!.id}}) on ${FUEL_ACCOUNT_ID}, 50 Tgas, 0 NEAR attached (anyone may call it)`,
+                  `Progress ${usdc(data!.positionSeason!.progress_usdc)} / ${usdc(data!.positionSeason!.target_usdc)} USDC → ${BigInt(data!.positionSeason!.progress_usdc) >= BigInt(data!.positionSeason!.target_usdc) ? "SUCCESS: level +1, rewards become claimable after the LP lock" : "FAILED: level −1, rewards forfeited, up to 10 FUEL burned from the burn reserve"}`,
+                ], { target: `S${data!.positionSeason!.id}` })}>Close season {data!.positionSeason!.id}</button> : null}
             {data?.position?.reward_status === "Claimable" && data.fuelRegistered
               ? <button disabled={busy} onClick={() => prepare("claim", claimCall(latest.id), [`FUEL.claim(${latest.id}), 50 Tgas`, `Pays ${fmtFuel(data.position!.position.creator_reward)} FUEL to ${data.position!.position.creator_id}`], { target: latest.id })}>Claim {fmtFuel(data.position.position.creator_reward)} FUEL</button> : null}
           </div>

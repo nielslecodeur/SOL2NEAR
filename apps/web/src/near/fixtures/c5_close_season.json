@@ -1,0 +1,44 @@
+{
+ "status": {
+  "SuccessValue": "eyJpZCI6MCwic3RhcnQiOiIxNzk0NDY5NzQyNTc4OTMyMTUzIiwiZW5kIjoiMTc5NDQ3MTU0MjU3ODkzMjE1MyIsInRhcmdldF91c2RjIjoiNTAwMDAwMCIsInByb2dyZXNzX3VzZGMiOiI5Njc2ODEyIiwicG9zaXRpb25zIjoxLCJjb21taXR0ZWRfY3JlYXRvciI6Ijc3NDE0NDk2MDAwMDAwMDAwMDAiLCJjb21taXR0ZWRfY29tbXVuaXR5IjoiMTkzNTM2MjQwMDAwMDAwMDAwMCIsInN0YXR1cyI6IlN1Y2Nlc3MiLCJidXJuZWQiOiIwIiwibGV2ZWxfYWZ0ZXIiOjEsImNsb3NlZF9hdCI6IjE3OTQ1NzYyMDE3MzYwNDUyMzYifQ=="
+ },
+ "transaction": {
+  "hash": "DUuoq2XZsmVbwp8zjzhW3gHRqjiDwokwbTMSNufdhaH9",
+  "signer_id": "sol2near-dev.testnet",
+  "receiver_id": "fuel.sol2near-dev.testnet"
+ },
+ "transaction_outcome": {
+  "id": "DUuoq2XZsmVbwp8zjzhW3gHRqjiDwokwbTMSNufdhaH9",
+  "outcome": {
+   "status": {
+    "SuccessReceiptId": "3hDc97b3hrWf3iM9wtNHT1PJkXDbsuPFHmjyJsopSYZu"
+   },
+   "logs": [],
+   "executor_id": "sol2near-dev.testnet"
+  }
+ },
+ "receipts_outcome": [
+  {
+   "id": "3hDc97b3hrWf3iM9wtNHT1PJkXDbsuPFHmjyJsopSYZu",
+   "outcome": {
+    "executor_id": "fuel.sol2near-dev.testnet",
+    "logs": [
+     "EVENT_JSON:{\"standard\":\"sol2near\",\"version\":\"1.0.0\",\"event\":\"season_closed\",\"data\":[{\"season_id\":0,\"status\":\"Success\",\"progress_usdc\":\"9676812\",\"target_usdc\":\"5000000\",\"burned\":\"0\",\"level\":1}]}"
+    ],
+    "status": {
+     "SuccessValue": "eyJpZCI6MCwic3RhcnQiOiIxNzk0NDY5NzQyNTc4OTMyMTUzIiwiZW5kIjoiMTc5NDQ3MTU0MjU3ODkzMjE1MyIsInRhcmdldF91c2RjIjoiNTAwMDAwMCIsInByb2dyZXNzX3VzZGMiOiI5Njc2ODEyIiwicG9zaXRpb25zIjoxLCJjb21taXR0ZWRfY3JlYXRvciI6Ijc3NDE0NDk2MDAwMDAwMDAwMDAiLCJjb21taXR0ZWRfY29tbXVuaXR5IjoiMTkzNTM2MjQwMDAwMDAwMDAwMCIsInN0YXR1cyI6IlN1Y2Nlc3MiLCJidXJuZWQiOiIwIiwibGV2ZWxfYWZ0ZXIiOjEsImNsb3NlZF9hdCI6IjE3OTQ1NzYyMDE3MzYwNDUyMzYifQ=="
+    }
+   }
+  },
+  {
+   "id": "HjoPRxqB9NsKP9Bcd9rj6YwftrjWPpzzfz87UaqzR2r5",
+   "outcome": {
+    "executor_id": "sol2near-dev.testnet",
+    "logs": [],
+    "status": {
+     "SuccessValue": ""
+    }
+   }
+  }
+ ]
+}

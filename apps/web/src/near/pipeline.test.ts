@@ -83,3 +83,44 @@ test("FUEL: register READY, Pending is not earned, Claimable READY, Claimed CONF
   assert.equal(states({ deposit: lpDone, position: pos("Claimed") }).FUEL, "CONFIRMED");
   assert.equal(states({ deposit: lpDone, position: pos("Forfeited") }).FUEL, "FAILED");
 });
+
+// ---- FUEL window (same rules as contracts/fuel: season_of, register deadline, close_season settle) ----
+import { fuelWindow } from "./pipeline.ts";
+
+// Real calendar of fuel.sol2near-dev.testnet (get_reactor().config, read 2026-11-13)
+const CAL = { genesis_ns: "1794469742578932153", season_duration_ns: "1800000000000", registration_grace_ns: "300000000000" };
+const S = 1_000_000_000n;
+
+test("fuelWindow: deposit #1 (LP confirmed 17:36:53 UTC) is in season 67, deadline 17:54:02, close from 17:55:02", () => {
+  const w = fuelWindow("1794591413804000000", CAL); // 2026-11-13T17:36:53.804Z
+  assert.equal(w.seasonId, 67);
+  assert.equal(new Date(Number(w.seasonEnd / 1_000_000n)).toISOString(), "2026-11-13T17:49:02.578Z");
+  assert.equal(new Date(Number(w.registerDeadline / 1_000_000n)).toISOString(), "2026-11-13T17:54:02.578Z");
+  assert.equal(new Date(Number(w.closeFrom / 1_000_000n)).toISOString(), "2026-11-13T17:55:02.578Z");
+  assert.equal(fuelWindow("1794469795010314429", CAL).seasonId, 0); // G2 C2 position: season 0 (real)
+});
+
+test("register: READY with a countdown inside the window, FAILED once it closed (no guess)", () => {
+  const confirmed = dep({ status: "LpConfirmed", lp_verified: true, usdc_in_lp: "904526", pool_id: 2951, lp_confirmed_at: "1794591413804000000" });
+  const w = fuelWindow(confirmed.lp_confirmed_at!, CAL);
+  const before = pipeline({ ...base, deposit: confirmed, calendar: CAL, nowNs: w.registerDeadline - 125n * S }).find((s) => s.name === "FUEL")!;
+  assert.equal(before.state, "READY");
+  assert.match(before.detail, /Register before 17:54:02 UTC \(2m 5s left\).*season 67/);
+  const after = pipeline({ ...base, deposit: confirmed, calendar: CAL, nowNs: w.registerDeadline }).find((s) => s.name === "FUEL")!;
+  assert.equal(after.state, "FAILED");
+  assert.match(after.detail, /ERR_REGISTRATION_WINDOW_CLOSED/);
+});
+
+test("close season: PENDING until end + grace + 60 s, then READY with the outcome it will settle", () => {
+  const confirmed = dep({ status: "LpConfirmed", lp_verified: true, usdc_in_lp: "5590822", pool_id: 2951, lp_confirmed_at: "1794591413804000000" });
+  const w = fuelWindow(confirmed.lp_confirmed_at!, CAL);
+  const position = { reward_status: "Pending", position: { season_id: 67, confirmed_at: confirmed.lp_confirmed_at } } as unknown as FuelPosition;
+  const season = { id: 67, status: "Open", progress_usdc: "5590822", target_usdc: "5000000" } as never;
+  const at = (nowNs: bigint) => pipeline({ ...base, deposit: confirmed, position, positionSeason: season, calendar: CAL, nowNs }).find((s) => s.name === "FUEL")!;
+  assert.equal(at(w.closeFrom - S).state, "PENDING");
+  assert.match(at(w.closeFrom - S).detail, /close possible from 17:55:02 UTC/);
+  assert.equal(at(w.closeFrom).state, "READY");
+  assert.match(at(w.closeFrom).detail, /settle it as SUCCESS/);
+  const failing = pipeline({ ...base, deposit: confirmed, position, positionSeason: { ...(season as object), progress_usdc: "904526" } as never, calendar: CAL, nowNs: w.closeFrom }).find((s) => s.name === "FUEL")!;
+  assert.match(failing.detail, /settle it as FAILED/);
+});

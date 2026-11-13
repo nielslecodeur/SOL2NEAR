@@ -40,13 +40,17 @@ export const registerPositionCall = (positionId: string): TxCall => ({
 export const claimCall = (positionId: string): TxCall => ({
   receiverId: FUEL_ACCOUNT_ID, methodName: "claim", args: { position_id: positionId }, gas: GAS.claim, deposit: 0n,
 });
+/** Permissionless; allowed from season end + grace + 60 s (contracts/fuel). 50 Tgas as in G2 C5. */
+export const closeSeasonCall = (seasonId: number): TxCall => ({
+  receiverId: FUEL_ACCOUNT_ID, methodName: "close_season", args: { season_id: seasonId }, gas: GAS.claim, deposit: 0n,
+});
 /** NEP-145 registration on FUEL, paying exactly storage_balance_bounds.min (read from the contract). */
 export const fuelStorageCall = (accountId: string, minYocto: string): TxCall => ({
   receiverId: FUEL_ACCOUNT_ID, methodName: "storage_deposit", args: { account_id: accountId, registration_only: true },
   gas: GAS.storage_deposit, deposit: BigInt(minYocto),
 });
 
-export type ActionKind = "execute_lp" | "register_position" | "claim" | "fuel_storage";
+export type ActionKind = "execute_lp" | "register_position" | "claim" | "fuel_storage" | "close_season";
 export type ActionVerdict = { ok: true; detail: string } | { ok: false; detail: string };
 
 /** Success is decided by the event the contract emits, not by the wallet having signed. */
@@ -69,6 +73,12 @@ export function analyzeAction(kind: ActionKind, o: TxOutcome, sender: string): A
     case "claim": {
       const c = eventsFrom(p, FUEL_ACCOUNT_ID, "reward_claimed");
       return c.length ? { ok: true, detail: `claimed ${String(c[0]!.amount)} (FUEL atomic, 18 decimals)` } : { ok: false, detail: firstFailure ?? "no reward_claimed event" };
+    }
+    case "close_season": {
+      const c = eventsFrom(p, FUEL_ACCOUNT_ID, "season_closed");
+      return c.length
+        ? { ok: true, detail: `season ${String(c[0]!.season_id)} closed: ${String(c[0]!.status)} (progress ${String(c[0]!.progress_usdc)} / ${String(c[0]!.target_usdc)}, burned ${String(c[0]!.burned)}, level ${String(c[0]!.level)})` }
+        : { ok: false, detail: firstFailure ?? "no season_closed event" };
     }
     case "fuel_storage":
       return p.ok && !firstFailure ? { ok: true, detail: "registered on FUEL" } : { ok: false, detail: firstFailure ?? "storage_deposit failed" };

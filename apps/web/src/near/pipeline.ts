@@ -4,10 +4,29 @@
  */
 import type { DepositStatus, TreasuryDeposit } from "../../../../packages/shared/src/treasury.ts";
 import type { TransferRecord } from "../../../../packages/crosschain/src/store.ts";
-import type { FuelPosition } from "../chain.ts";
+import type { FuelPosition, Season } from "../chain.ts";
 import type { TxRecord } from "./history.ts";
 
 export type StepState = "NOT_STARTED" | "READY" | "PENDING" | "CONFIRMED" | "FAILED" | "BLOCKED";
+
+/** FUEL calendar fields of `get_reactor().config` (contracts/fuel). */
+export interface FuelCalendar { genesis_ns: string; season_duration_ns: string; registration_grace_ns: string }
+/** contracts/fuel SETTLE_NS: close_season(k) is allowed from end_k + grace + 60 s. */
+export const SETTLE_NS = 60_000_000_000n;
+
+/**
+ * Same rules as contracts/fuel: a position belongs to the season containing its LP confirmation time;
+ * register_position must be requested before end + grace; close_season is allowed from end + grace + SETTLE.
+ */
+export function fuelWindow(lpConfirmedAtNs: string | bigint, cal: FuelCalendar) {
+  const g = BigInt(cal.genesis_ns), d = BigInt(cal.season_duration_ns), grace = BigInt(cal.registration_grace_ns);
+  const id = (BigInt(lpConfirmedAtNs) - g) / d;
+  const end = g + (id + 1n) * d;
+  return { seasonId: Number(id), seasonEnd: end, registerDeadline: end + grace, closeFrom: end + grace + SETTLE_NS };
+}
+
+const hhmm = (ns: bigint) => new Date(Number(ns / 1_000_000n)).toISOString().slice(11, 19) + " UTC";
+const left = (ns: bigint) => { const s = Number(ns / 1_000_000_000n); return s > 0 ? `${Math.floor(s / 60)}m ${s % 60}s left` : "expired"; };
 export interface Step { name: "Bridge" | "Receive" | "Deposit" | "Liquidity" | "FUEL"; state: StepState; detail: string }
 
 export interface PipelineInput {
@@ -23,6 +42,11 @@ export interface PipelineInput {
   /** Another creator's LP job is running in the Treasury (single job at a time). */
   treasuryBusy: boolean;
   position: FuelPosition | null;
+  /** FUEL calendar (from get_reactor) and the position's season (from get_season), when known. */
+  calendar?: FuelCalendar | null;
+  positionSeason?: Season | null;
+  /** Current time in ns (client clock). */
+  nowNs?: bigint;
 }
 
 const statusName = (s: DepositStatus) => (typeof s === "string" ? s : Object.keys(s)[0]!);
@@ -68,10 +92,24 @@ export function pipeline(i: PipelineInput): Step[] {
   let fuel: Step;
   const p = i.position;
   if (liquidity.state !== "CONFIRMED") fuel = { name: "FUEL", state: "NOT_STARTED", detail: "Needs confirmed LP." };
-  else if (open("register_position") || open("claim")) fuel = { name: "FUEL", state: "PENDING", detail: "FUEL transaction awaiting signature or verification." };
-  else if (!p) fuel = { name: "FUEL", state: d!.lp_verified ? "READY" : "BLOCKED", detail: d!.lp_verified ? "Register now (Proof of Liquidity): it only counts if registered before the season of its LP confirmation ends (+5 min grace), else FUEL rejects it (ERR_SEASON_CLOSED)." : "LP not verified: FUEL would reject it." };
+  else if (open("register_position") || open("claim") || open("close_season")) fuel = { name: "FUEL", state: "PENDING", detail: "FUEL transaction awaiting signature or verification." };
+  else if (!p) {
+    const w = i.calendar && d!.lp_confirmed_at ? fuelWindow(d!.lp_confirmed_at, i.calendar) : null;
+    const now = i.nowNs ?? BigInt(Date.now()) * 1_000_000n;
+    if (!d!.lp_verified) fuel = { name: "FUEL", state: "BLOCKED", detail: "LP not verified: FUEL would reject it." };
+    else if (w && now >= w.registerDeadline)
+      fuel = { name: "FUEL", state: "FAILED", detail: `Registration window closed: season ${w.seasonId} ended at ${hhmm(w.seasonEnd)} (+5 min grace). This deposit can no longer enter FUEL (ERR_REGISTRATION_WINDOW_CLOSED); its LP stays held by the Treasury.` };
+    else fuel = { name: "FUEL", state: "READY", detail: w ? `Register before ${hhmm(w.registerDeadline)} (${left(w.registerDeadline - now)}): the position counts only in season ${w.seasonId}, the season of its LP confirmation.` : "Register now (Proof of Liquidity): it counts only if registered before the season of its LP confirmation ends (+5 min grace)." };
+  }
   else switch (p.reward_status) {
-    case "Pending": fuel = { name: "FUEL", state: "PENDING", detail: `Admitted in season ${p.position.season_id}; reward not earned until the season closes with SUCCESS.` }; break;
+    case "Pending": {
+      const s = i.positionSeason, now = i.nowNs ?? BigInt(Date.now()) * 1_000_000n;
+      const w = i.calendar ? fuelWindow(p.position.confirmed_at, i.calendar) : null;
+      if (s?.status === "Open" && w && now >= w.closeFrom)
+        fuel = { name: "FUEL", state: "READY", detail: `Season ${s.id} has ended (progress ${usdc(s.progress_usdc)} / ${usdc(s.target_usdc)} USDC): close it (anyone can) to settle it as ${BigInt(s.progress_usdc) >= BigInt(s.target_usdc) ? "SUCCESS" : "FAILED"}.` };
+      else fuel = { name: "FUEL", state: "PENDING", detail: `Admitted in season ${p.position.season_id}${s ? ` (progress ${usdc(s.progress_usdc)} / ${usdc(s.target_usdc)} USDC)` : ""}; reward not earned until the season closes with SUCCESS${w ? `; close possible from ${hhmm(w.closeFrom)}` : ""}.` };
+      break;
+    }
     case "Locked": fuel = { name: "FUEL", state: "PENDING", detail: "Season succeeded; LP lock still running." }; break;
     case "Claimable": fuel = { name: "FUEL", state: "READY", detail: "Reward claimable." }; break;
     case "Claimed": fuel = { name: "FUEL", state: "CONFIRMED", detail: "Reward claimed." }; break;

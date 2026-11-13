@@ -13,7 +13,8 @@ export type TxRecordStatus =
   | "refunded" //           deposit refused or refunded by the token
   | "failed" //             final outcome is a failure
   | "rejected" //           user rejected in the wallet: nothing was sent
-  | "dismissed"; //         user said they checked it themselves
+  | "dismissed" //          user said they checked it themselves
+  | "expired"; //           still waiting for a signature after its on-chain deadline (e.g. FUEL registration window)
 
 export interface TxRecord {
   id: string;
