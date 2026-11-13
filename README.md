@@ -70,6 +70,7 @@ Full log with gas, costs and read-only checks: [`docs/G2_EXECUTION.md`](docs/G2_
 | C6 | `claim(0)` → 7.7414496 FUEL to the creator | [6g13fiwv…hXxu](https://testnet.nearblocks.io/txns/6g13fiwvEbSoHhYLXGkDcN9tEsPLG2LXic88bmP3hXxu) |
 | C7 | second `claim(0)` → rejected `ERR_ALREADY_CLAIMED` (expected failure) | [J8UEKyZy…AoWHi](https://testnet.nearblocks.io/txns/J8UEKyZyyYpHrzW8HTJiJ1tqtq23GdkX2VA8HdYAoWHi) |
 | G6-D | **from the dashboard**: `lowarena9362.testnet` (Meteor wallet) deposits 2 USDC → deposit #1, 1.8 / 0.16 / 0.04, verified by event + `get_deposit` (`docs/G6_LIVE_WALLET_E2E.md`) | [FaBKjLRU…haHV](https://testnet.nearblocks.io/txns/FaBKjLRUuYMgH4SgVgurTyUinDPvPvdH5Rxc69X1haHV) |
+| G6-LP | **from the dashboard**: `execute_lp(1)` signed in Meteor, plan from the live pool; 0.904526 USDC in LP, 0.0153 shares, `lp_verified`, Treasury shares = Ref shares | [CniqxoxZ…bRdN](https://testnet.nearblocks.io/txns/CniqxoxZ5qzJBLZ9RCwJ9nH4evbNwaGV6Y1nE4aDbRdN) |
 
 Pool 2951 is shallow (≈ 100 USD of test liquidity), so the zap price is worse than the Tidepool quote. This is a demo-pool effect. The Solana Devnet → NEAR leg via Tidepool is still quote-only: the client exists (`packages/crosschain`) but no live transfer has run yet.
 
