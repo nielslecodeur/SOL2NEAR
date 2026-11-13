@@ -11,7 +11,8 @@ export function formatUnits(atomic: string | bigint, decimals: number, maxFracti
 }
 
 export const usdc = (a: string | bigint) => formatUnits(a, 6, 2);
-export const fuel = (a: string | bigint) => formatUnits(a, 18, 2);
+/** Up to 7 decimals: rewards are 1 FUEL per USDC (6 decimals) split 80/20, e.g. 4.4688424 — never shown rounded. */
+export const fuel = (a: string | bigint) => formatUnits(a, 18, 7);
 export const wnear = (a: string | bigint) => formatUnits(a, 24, 4);
 
 /** Integer percentage (0-100) of part/whole, for progress bars only. */

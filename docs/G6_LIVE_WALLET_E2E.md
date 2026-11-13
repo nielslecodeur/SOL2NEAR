@@ -1,6 +1,6 @@
 # G6 — Live NEAR wallet, first Treasury deposit from the dashboard
 
-Date: 2026-11-13. Solo project. **Status: scenario 1 (deposit #1): deposit + LP PASS, registration rejected (window expired). Scenario 2 (deposit #2, 12 USDC): deposit, LP, registration, FUEL storage PASS; close_season + claim pending (allowed from 19:25:02 UTC).**
+Date: 2026-11-13. Solo project. **Status: G6 COMPLETE. The full path A (wallet → Treasury → Ref LP → FUEL season SUCCESS → claim) was signed from the dashboard with a real wallet and verified on-chain (deposit #2). Scenario 1 (deposit #1) also proved deposit + LP, and its registration was correctly rejected after the window.**
 
 ## 1. Environment
 
@@ -32,6 +32,8 @@ Date: 2026-11-13. Solo project. **Status: scenario 1 (deposit #1): deposit + LP 
 | **E1b** | **`execute_lp(2)`** | **PASS** | tx [`CundGCKWCSnC14tTRkaJ8EiRzDRttQvhQ3SjFgfTpHyD`](https://testnet.nearblocks.io/txns/CundGCKWCSnC14tTRkaJ8EiRzDRttQvhQ3SjFgfTpHyD): `LpConfirmed`, verified, swapped 5213946 + in LP 5586053 + dust 1 = 10800000 = lp_budget; 87827896964884103917701 shares; Treasury recorded = Ref `get_pool_shares` = 268750243691052670214318; LP confirmed at 19:08:25 UTC, i.e. **season 70** (registration deadline 19:24:02) |
 | **E3b** | **`register_position(2)`** | **PASS** | tx [`SrFHSmHCx41j2ytekUvZhV5sX4AHkSsQCrBNLZbsghM`](https://testnet.nearblocks.io/txns/SrFHSmHCx41j2ytekUvZhV5sX4AHkSsQCrBNLZbsghM): `position_admitted` season 70, usdc_in_lp 5586053, committed 4.4688424 FUEL creator / 1.1172106 community; registered at 19:10:36 UTC (the dashboard countdown showed 14m left); season 70 progress **5586053 / 5000000**, 1 position, status Open |
 | **E2b** | **FUEL `storage_deposit`** | **PASS** | tx [`DntEzzYDmLsznGpMEyDcW9Q872Y7azKT6NMqzv3GPQFg`](https://testnet.nearblocks.io/txns/DntEzzYDmLsznGpMEyDcW9Q872Y7azKT6NMqzv3GPQFg): `storage_balance_of(lowarena9362.testnet)` = 0.00125 NEAR |
+| **E4a** | **`close_season(70)`** | **PASS** | tx [`ELiyFHpWnJSMrQamjP1cxYZsRXnUNBg5t32r1nMjAy3s`](https://testnet.nearblocks.io/txns/ELiyFHpWnJSMrQamjP1cxYZsRXnUNBg5t32r1nMjAy3s), included 19:26:49 UTC (allowed from 19:25:02): `season_closed` **Success**, progress 5586053 / 5000000, **burned 0**, reactor **level 1 → 2**; position #2 → `Claimable` |
+| **E4b** | **`claim(2)`** | **PASS** | tx [`8CRvXVJgk7sEiapJZSYiiFhhMRANPxZL9rGmAsFsA7F8`](https://testnet.nearblocks.io/txns/8CRvXVJgk7sEiapJZSYiiFhhMRANPxZL9rGmAsFsA7F8), included 19:29:53 UTC: FUEL `ft_transfer` fuel → lowarena9362.testnet **4468842400000000000** (4.4688424 FUEL, memo "FUEL proof-of-liquidity reward") + `reward_claimed`; `get_position(2)` `Claimed`; FUEL balance 0 → **4.4688424**. The user reported **no Meteor prompt** for this call. It was signed with the same Full Access key as every other call (`ed25519:3fUdZWCk…1YeUk`, the only key on the account); 11 s after the request. Check Meteor's auto-approve settings |
 
 ### E1 — on-chain verification of `execute_lp(1)` (independent RPC)
 
@@ -117,9 +119,27 @@ The positions must be confirmed and registered within one 30-min season (+5 min 
   - a *Close season* action was added.
 - **Dashboard dev server**: it was stopped at the end of the session by Claude Code because the machine was low on memory (not a dashboard failure). Restart it with `pnpm --filter @sol2near/web dev`.
 
-## 8. Remaining
+## 8. Final state (2026-11-13 ~19:33 UTC, read-only)
+
+Dashboard (`docs/g6/full-path-claimed-dashboard.jpg`):
+- Deposit / Liquidity / FUEL are **CONFIRMED**: "LP confirmed and FUEL reward claimed".
+- `lowarena9362.testnet` holds 86 USDC, 4.4688424 FUEL and 4.93583 NEAR; storage USDC ✓ · FUEL ✓.
+- Every transaction is listed with its explorer link and its verified detail.
+
+Real signed transactions from the dashboard in G6: **9**.
+- Successes:
+  - deposit 2 USDC;
+  - execute_lp(1);
+  - deposit 12 USDC;
+  - execute_lp(2);
+  - register_position(2);
+  - FUEL storage;
+  - close_season(70);
+  - claim(2).
+- One correct on-chain rejection: register_position(1), refused because its window had closed.
+
+## 9. Remaining
 
 - Disconnect test.
-- A FUEL demonstration from the dashboard needs a **new** deposit: deposit → `execute_lp` → `register_position` must all fall within one 30-min season (+5 min grace). For a SUCCESS season, aim for ≥ 5 USDC in LP (≈ 12 USDC deposit, §5); then FUEL storage + claim after the season ends and the LP lock expires.
 - The dashboard record `register_position #1` shows `failed: rejected: ERR_REGISTRATION_WINDOW_CLOSED` (verified on-chain).
 - MyNearWallet redirect flow: only Meteor was used live.
