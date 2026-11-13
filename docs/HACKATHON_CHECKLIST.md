@@ -38,7 +38,7 @@ Légende : ☐ à faire · ☑ fait (avec preuve) · ⚠ point d'attention
 ## 3. Dépôt GitHub, README, LICENSE
 
 - [x] Dépôt **public** avant 2026-11-14T23:59Z, et public pendant tout le jugement (Q-014). Vérifié le 2026-11-11 : `github.com/nielslecodeur/SOL2NEAR` est `public` (API GitHub).
-- [ ] Le dépôt public contient le code final : rien n'est poussé depuis le commit initial, chaque push passe par l'accord du lead.
+- [x] Le dépôt public contient le code final (`main` à jour le 13/11) ; chaque push passe par l'accord du lead.
 - [x] Fichier `LICENSE` : MIT (« Any. MIT is fine. »).
 - [ ] README écrit pour une IA **et** un humain (Q-017 : Claude Code et Codex font le screening, avec reproductibilité et vérification des fonctionnalités). Il doit contenir :
   - [ ] ce qu'est le produit, le problème, comment l'essayer ;
@@ -68,16 +68,16 @@ Règle : **aucune fonctionnalité n'est annoncée sans preuve vérifiable**. Un 
 |---|---|---|
 | Logique Treasury (90/8/2, états, garde-fous) | `cargo test` → `34 passed` | ☑ unitaire |
 | Build officiel | `cargo near build` + SHA-256 | ☑ `35e9a79a…8168` |
-| Route Solana Devnet → NEAR testnet | tx Solana + statut Tidepool `SUCCESS` + tx NEAR | ☐ (dry quote seulement) |
-| Dépôt NEP-141 dans Treasury | tx `ft_transfer_call` + `get_deposit` | ☐ |
-| Pool Ref créé | tx `add_simple_pool` + `get_pool` | ☐ G2 |
-| LP réelles détenues par Treasury | tx `add_liquidity` + `get_pool_shares(Treasury) > 0` | ☐ G2/G3 |
-| Proof of Liquidity | tx `verify_liquidity` + event `proof_of_liquidity` | ☐ |
+| Route Solana Devnet → NEAR testnet | tx Solana + statut Tidepool `SUCCESS` + tx NEAR | ☐ dry quote seulement (11/11) ; client `packages/crosschain` testé avec mocks ; Tidepool injoignable le 13/11 |
+| Dépôt NEP-141 dans Treasury | tx `ft_transfer_call` + `get_deposit` | ☑ C1 `AsD2o2aV…ZWzw` |
+| Pool Ref créé | tx `add_simple_pool` + `get_pool` | ☑ A8 `BXcJeRyX…7f7B`, pool 2951 |
+| LP réelles détenues par Treasury | tx `add_liquidity` + `get_pool_shares(Treasury) > 0` | ☑ C2 `4F2wXqzm…SSHA`, 165 640 253 516 145 704 019 022 parts |
+| Proof of Liquidity | tx `verify_liquidity` + event `proof_of_liquidity` | ☑ C2 (event) + C3 `8DCCtF7y…MrkA` |
 | FUEL : règles (supply, PoL, saisons, burn, claims) | `cargo test -p sol2near-fuel` → 31 passed ; walkthrough `demo_walkthrough -- --nocapture` | ☑ unitaire (VM mockée) |
 | FUEL : build | cargo-near + SHA-256 | ☑ `scripts/build-wasm.sh` |
-| FUEL : admission d'une vraie position | tx `register_position` + event `position_admitted` | ☐ (nécessite G2 + déploiements) |
-| FUEL : clôture de saison et claim | tx `close_season` + `claim` + event `reward_claimed` | ☐ |
-| Frontend | `pnpm --filter @sol2near/web build` ; les données démo portent le bandeau SIMULATED | ☑ build ; ☐ données testnet réelles |
+| FUEL : admission d'une vraie position | tx `register_position` + event `position_admitted` | ☑ C4 `CoAgrgQE…Lk6o` |
+| FUEL : clôture de saison et claim | tx `close_season` + `claim` + event `reward_claimed` | ☑ C5 `DUuoq2XZ…haH9`, C6 `6g13fiwv…hXxu`, double claim refusé C7 `J8UEKyZy…AoWHi` |
+| Frontend | `pnpm --filter @sol2near/web build` ; les données démo portent le bandeau SIMULATED | ☑ build ; ☑ données testnet réelles (vérifié dans Chrome le 13/11) ; ☐ transfert cross-chain réel |
 
 Chaque preuve va dans le README avec un lien explorer (`testnet.nearblocks.io`, `explorer.solana.com/?cluster=devnet`). Si une étape n'est pas prouvée le jour J, le README et la vidéo disent **« non démontré »**.
 
@@ -117,7 +117,7 @@ Chaque preuve va dans le README avec un lien explorer (`testnet.nearblocks.io`, 
 | `projectName` | « SOL2NEAR » (2 à 80 car.) | lead à confirmer |
 | `leadName` | — | **lead** |
 | `email` | — (2 soumissions max par e-mail) | **lead** |
-| `size` | `2 - 4` | lead à confirmer |
+| `size` | `1` (projet solo depuis le 13/11) | lead à confirmer |
 | `tracks` | `["memecoins","defi"]` | lead à confirmer |
 | `nearAddress` | compte **mainnet** de paiement, créé par l'équipe | **lead** |
 | `projectUrl` | `https://github.com/nielslecodeur/SOL2NEAR` (un dépôt ne peut être soumis qu'une fois) | lead à confirmer |
@@ -132,16 +132,16 @@ Chaque preuve va dans le README avec un lien explorer (`testnet.nearblocks.io`, 
 
 ## 9. Contrôle final du règlement (à faire le 14/11, avant soumission)
 
-1. [ ] **Relire la version live** de https://nearhackathon.com/HACKATHON.md et la comparer à cette checklist (dates, champs, Q-xxx). Mettre à jour ce fichier si quelque chose a changé.
-2. [ ] Vérifier la fenêtre (`now < 2026-11-14T23:59:00Z`) et que le dépôt est public : `GET https://api.github.com/repos/nielslecodeur/SOL2NEAR` → `"visibility":"public"`.
-3. [ ] Faire le scan des secrets et données personnelles sur ce qui sera poussé :
+1. [x] **Relire la version live** (13/11 ~14:00 UTC, SHA-256 `6dd0c1ff…868d` : dates, champs, tracks et statuts identiques ; Q-001 autorise le code depuis l'annonce du 19/10 ; Q-015 : 2 projets max par personne, chacun cité dans l'autre README) de https://nearhackathon.com/HACKATHON.md et la comparer à cette checklist (dates, champs, Q-xxx). Mettre à jour ce fichier si quelque chose a changé.
+2. [x] (13/11 13:59 UTC : dans la fenêtre, dépôt `public`) Vérifier la fenêtre (`now < 2026-11-14T23:59:00Z`) et que le dépôt est public : `GET https://api.github.com/repos/nielslecodeur/SOL2NEAR` → `"visibility":"public"`.
+3. [x] (13/11 : seuls des faux positifs, le texte des règles ; aucune donnée perso) Faire le scan des secrets et données personnelles sur ce qui sera poussé :
    `git diff origin/main..HEAD | grep -iE 'ed25519:[1-9A-HJ-NP-Za-km-z]{80,}|secret_key|private_key|mnemonic'` → doit être vide ;
    `git ls-tree -r --name-only HEAD | grep -iE '\.env|credential|keypair|id\.json'` → doit être vide.
 4. [ ] Faire tourner les étapes « action → résultat » du README sur une copie propre (`git clone` → build → tests) et vérifier les sorties.
-5. [ ] Vérifier chaque lien de preuve du README (tx existantes, statut `SUCCESS`).
+5. [x] Vérifier chaque lien de preuve du README (13/11 : les 12 tx confirmées par RPC, A8–B2 via archival ; C7 échoue avec `ERR_ALREADY_CLAIMED` comme prévu).
 6. [ ] Tenir le tableau §5 à jour : rien n'est marqué ☑ sans preuve.
-7. [ ] Déclarations §4 présentes dans le README.
-8. [ ] Disclaimer Tidepool §6 présent dans le README, la vidéo et le post X.
+7. [x] Déclarations §4 présentes dans le README (bibliothèques Solana ajoutées le 13/11).
+8. [ ] Disclaimer Tidepool §6 présent dans le README (☑), la vidéo et le post X (☐).
 9. [ ] Post X publié par un humain, URL récupérée.
 10. [ ] Le lead valide le **payload exact** de soumission, puis envoi **unique**. Conserver la réponse 201, sans la commiter.
 11. [ ] Taguer `hackathon-submission` sur le commit soumis (le push du tag demande aussi un accord).

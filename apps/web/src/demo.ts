@@ -65,7 +65,7 @@ export function demoSnapshot(): Snapshot {
   };
 }
 
-/** SIMULATED crosschain adapter until packages/crosschain (teammate) lands. Never touches a network. */
+/** SIMULATED crosschain adapter for demo mode only. Never touches a network. */
 export const mockCrosschain: Pick<CrosschainClient, "watch"> = {
   async watch(depositAddress, onUpdate) {
     const steps = ["PENDING_DEPOSIT", "KNOWN_DEPOSIT_TX", "PROCESSING", "SUCCESS"] as const;

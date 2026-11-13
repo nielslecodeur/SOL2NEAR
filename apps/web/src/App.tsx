@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { BridgeResult } from "../../../packages/shared/src/crosschain.ts";
 import { explorerAccount, explorerBlock, FUEL_ACCOUNT_ID, loadTestnet, TREASURY_ACCOUNT_ID, type FuelPosition, type Season, type Snapshot } from "./chain.ts";
 import { demoSnapshot, mockCrosschain } from "./demo.ts";
+import { BridgeLive } from "./BridgeLive.tsx";
 import { bridgeTone, depositStatus, duration, fuel, pct, usdc, wnear, type Tone } from "./format.ts";
 
 type Route = { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" };
@@ -75,7 +76,7 @@ export function App() {
           <label htmlFor="acct">Creator account</label>
           <input id="acct" placeholder="you.testnet" value={account} onChange={(e) => setAccount(e.target.value)} />
           <button disabled={loading}>{loading ? "Reading…" : "Load"}</button>
-          <small>Watch mode: reads public contract state. Wallet signing is not in this build.</small>
+          <small>Watch mode: reads public contract state. The only signing is the Solana deposit, in your Phantom wallet (cross-chain card).</small>
         </form>
       )}
 
@@ -86,7 +87,7 @@ export function App() {
         </div>
       )}
 
-      {snap && route.page === "dashboard" && <Dashboard snap={snap} />}
+      {snap && route.page === "dashboard" && <Dashboard snap={snap} account={account} />}
       {snap && route.page === "vault" && <Vault snap={snap} id={route.id} />}
       {snap && route.page === "reactor" && <ReactorPage snap={snap} />}
 
@@ -98,7 +99,7 @@ export function App() {
   );
 }
 
-function Dashboard({ snap }: { snap: Snapshot }) {
+function Dashboard({ snap, account }: { snap: Snapshot; account: string }) {
   const total = snap.deposits.reduce((s, d) => s + BigInt(d.amount), 0n);
   const sum = (k: "lp_budget" | "reserve" | "community") => snap.deposits.reduce((s, d) => s + BigInt(d[k]), 0n);
   const confirmed = snap.deposits.filter((d) => d.status === "LpConfirmed");
@@ -127,7 +128,7 @@ function Dashboard({ snap }: { snap: Snapshot }) {
               ? <Badge tone="confirmed">BACKED ON REF</Badge> : <Badge tone="failed">NOT BACKED</Badge>)}
           </p>
         </div>
-        <BridgeCard demo={snap.source === "demo"} />
+        <BridgeCard demo={snap.source === "demo"} nearAccount={account} />
       </section>
       <section className="card">
         <h3>Vaults &amp; deposits</h3>
@@ -152,19 +153,19 @@ function Dashboard({ snap }: { snap: Snapshot }) {
   );
 }
 
-function BridgeCard({ demo }: { demo: boolean }) {
+function BridgeCard({ demo, nearAccount }: { demo: boolean; nearAccount: string }) {
   const [r, setR] = useState<BridgeResult | null>(null);
   return (
     <div className="card">
       <h3>Cross-chain transfer (Solana Devnet → NEAR)</h3>
       {demo ? (
         <>
-          <p className="muted">SIMULATED adapter: the real Tidepool client (packages/crosschain) is not wired into the UI yet.</p>
+          <p className="muted">SIMULATED adapter: switch to Testnet for the real Tidepool client (packages/crosschain).</p>
           <button onClick={() => mockCrosschain.watch("SIMULATED-deposit-address", setR)}>Run simulated transfer</button>
           {r && <p><Badge tone={bridgeTone(r.status)}>{r.status}</Badge> {r.amountOut && `→ ${usdc(r.amountOut)} USDC`}</p>}
         </>
       ) : (
-        <p className="muted">Not integrated yet: the Tidepool client exists in <code>packages/crosschain</code> but no live transfer has been run. No status is shown rather than an invented one.</p>
+        <BridgeLive nearAccount={nearAccount} />
       )}
     </div>
   );

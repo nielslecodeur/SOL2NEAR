@@ -54,3 +54,11 @@ export function bridgeTone(status: string): Tone {
   if (status === "FAILED") return "failed";
   return "pending";
 }
+
+/** "1.5" -> "1500000" for 6 decimals. Exact string math, rejects anything that is not a plain decimal. */
+export function parseUnits(input: string, decimals: number): string | null {
+  const m = /^(\d+)(?:\.(\d*))?$/.exec(input.trim());
+  if (!m || (m[2] ?? "").length > decimals) return null;
+  const v = BigInt(m[1]! + (m[2] ?? "").padEnd(decimals, "0"));
+  return v > 0n ? v.toString() : null;
+}

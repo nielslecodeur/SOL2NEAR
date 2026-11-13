@@ -131,5 +131,15 @@ if (POOL_ID !== null) {
   info("LP_POOL_ID not set: no SOL2NEAR pool created yet (gate G2)");
 }
 
+await check("fuel", async () => {
+  const FUEL = "fuel.sol2near-dev.testnet";
+  const supply = await view(FUEL, "ft_total_supply");
+  supply === (10n ** 24n).toString() ? pass(`${FUEL} total supply 1000000 FUEL (fixed, minted at init)`) : fail(`FUEL supply ${supply}`);
+  const s0 = await view(FUEL, "get_season", { season_id: 0 });
+  s0?.status === "Success" ? pass(`FUEL season 0 closed Success, level ${s0.level_after}, progress ${s0.progress_usdc}/${s0.target_usdc} USDC atomic`) : info(`FUEL season 0 status ${s0?.status}`);
+  const p0 = await view(FUEL, "get_position", { position_id: "0" });
+  p0?.reward_status === "Claimed" ? pass(`FUEL position 0 (Treasury LP ${p0.position.lp_shares} shares) admitted and claimed once`) : info(`FUEL position 0 ${p0?.reward_status}`);
+});
+
 console.log(failures ? `\n${failures} check(s) FAILED` : "\nall checks passed");
 process.exit(failures ? 1 : 0);

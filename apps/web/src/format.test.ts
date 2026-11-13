@@ -31,3 +31,12 @@ test("statuses never show unconfirmed LP as confirmed", () => {
   assert.equal(bridgeTone("REFUNDED"), "refunded");
   assert.equal(bridgeTone("PROCESSING"), "pending");
 });
+
+test("parseUnits converts decimal USDC to atomic without floats", async () => {
+  const { parseUnits } = await import("./format.ts");
+  assert.equal(parseUnits("1", 6), "1000000");
+  assert.equal(parseUnits("1.5", 6), "1500000");
+  assert.equal(parseUnits("0.000001", 6), "1");
+  assert.equal(parseUnits(" 20. ", 6), "20000000");
+  for (const bad of ["0", "0.0", "", "-1", "1e3", "1.0000001", "1,5", "abc"]) assert.equal(parseUnits(bad, 6), null, bad);
+});
