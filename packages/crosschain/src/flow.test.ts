@@ -211,3 +211,20 @@ test("received less than the quote's minAmountOut -> settlement_mismatch; at lea
   assert.throws(() => verifySettlement("5000000", "5987425", "987426"), (e) => failsWith("settlement_mismatch")(e));
   assert.equal(verifySettlement("5000000", "5987426", "987426"), "987426");
 });
+
+test("REAL Tidepool status (Solana devnet -> NEAR, 2026-11-13, third-party addresses redacted): U3 shape parses; refund tx goes to Solana", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { parseStatus } = await import("./status.ts");
+  const raw = JSON.parse(readFileSync(new URL("./fixtures/tidepool_status_sol_success.json", import.meta.url), "utf8"));
+  const r = parseStatus(raw, "aV6YRnofogRdnQcNmyGmhyp2H1ZzpQEWTiWLX8VRyor");
+  assert.equal(r.status, "SUCCESS");
+  assert.equal(r.amountIn, "85954580");
+  assert.equal(r.amountOut, "85731098");
+  assert.equal(r.refundedAmount, "859545"); // EXACT_OUTPUT over-deposit returned on Solana
+  // origin = the real SPL deposit to the ATA of the deposit address (U2); destination mixes NEAR settlement + Solana refund
+  assert.ok(r.solanaTxHashes[0]!.startsWith("SHgjML7x7NVV8yNN"));
+  assert.ok(r.solanaTxHashes.some((h) => h.startsWith("gpw8woFMFGcY9m4J")), "Solana refund classified as Solana");
+  assert.deepEqual(r.nearTxHashes, ["4ZGvNVVWsk8dvyZrskDu78ZPgS2MfHsdgVduXSjX9K44"]);
+  // the echoed quote is about the same deposit address (else parseStatus throws)
+  assert.throws(() => parseStatus(raw, "SomeOtherAddress1111111111111111111111111111"), /status is for deposit address/);
+});

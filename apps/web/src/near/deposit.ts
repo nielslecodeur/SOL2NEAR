@@ -139,3 +139,11 @@ export async function confirmInTreasury(rpc: NearRpc, depositId: string, sender:
   if (d.creator !== sender || d.amount !== used) return { ok: false as const, detail: `deposit #${depositId} is ${d.amount} for ${d.creator}` };
   return { ok: true as const, status: d.status };
 }
+
+/**
+ * A bridge is only useful for path B if what is GUARANTEED to arrive on NEAR (the quote's minAmountOut) can be
+ * deposited: the Treasury refunds anything below `min_deposit` (G7: 1 USDC sent from Solana yields ~0.9974).
+ */
+export function bridgeCoversTreasuryMin(minAmountOut: string, minDeposit: string): boolean {
+  return BigInt(minAmountOut) >= BigInt(minDeposit);
+}

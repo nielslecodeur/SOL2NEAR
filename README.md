@@ -33,7 +33,7 @@ The rules (split, lock, token ids, pool, FUEL supply and season parameters) are 
 | Treasury / FUEL deployed on testnet | ✅ `treasury.sol2near-dev.testnet`, `fuel.sol2near-dev.testnet` | B1 `HJTW4c6u…yUpY`, B4 `JBdFrx2j…rbBP` (see below) |
 | Ref pool + LP shares held by Treasury | ✅ pool **2951**, Treasury holds 165 640 253 516 145 704 019 022 shares | C2 `4F2wXqzm…SSHA`, C3 `verify_liquidity` ok |
 | Proof of Liquidity / FUEL admission on-chain | ✅ full cycle: admission → season close → single claim | C4–C7 (see below) |
-| Cross-chain package (Tidepool client + Solana deposit tx) | ⚠️ unit-tested with mocks (quote echo checks, Solana confirmation, NEAR receipt check, reload-safe); wired into the live dashboard; **no live transfer yet**: our network's firewall sinkholes `usetidepool.tech` | `pnpm --filter @sol2near/crosschain test` → 34 passed · `docs/crosschain/CROSSCHAIN_HANDOFF.md` |
+| Cross-chain package (Tidepool client + Solana deposit tx) — G7: U1/U2/U3 verified on a real third-party transfer, our own live bridge pending (`docs/G7_CROSSCHAIN_LIVE.md`) | ⚠️ unit-tested with mocks (quote echo checks, Solana confirmation, NEAR receipt check, reload-safe); wired into the live dashboard; **no live transfer yet**: our network's firewall sinkholes `usetidepool.tech` | `pnpm --filter @sol2near/crosschain test` → 34 passed · `docs/crosschain/CROSSCHAIN_HANDOFF.md` |
 
 A feature is only marked ✅ once a transaction hash or a reproducible command output backs it. **Unit tests use a mocked NEAR VM: they prove contract rules, not the live Ref / Tidepool integration.** Missing pieces are tracked in `docs/CHECKPOINT_A2.md`.
 

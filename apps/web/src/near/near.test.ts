@@ -276,3 +276,11 @@ test("disconnect fallback forgets only Wallet Selector keys (G6: Meteor signOut 
   assert.deepEqual(forgetSelectorSession(storage).sort(), ["near-wallet-selector:recentlySignedInWallets", "near-wallet-selector:selectedWalletId"]);
   assert.deepEqual([...m.keys()].sort(), ["meteor-wallet:something", "sol2near.near-tx", "sol2near.transfers"]);
 });
+
+test("bridge amount guard: REAL dry quotes 2026-11-13 - 1 USDC is not depositable, 2 USDC is", async () => {
+  const { bridgeCoversTreasuryMin } = await import("./deposit.ts");
+  // 1 USDC -> 997400 (min 987426), correlationId d735e82b-…; 2 USDC -> 1994800 (min 1974852), 8dd6ecf1-…
+  assert.equal(bridgeCoversTreasuryMin("987426", "1000000"), false);
+  assert.equal(bridgeCoversTreasuryMin("1974852", "1000000"), true);
+  assert.equal(bridgeCoversTreasuryMin("1000000", "1000000"), true);
+});

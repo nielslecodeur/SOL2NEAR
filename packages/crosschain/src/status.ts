@@ -12,10 +12,18 @@ const ALL: readonly BridgeStatus[] = [
 
 export const isTerminal = (s: BridgeStatus) => TERMINAL_BRIDGE_STATUSES.includes(s);
 
-const hashes = (v: unknown): string[] =>
+type TxRef = { hash: string; explorerUrl?: string };
+const refs = (v: unknown): TxRef[] =>
   Array.isArray(v)
-    ? v.map((h) => (typeof h === "string" ? h : (h as { hash?: unknown })?.hash)).filter((h): h is string => typeof h === "string")
+    ? v.map((h) => (typeof h === "string" ? { hash: h } : { hash: (h as { hash?: unknown })?.hash, explorerUrl: (h as { explorerUrl?: unknown })?.explorerUrl }))
+        .filter((h): h is TxRef => typeof h.hash === "string")
     : [];
+/**
+ * Which chain a tx ref belongs to. Observed live (2026-11-13): `destinationChainTxHashes` can also hold a
+ * Solana refund tx (explorer.solana.com). The explorer URL decides; without one, Solana signatures are
+ * 64-byte base58 (~87-88 chars) and NEAR tx hashes 32-byte base58 (~43-44 chars).
+ */
+const isSolana = (r: TxRef) => (r.explorerUrl ? /solana/i.test(r.explorerUrl) : r.hash.length > 60);
 
 const str = (v: unknown) => (typeof v === "string" ? v : undefined);
 
@@ -43,8 +51,9 @@ export function parseStatus(raw: unknown, depositAddress: string): BridgeResult 
     depositAddress,
     ...(amountIn && { amountIn }),
     ...(amountOut && { amountOut }),
-    solanaTxHashes: hashes(d.originChainTxHashes),
-    nearTxHashes: hashes(d.destinationChainTxHashes),
+    // Our only route starts on Solana, so origin refs are Solana; destination refs are split by chain.
+    solanaTxHashes: [...refs(d.originChainTxHashes), ...refs(d.destinationChainTxHashes).filter(isSolana)].map((r) => r.hash),
+    nearTxHashes: refs(d.destinationChainTxHashes).filter((r) => !isSolana(r)).map((r) => r.hash),
     ...(refundReason && { refundReason }),
     ...(refundedAmount && { refundedAmount }),
     ...(updatedAt && { updatedAt }),

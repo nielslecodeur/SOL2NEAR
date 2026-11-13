@@ -17,6 +17,8 @@ is not bypassed. Details: [`FEASIBILITY.md` §4](FEASIBILITY.md).
 
 ## 2. U1–U5
 
+> G7 (2026-11-13): U1, U2 and U3 are ✅ **verified on real Tidepool data**, read-only (`docs/G7_CROSSCHAIN_LIVE.md`). The table below is the earlier G3 status.
+
 | # | Status |
 |---|---|
 | U1 live quote fields | ✅ matches the official 1Click spec · ⏳ Tidepool live |

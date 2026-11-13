@@ -17,7 +17,12 @@ import {
   type TransferStore,
 } from "../../../packages/crosschain/src/index.ts";
 import { TREASURY_ACCOUNT_ID } from "./chain.ts";
-import { bridgeTone, parseUnits, usdc } from "./format.ts";
+import { bridgeTone, formatUnits, parseUnits, usdc } from "./format.ts";
+
+/** Quote amounts are shown with all 6 USDC decimals (no rounding on a price the user is about to accept). */
+const exact = (a: string) => formatUnits(a, 6, 6);
+import { bridgeCoversTreasuryMin } from "./near/deposit.ts";
+import { view } from "./chain.ts";
 
 function browserStore(): TransferStore {
   try {
@@ -28,6 +33,8 @@ function browserStore(): TransferStore {
   }
 }
 const tidepool = createTidepoolClient({ store: browserStore() });
+/** Only for DRY previews before a Solana wallet is connected: the Tidepool devnet USDC mint address. */
+const DRY_PREVIEW_REFUND_PLACEHOLDER = "7pafEGXSmR35rLKNaD6inpfLYuEnRX9DyBc1c7M8r4Xr";
 
 type InjectedWallet = {
   publicKey: { toBase58(): string } | null;
@@ -63,7 +70,9 @@ const STEP_LABEL: Record<TransferRecord["stage"], string> = {
 export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onHealth?: (reachable: boolean) => void }) {
   const [health, setHealth] = useState("checking Tidepool…");
   const [solAddr, setSolAddr] = useState<string | null>(null);
-  const [amount, setAmount] = useState("1");
+  // 2, not 1: 1 USDC from Solana arrives as ~0.9974 on NEAR, below the Treasury minimum deposit of 1 USDC.
+  const [amount, setAmount] = useState("2");
+  const [minDeposit, setMinDeposit] = useState<string | null>(null);
   const [preview, setPreview] = useState<BridgeQuote | null>(null);
   const [transfers, setTransfers] = useState<TransferRecord[]>(() => tidepool.transfers());
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +91,7 @@ export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onH
   }
 
   useEffect(() => {
+    view<{ config: { min_deposit: string } }>(TREASURY_ACCOUNT_ID, "get_config").then((c) => setMinDeposit(c.config.min_deposit), () => setMinDeposit(null));
     tidepool.health().then(
       (h) => { onHealth?.(true); setHealth(h.ok && h.solanaRouteOk ? "up · Solana devnet route ok" : `degraded · ok=${h.ok} solanaRoute=${h.solanaRouteOk}`); },
       (e) => { onHealth?.(false); setHealth(`unreachable from this network (${explain(e)}). Path B is unavailable here; the direct NEAR deposit still works.`); },
@@ -96,6 +106,7 @@ export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onH
   const atomic = parseUnits(amount, 6);
   const recipient = nearAccount.trim();
   const ready = !!atomic && !!recipient && !!solAddr && !busy;
+  const coversMin = preview && minDeposit ? bridgeCoversTreasuryMin(preview.minAmountOut, minDeposit) : null;
   const req = () => ({ amountAtomic: atomic!, solanaRefundAddress: solAddr!, nearRecipient: recipient });
 
   async function run(step: () => Promise<void>) {
@@ -109,7 +120,10 @@ export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onH
     if (!p) throw new Error("No Solana wallet found: install Phantom and switch it to Devnet (Settings → Developer settings → Testnet mode).");
     setSolAddr((await p.connect()).publicKey.toBase58());
   });
-  const quote = () => run(async () => setPreview(await tidepool.quote(req(), { dry: true })));
+  // A dry quote creates no deposit address and moves nothing, so it may be previewed before connecting a Solana
+  // wallet: the refund address is then a labelled placeholder (the Tidepool USDC mint), never used for a live quote.
+  const quote = () => run(async () =>
+    setPreview(await tidepool.quote({ ...req(), solanaRefundAddress: solAddr ?? DRY_PREVIEW_REFUND_PLACEHOLDER }, { dry: true })));
   const bridge = () => run(async () => {
     const live = await tidepool.quote(req(), { dry: false });
     await tidepool.deposit(live, solAddr!, walletOf(injected()!));
@@ -128,10 +142,12 @@ export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onH
         NEAR recipient: <code>{recipient || "enter your account above"}</code>. Tidepool delivers to <b>your</b> account, then you deposit into the Treasury.
       </p>
       <div className="watch">
-        <button onClick={quote} disabled={!ready}>Preview (dry quote)</button>
-        <button onClick={bridge} disabled={!ready || !preview}>Bridge {atomic ? usdc(atomic) : "—"} USDC</button>
+        <button onClick={quote} disabled={!atomic || !recipient || busy}>Preview (dry quote)</button>
+        <button onClick={bridge} disabled={!ready || !preview || coversMin === false}>Bridge {atomic ? usdc(atomic) : "—"} USDC</button>
       </div>
-      {preview && <p>Quote: {usdc(preview.amountIn)} USDC → <b>{usdc(preview.amountOut)}</b> USDC on NEAR (min {usdc(preview.minAmountOut)}), ~{preview.timeEstimateSec}s. Cost read from the quote, not hard-coded.</p>}
+      {preview && <p>Quote: {exact(preview.amountIn)} USDC → <b>{exact(preview.amountOut)}</b> USDC on NEAR (guaranteed min {exact(preview.minAmountOut)}), cost {exact((BigInt(preview.amountIn) - BigInt(preview.amountOut)).toString())} USDC, ~{preview.timeEstimateSec}s. Read from the quote, not hard-coded.</p>}
+      {coversMin === true && <p className="muted">✓ The guaranteed minimum ({exact(preview!.minAmountOut)} USDC) covers the Treasury minimum deposit ({exact(minDeposit!)} USDC).</p>}
+      {coversMin === false && <p className="badge failed">The guaranteed minimum ({exact(preview!.minAmountOut)} USDC) is below the Treasury minimum deposit ({exact(minDeposit!)} USDC): these funds could not be deposited. Increase the amount.</p>}
       {transfers.map((t) => {
         const links = t.result ? explorerLinks(t.result) : null;
         return (

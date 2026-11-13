@@ -40,6 +40,8 @@ New on 2026-11-13 (Solana devnet RPC `getAccountInfo`, read-only):
 
 ## 3. Unverified points U1–U5 — status on 2026-11-13
 
+> **Update (G7, 2026-11-13 evening):** U1, U2 and U3 are now **verified on a real third-party Solana Devnet → NEAR transfer** (on-chain deposit tx `SHgjML7x…` + public `GET /v0/status`); see `docs/G7_CROSSCHAIN_LIVE.md` §1. U4 waits for our own live transfer; U5 stays not verifiable.
+
 Sources: the official NEAR Intents 1Click API reference read on 2026-11-13 (`docs.near-intents.org/api-reference/oneclick/*`,
 OpenAPI 0.1.10 at `1click.chaindefuser.com/docs/v0/openapi.yaml`), which Tidepool says it is compatible with.
 **Matching the 1Click spec is not proof that Tidepool behaves the same.** Only a live call to Tidepool closes a U-item.

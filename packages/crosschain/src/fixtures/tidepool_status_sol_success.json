@@ -1,0 +1,104 @@
+{
+ "correlationId": "83b7b6db-5da9-4975-89fc-e7fe42b424b4",
+ "quoteResponse": {
+  "correlationId": "83b7b6db-5da9-4975-89fc-e7fe42b424b4",
+  "timestamp": "2026-11-13T18:12:49.944Z",
+  "quoteRequest": {
+   "dry": false,
+   "swapType": "EXACT_OUTPUT",
+   "slippageTolerance": 100,
+   "originAsset": "nep141:sol-d48c1adc423a64867ac91ed2e1c0df76da323235.tp-omft.testnet",
+   "depositType": "ORIGIN_CHAIN",
+   "destinationAsset": "nep141:usdc.tidepool-sandbox.testnet",
+   "amount": "85731098",
+   "recipient": "REDACTED.testnet",
+   "recipientType": "DESTINATION_CHAIN",
+   "refundTo": "REDACTED_SOLANA_ADDRESS",
+   "refundType": "ORIGIN_CHAIN",
+   "deadline": "2026-11-13T18:42:49.820Z"
+  },
+  "quote": {
+   "amountIn": "86814125",
+   "amountInFormatted": "86.814125",
+   "amountInUsd": "86.7751",
+   "minAmountIn": "85954580",
+   "amountOut": "85731098",
+   "amountOutFormatted": "85.731098",
+   "amountOutUsd": "85.6926",
+   "minAmountOut": "85731098",
+   "timeEstimate": 60,
+   "depositAddress": "aV6YRnofogRdnQcNmyGmhyp2H1ZzpQEWTiWLX8VRyor",
+   "deadline": "2026-11-13T18:42:49.820Z",
+   "timeWhenInactive": "2026-11-13T18:42:49.820Z"
+  },
+  "signature": "ed25519:3gfasosmqVFm8DL7ceuYx1bBr4inerU4eXd1vQocx5EznEh6HyFHMcKdbgruR2nezwCvHPXPTzWJphr3ZAsLe3QL"
+ },
+ "status": "SUCCESS",
+ "updatedAt": "2026-11-13T18:13:16.599Z",
+ "swapDetails": {
+  "intentHashes": [
+   "AZPDu5ZtQY2T9nwBLFUs2oxP5cKsLPi8sxGq1ioRMyN",
+   "BkTECfquNcuaSCcq16BNGTEusG8tTRFspPCF9vTQXueg"
+  ],
+  "nearTxHashes": [
+   "7k5f1wHjFMzwSYKBnCXjit8WJpEdUrZQE6kL1c7Xy7tf",
+   "7QRBJZqphYRWGe1RM5JwVpYTD1no8odfxr27BcvkGr5S",
+   "4ZGvNVVWsk8dvyZrskDu78ZPgS2MfHsdgVduXSjX9K44"
+  ],
+  "originChainTxHashes": [
+   {
+    "hash": "SHgjML7x7NVV8yNNFTQN1nz3EsaTaEi4rtMPrThezhAiRWiazU8oTTiTAyLZDzpDJR51DpgBk4JpCBgbjGxaPGJ",
+    "explorerUrl": "https://explorer.solana.com/tx/SHgjML7x7NVV8yNNFTQN1nz3EsaTaEi4rtMPrThezhAiRWiazU8oTTiTAyLZDzpDJR51DpgBk4JpCBgbjGxaPGJ?cluster=devnet"
+   }
+  ],
+  "destinationChainTxHashes": [
+   {
+    "hash": "4ZGvNVVWsk8dvyZrskDu78ZPgS2MfHsdgVduXSjX9K44",
+    "explorerUrl": "https://testnet.nearblocks.io/txns/4ZGvNVVWsk8dvyZrskDu78ZPgS2MfHsdgVduXSjX9K44"
+   },
+   {
+    "hash": "gpw8woFMFGcY9m4JTEe3GFzr5DtBH1WsYfKxbsGPU8oWvRmmE58TRFG85kQfe8PtXunFiYPoGxHt6jrEWSu5wd3",
+    "explorerUrl": "https://explorer.solana.com/tx/gpw8woFMFGcY9m4JTEe3GFzr5DtBH1WsYfKxbsGPU8oWvRmmE58TRFG85kQfe8PtXunFiYPoGxHt6jrEWSu5wd3?cluster=devnet"
+   }
+  ],
+  "amountIn": "85954580",
+  "amountInFormatted": "85.95458",
+  "amountInUsd": "85.9160",
+  "amountOut": "85731098",
+  "amountOutFormatted": "85.731098",
+  "amountOutUsd": "85.6926",
+  "slippage": -0.01,
+  "depositedAmount": "86814125",
+  "depositedAmountFormatted": "86.814125",
+  "depositedAmountUsd": "86.7751",
+  "refundedAmount": "859545",
+  "refundedAmountFormatted": "0.859545",
+  "refundedAmountUsd": "0.8592",
+  "withdrawFee": "0"
+ },
+ "tidepool": {
+  "explorer": [
+   {
+    "label": "sweep deposit address into treasury (Solana Devnet)",
+    "url": "https://explorer.solana.com/tx/251jkDWyZn1w4shu9n3nJUdDakjYroDUJm7VebypCAq1WZcctgckQ2aWgD14nXpJkvzvU22Pd6a65F2fkJ4o9sUb?cluster=devnet"
+   },
+   {
+    "label": "mint bridged USDC (Solana Devnet deposit)",
+    "url": "https://testnet.nearblocks.io/txns/7k5f1wHjFMzwSYKBnCXjit8WJpEdUrZQE6kL1c7Xy7tf"
+   },
+   {
+    "label": "credit deposit into verifier (ft_transfer_call)",
+    "url": "https://testnet.nearblocks.io/txns/7QRBJZqphYRWGe1RM5JwVpYTD1no8odfxr27BcvkGr5S"
+   },
+   {
+    "label": "swap (execute_intents)",
+    "url": "https://testnet.nearblocks.io/txns/4ZGvNVVWsk8dvyZrskDu78ZPgS2MfHsdgVduXSjX9K44"
+   },
+   {
+    "label": "excess refund payout on Solana Devnet",
+    "url": "https://explorer.solana.com/tx/gpw8woFMFGcY9m4JTEe3GFzr5DtBH1WsYfKxbsGPU8oWvRmmE58TRFG85kQfe8PtXunFiYPoGxHt6jrEWSu5wd3?cluster=devnet"
+   }
+  ],
+  "intentsAccount": "9b3bae453605f1bc7c0d609f16dbd8ed353295a448bfab34c99734db8f7e3b96"
+ }
+}
