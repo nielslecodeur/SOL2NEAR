@@ -252,3 +252,68 @@ test.describe("@mock mocked wallet (e2e hook) + real testnet reads", () => {
     expect(await page.evaluate(() => (window as any).__signCalls)).toBe(0);
   });
 });
+
+// ---- V4.0 Pool Explorer: READ ONLY. No wallet is involved; the mocked wallet only counts that nothing was signed. ----
+const PILOT_KEY = "near-testnet:ref-finance-101.testnet:2951";
+const card = (page: Page, key: string) => page.locator(`article[data-pool="${key}"]`);
+
+test.describe("@live V4.0 Pool Explorer (real testnet + mainnet reads, read-only)", () => {
+  test("catalogue read live: only pool 2951 is selectable; memecoin and mainnet pools are observe only with reasons", async ({ page }) => {
+    const errors = watchErrors(page);
+    const pool = await view<{ total_fee: number }>("ref-finance-101.testnet", "get_pool", { pool_id: 2951 });
+    await page.goto("/#/pools");
+    await expect(page.locator("article.pool")).toHaveCount(6, { timeout: 30_000 });
+    await expect(page.getByText(/1 selectable of 6/)).toBeVisible({ timeout: 30_000 });
+    const pilot = card(page, PILOT_KEY);
+    await expect(pilot).toContainText("ELIGIBLE");
+    await expect(pilot).toContainText(`${pool.total_fee} bps`); // fee read live, equal to get_pool
+    await expect(pilot.getByRole("button", { name: "Select this pool" })).toBeVisible();
+    for (const key of ["near-testnet:ref-finance-101.testnet:2131", "near-testnet:ref-finance-101.testnet:2190", "near-mainnet:v2.ref-finance.near:5462", "near-mainnet:v2.ref-finance.near:4276", "near-mainnet:dclv2.ref-labs.near:nearly-993927.nearlytrade.near|wrap.near|10000"]) {
+      const c = card(page, key);
+      await expect(c).toContainText("OBSERVE ONLY");
+      await expect(c.getByRole("button")).toHaveCount(0);
+      await expect(c.getByLabel("Why observe only")).toContainText("Not selectable.");
+    }
+    await expect(card(page, "near-testnet:ref-finance-101.testnet:2131")).toContainText(/appear only in pool 2951/);
+    await expect(card(page, "near-mainnet:dclv2.ref-labs.near:nearly-993927.nearlytrade.near|wrap.near|10000")).toContainText(/positions are NFTs/);
+    await page.screenshot({ path: "test-results/v4-pools.png", fullPage: true });
+    expect(errors).toEqual([]);
+  });
+
+  test("select 2951: survives a reload, and the read-only preflight equals Ref's own get_return", async ({ page }) => {
+    await mockWallet(page, DEV);
+    await page.goto("/#/pools");
+    await card(page, PILOT_KEY).getByRole("button", { name: "Select this pool" }).click({ timeout: 30_000 });
+    await page.reload();
+    const sel = page.getByLabel("Selected pool preflight");
+    await expect(sel).toContainText("= Treasury pool", { timeout: 30_000 });
+    await sel.getByRole("button", { name: "Quote (read-only)" }).click();
+    await expect(sel.getByLabel("Preflight result")).toContainText("✓ equals the plan", { timeout: 30_000 });
+    await expect(sel.getByLabel("Preflight result")).toContainText(/Price impact \d+\.\d\d %/);
+    expect(await page.evaluate(() => (window as any).__signCalls)).toBe(0);
+  });
+  test("mobile 390px: the Pool Explorer has no horizontal page scroll", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/#/pools");
+    await expect(page.locator("article.pool")).toHaveCount(6, { timeout: 30_000 });
+    await expect(page.getByText(/selectable of 6/)).toBeVisible({ timeout: 30_000 });
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+});
+
+test.describe("@mock V4.0 Pool Explorer failure cases", () => {
+  test("a stored OBSERVE_ONLY selection is cleared on load; mainnet RPC down -> mainnet pools unreadable, still observe only", async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.addInitScript(() => localStorage.setItem("sol2near:v4-pool", "near-testnet:ref-finance-101.testnet:2131"));
+    await page.route(/free\.rpc\.fastnear\.com|near\.drpc\.org/, (route) => route.abort("failed")); // MOCK mainnet outage only
+    await page.goto("/#/pools");
+    await expect(page.getByRole("status")).toContainText("Previous selection cleared: OBSERVE_ONLY", { timeout: 30_000 });
+    const chill = card(page, "near-mainnet:v2.ref-finance.near:5462");
+    await expect(chill).toContainText("✗ readable");
+    await expect(chill).toContainText("OBSERVE ONLY");
+    await expect(card(page, PILOT_KEY)).toContainText("ELIGIBLE"); // testnet reads are unaffected
+    expect(await page.evaluate(() => localStorage.getItem("sol2near:v4-pool"))).toBeNull();
+    expect(errors.filter((e) => e.startsWith("pageerror"))).toEqual([]);
+  });
+});

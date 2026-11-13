@@ -1,0 +1,238 @@
+{
+ "readAt": "2026-11-13T22:56:58.205Z",
+ "treasuryConfig": {
+  "config": {
+   "usdc_token": "usdc.tidepool-sandbox.testnet",
+   "wnear_token": "wnear.tidepool-sandbox.testnet",
+   "ref_exchange": "ref-finance-101.testnet",
+   "pool_id": 2951,
+   "min_deposit": "1000000",
+   "lp_lock_duration_ns": "600000000000"
+  },
+  "lp_bps": 9000,
+  "reserve_bps": 800,
+  "community_bps": 200,
+  "ready": true,
+  "usdc_pool_index": 0
+ },
+ "pools": {
+  "near-testnet:ref-finance-101.testnet:2951": {
+   "raw": {
+    "pool_kind": "SIMPLE_POOL",
+    "token_account_ids": [
+     "usdc.tidepool-sandbox.testnet",
+     "wnear.tidepool-sandbox.testnet"
+    ],
+    "amounts": [
+     "80699997",
+     "14011261309647048936214624"
+    ],
+    "total_fee": 30,
+    "shares_total_supply": "1268822730751472693063636",
+    "amp": 0
+   },
+   "volumes": [
+    {
+     "input": "14532606",
+     "output": "3170067337992809017496944"
+    },
+    {
+     "input": "0",
+     "output": "0"
+    }
+   ],
+   "meta": {
+    "usdc.tidepool-sandbox.testnet": {
+     "symbol": "USDC",
+     "decimals": 6
+    },
+    "wnear.tidepool-sandbox.testnet": {
+     "symbol": "wNEAR",
+     "decimals": 24
+    }
+   }
+  },
+  "near-testnet:ref-finance-101.testnet:2131": {
+   "raw": {
+    "pool_kind": "SIMPLE_POOL",
+    "token_account_ids": [
+     "mev-33.factory.v9.meme-cooking.testnet",
+     "wrap.testnet"
+    ],
+    "amounts": [
+     "499034474623309020599684108",
+     "3160926057803180253729471360"
+    ],
+    "total_fee": 10,
+    "shares_total_supply": "1000000737881394291040031",
+    "amp": 0
+   },
+   "volumes": [
+    {
+     "input": "1359482756826610181630706",
+     "output": "8582812604768746168315438"
+    },
+    {
+     "input": "14710000000000000000000000",
+     "output": "2325008133517589581946598"
+    }
+   ],
+   "meta": {
+    "mev-33.factory.v9.meme-cooking.testnet": {
+     "symbol": "MEV",
+     "decimals": 18
+    },
+    "wrap.testnet": {
+     "symbol": "wNEAR",
+     "decimals": 24
+    }
+   }
+  },
+  "near-testnet:ref-finance-101.testnet:2190": {
+   "raw": {
+    "pool_kind": "SIMPLE_POOL",
+    "token_account_ids": [
+     "shitzu-0.factory.v10.meme-cooking.testnet",
+     "wrap.testnet"
+    ],
+    "amounts": [
+     "7298572146933183130298215",
+     "1025935733383457438843792445"
+    ],
+    "total_fee": 10,
+    "shares_total_supply": "1000339446735528593924264",
+    "amp": 0
+   },
+   "volumes": [
+    {
+     "input": "500100000000000000000000000",
+     "output": "104591815809188977062268690"
+    },
+    {
+     "input": "1115602549192646415906061135",
+     "output": "992801427853066816869701785"
+    }
+   ],
+   "meta": {
+    "shitzu-0.factory.v10.meme-cooking.testnet": {
+     "symbol": "SHITZU",
+     "decimals": 18
+    },
+    "wrap.testnet": {
+     "symbol": "wNEAR",
+     "decimals": 24
+    }
+   }
+  },
+  "near-mainnet:v2.ref-finance.near:5462": {
+   "raw": {
+    "pool_kind": "SIMPLE_POOL",
+    "token_account_ids": [
+     "chill-129.meme-cooking.near",
+     "wrap.near"
+    ],
+    "amounts": [
+     "858675932307821858968489026",
+     "48390326204173463761472792841"
+    ],
+    "total_fee": 10,
+    "shares_total_supply": "1000540215620522811677609",
+    "amp": 0
+   },
+   "volumes": [
+    {
+     "input": "1250225095685079877990481033",
+     "output": "199464212610653503626902387731"
+    },
+    {
+     "input": "165023589295892786865577087713",
+     "output": "891025290324593751665365965"
+    }
+   ],
+   "meta": {
+    "chill-129.meme-cooking.near": {
+     "symbol": "CHILL",
+     "decimals": 18
+    },
+    "wrap.near": {
+     "symbol": "wNEAR",
+     "decimals": 24
+    }
+   }
+  },
+  "near-mainnet:v2.ref-finance.near:4276": {
+   "raw": {
+    "pool_kind": "SIMPLE_POOL",
+    "token_account_ids": [
+     "wrap.near",
+     "blackdragon.tkn.near"
+    ],
+    "amounts": [
+     "5241528512277183333845701943",
+     "3296435229643995367606897754183919177"
+    ],
+    "total_fee": 30,
+    "shares_total_supply": "1989290236812287208729867",
+    "amp": 0
+   },
+   "volumes": [
+    {
+     "input": "2831255183802635180638790695154",
+     "output": "528118266461029810653018013949511041997"
+    },
+    {
+     "input": "489913164848177627805601024729679101954",
+     "output": "2820750182588546460608506005866"
+    }
+   ],
+   "meta": {
+    "wrap.near": {
+     "symbol": "wNEAR",
+     "decimals": 24
+    },
+    "blackdragon.tkn.near": {
+     "symbol": "BLACKDRAGON",
+     "decimals": 24
+    }
+   }
+  },
+  "near-mainnet:dclv2.ref-labs.near:nearly-993927.nearlytrade.near|wrap.near|10000": {
+   "raw": {
+    "pool_id": "nearly-993927.nearlytrade.near|wrap.near|10000",
+    "token_x": "nearly-993927.nearlytrade.near",
+    "token_y": "wrap.near",
+    "fee": 10000,
+    "point_delta": 200,
+    "current_point": 50476,
+    "liquidity": "56254381955948946355842",
+    "liquidity_x": "52137789767425487249356",
+    "max_liquidity_per_point": "42529979617665099795447395004595452",
+    "total_fee_x_charged": "698011759497414048715994",
+    "total_fee_y_charged": "167694776959354973367993474",
+    "volume_x_in": "3448585929316237484191787073",
+    "volume_y_in": "1759649807448280389774411968386",
+    "volume_x_out": "4326696701422640864175406830",
+    "volume_y_out": "1729102271062173708968329532172",
+    "total_liquidity": "262621362111147704956668",
+    "total_order_x": "3222135314818897347728783",
+    "total_order_y": "21311000000000000003004542",
+    "total_x": "95610611937003714679140259",
+    "total_y": "12966882349550747142685132815",
+    "state": "Running",
+    "whitelist": null,
+    "tax": null
+   },
+   "volumes": null,
+   "meta": {
+    "nearly-993927.nearlytrade.near": {
+     "symbol": "NEARLY",
+     "decimals": 18
+    },
+    "wrap.near": {
+     "symbol": "wNEAR",
+     "decimals": 24
+    }
+   }
+  }
+ }
+}

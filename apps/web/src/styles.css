@@ -87,3 +87,18 @@ h2 { margin: 6px 0; overflow-wrap: anywhere; }
 .histrow small { flex-basis: 100%; overflow-wrap: anywhere; }
 @media (max-width: 520px) { .steps { grid-template-columns: 1fr; } .row { min-width: 560px; } }
 .ack { display: flex; gap: 8px; align-items: center; color: var(--warn); font-weight: 600; margin: 6px 0; }
+/* V4.0 Pool Explorer */
+.pools { display: grid; gap: 12px; }
+.poolgrid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+.pool { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.pool.sel { border-color: var(--near); }
+.poolhead { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.kv { margin: 0; display: grid; gap: 4px; font-size: 13px; }
+.kv div { display: grid; grid-template-columns: 110px 1fr; gap: 8px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+.checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; font-size: 13px; overflow-wrap: anywhere; }
+.checks li.ok b { color: var(--near); }
+.checks li.ko b, .checks li.ko { color: var(--warn); }
+.observe { margin: 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.small { font-size: 12px; margin: 0; }

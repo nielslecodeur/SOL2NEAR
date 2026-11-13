@@ -4,14 +4,16 @@ import { explorerAccount, explorerBlock, FUEL_ACCOUNT_ID, loadTestnet, TREASURY_
 import { demoSnapshot, mockCrosschain } from "./demo.ts";
 import { BridgeLive } from "./BridgeLive.tsx";
 import { NearPanel } from "./NearPanel.tsx";
+import { PoolsPage } from "./PoolsPage.tsx";
 import { bridgeTone, depositStatus, duration, fuel, pct, usdc, wnear, type Tone } from "./format.ts";
 
-type Route = { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" };
+type Route = { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" } | { page: "pools" };
 
 function parseRoute(): Route {
   const [, page, id] = location.hash.split("/");
   if (page === "vault" && id) return { page: "vault", id };
   if (page === "reactor") return { page: "reactor" };
+  if (page === "pools") return { page: "pools" };
   return { page: "dashboard" };
 }
 
@@ -65,8 +67,9 @@ export function App() {
       <header>
         <a href="#/" className="logo">SOL<span>2</span>NEAR</a>
         <nav>
-          <a href="#/" className={route.page !== "reactor" ? "on" : ""}>Dashboard</a>
+          <a href="#/" className={route.page === "dashboard" || route.page === "vault" ? "on" : ""}>Dashboard</a>
           <a href="#/reactor" className={route.page === "reactor" ? "on" : ""}>FUEL Reactor</a>
+          <a href="#/pools" className={route.page === "pools" ? "on" : ""}>Pools (V4.0)</a>
         </nav>
         <div className="net">
           <Badge tone="pending">TESTNET</Badge>
@@ -109,6 +112,9 @@ export function App() {
       {snap && route.page === "dashboard" && <Dashboard snap={snap} account={account} onTidepool={setTidepoolOk} />}
       {snap && route.page === "vault" && <Vault snap={snap} id={route.id} />}
       {snap && route.page === "reactor" && <ReactorPage snap={snap} />}
+      {route.page === "pools" && (demo
+        ? <main><div className="banner sim">The Pool Explorer has no simulated data: switch to Live testnet to read the real DEX pools.</div></main>
+        : <PoolsPage />)}
 
       <footer>
         Contracts: <a href={explorerAccount(TREASURY_ACCOUNT_ID)} target="_blank" rel="noreferrer">{TREASURY_ACCOUNT_ID}</a> ·{" "}
