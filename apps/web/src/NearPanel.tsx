@@ -261,7 +261,21 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
           <>
             <span className="badge confirmed">testnet</span> <code>{accountId}</code>
             <button className="ghost" onClick={() => { setRefreshing(true); load().finally(() => setRefreshing(false)); }} disabled={busy || refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button>
-            <button className="ghost" onClick={() => wallet?.disconnect()} disabled={busy}>Disconnect</button>
+            <button className="ghost" disabled={busy} onClick={async () => {
+              if (!wallet) return;
+              setBusy(true);
+              try {
+                const how = await wallet.disconnect();
+                if (how === "forgotten") {
+                  setError("The wallet did not answer the sign-out request. The dashboard forgot this session locally (it holds no key of its own); reloading.");
+                  setTimeout(() => location.reload(), 1500);
+                }
+              } catch (e) {
+                setError(`Disconnect failed: ${(e as Error).message}`);
+              } finally {
+                setBusy(false);
+              }
+            }}>Disconnect</button>
           </>
         ) : <button onClick={() => wallet?.connect()} disabled={!wallet}>{wallet ? "Connect NEAR wallet" : "Loading wallets…"}</button>}
       </div>

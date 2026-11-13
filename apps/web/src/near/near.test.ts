@@ -265,3 +265,14 @@ test("close_season: exact call; REAL C5 outcome -> season 0 SUCCESS", () => {
   assert.equal(v.ok, true);
   assert.match(v.detail, /season 0 closed: Success \(progress 9676812 \/ 5000000, burned 0, level 1\)/);
 });
+
+test("disconnect fallback forgets only Wallet Selector keys (G6: Meteor signOut never settled)", async () => {
+  const { forgetSelectorSession } = await import("./session.ts");
+  const m = new Map<string, string>([
+    ["near-wallet-selector:selectedWalletId", '"meteor-wallet"'], ["near-wallet-selector:recentlySignedInWallets", "[]"],
+    ["sol2near.near-tx", "[]"], ["meteor-wallet:something", "x"], ["sol2near.transfers", "{}"],
+  ]);
+  const storage = { get length() { return m.size; }, key: (i: number) => [...m.keys()][i] ?? null, removeItem: (k: string) => void m.delete(k) };
+  assert.deepEqual(forgetSelectorSession(storage).sort(), ["near-wallet-selector:recentlySignedInWallets", "near-wallet-selector:selectedWalletId"]);
+  assert.deepEqual([...m.keys()].sort(), ["meteor-wallet:something", "sol2near.near-tx", "sol2near.transfers"]);
+});

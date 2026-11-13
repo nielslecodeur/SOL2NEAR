@@ -13,13 +13,17 @@ import { NETWORK_ID, isTestnetAccount } from "./config.ts";
 import type { TxCall } from "./deposit.ts";
 import type { TxOutcome } from "./outcome.ts";
 import { WalletError, isRejection } from "./errors.ts";
+import { forgetSelectorSession } from "./session.ts";
+
+const SIGN_OUT_TIMEOUT_MS = 8000;
 
 export type SignResult = { hash: string; outcome?: TxOutcome } | { redirected: true };
 
 export interface NearWallet {
   accountId: string | null;
   connect(): void;
-  disconnect(): Promise<void>;
+  /** "wallet": the wallet signed out; "forgotten": it did not answer, the dashboard forgot the session locally. */
+  disconnect(): Promise<"wallet" | "forgotten">;
   signAndSend(call: TxCall): Promise<SignResult>;
   subscribe(cb: (accountId: string | null) => void): () => void;
 }
@@ -47,7 +51,16 @@ async function create(): Promise<NearWallet> {
     },
     connect: () => modal.show(),
     async disconnect() {
-      if (selector.isSignedIn()) await (await selector.wallet()).signOut();
+      if (!selector.isSignedIn()) return "wallet";
+      const wallet = await selector.wallet();
+      // Meteor's signOut was seen never settling (G6). The dashboard holds no key of its own (no access key is
+      // created at sign-in), so forgetting the session locally is a complete disconnect from the dApp side.
+      const outcome = await Promise.race([
+        wallet.signOut().then(() => "wallet" as const, () => "forgotten" as const),
+        new Promise<"forgotten">((r) => setTimeout(() => r("forgotten"), SIGN_OUT_TIMEOUT_MS)),
+      ]);
+      if (outcome === "forgotten") forgetSelectorSession(localStorage);
+      return outcome;
     },
     subscribe(cb) {
       const sub = selector.store.observable.subscribe(() => cb(current()));
