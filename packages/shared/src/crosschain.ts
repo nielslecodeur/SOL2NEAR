@@ -45,6 +45,9 @@ export interface BridgeQuote {
   deadline?: string;
   /** Tidepool ed25519 signature (not verified by the default 1Click SDK key). */
   signature: string;
+  /** Echo of the request, kept so every later step can re-check where the funds go. */
+  nearRecipient?: string;
+  solanaRefundAddress?: string;
 }
 
 export interface BridgeResult {
@@ -55,11 +58,25 @@ export interface BridgeResult {
   solanaTxHashes: string[];
   nearTxHashes: string[];
   refundReason?: string;
+  /** Atomic amount returned to the Solana refund address (REFUNDED). */
+  refundedAmount?: string;
   updatedAt?: string;
 }
 
 export interface CrosschainError {
-  kind: "network" | "http" | "validation" | "wallet_rejected" | "quote_expired" | "unsupported_route";
+  kind:
+    | "network"
+    | "http"
+    | "validation"
+    | "wallet_rejected"
+    | "quote_expired"
+    | "unsupported_route"
+    /** The Solana deposit transaction landed but failed on-chain. */
+    | "solana_tx_failed"
+    /** A signing attempt was interrupted (reload, crash): never re-sign automatically. */
+    | "interrupted"
+    /** Tidepool says SUCCESS but the expected USDC is not on the NEAR recipient. */
+    | "settlement_mismatch";
   message: string;
   httpStatus?: number;
 }

@@ -67,3 +67,4 @@ a.row:hover { background: rgba(0,236,151,.05); }
 .bar div { height: 100%; background: linear-gradient(90deg, var(--sol), var(--near)); }
 footer { margin-top: 32px; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
 h2 { margin: 6px 0; overflow-wrap: anywhere; }
+.transfer { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 6px; }

@@ -10,4 +10,6 @@ export { isTerminal, parseStatus, watchStatus, type WatchOptions } from "./statu
 export { buildSplDepositTx, SolanaDevnet, SOLANA_DEVNET_RPC } from "./solana.ts";
 export { signAndSend, type SolanaWallet } from "./wallet.ts";
 export { explorerLinks } from "./links.ts";
+export { nearRpcReader, verifySettlement, type NearReader } from "./near.ts";
+export { memoryStore, webStorageStore, isFinished, type TransferRecord, type TransferStage, type TransferStore } from "./store.ts";
 export type * from "../../shared/src/crosschain.ts";

@@ -38,19 +38,39 @@ New on 2026-11-13 (Solana devnet RPC `getAccountInfo`, read-only):
   "deadline": "<ISO, now + 30 min>" }
 ```
 
-## 3. Not verified yet (assumptions coded defensively)
+## 3. Unverified points U1–U5 — status on 2026-11-13
 
-| # | Assumption | Why we think so | How the code protects itself |
-|---|---|---|---|
-| U1 | Live quote returns `quote.depositAddress` (Solana wallet address) and `quote.deadline` | 1Click convention | missing `depositAddress` → error; missing deadline → quote treated as not fundable |
-| U2 | The SPL deposit goes to the **associated token account** of `depositAddress` | 1Click convention for SPL | the tx creates that ATA idempotently (payer pays ~0.002 SOL rent if absent) |
-| U3 | `GET /v0/status?depositAddress=…` → `{status, updatedAt, swapDetails:{amountIn, amountOut, originChainTxHashes[{hash}], destinationChainTxHashes[{hash}], refundReason}}` | 1Click convention + status names 📄 T14 | unknown status → error, missing fields left empty, never guessed |
-| U4 | `POST /v0/deposit/submit {txHash, depositAddress}` is optional and idempotent | 1Click convention, 📄 "optional speed-up" | sent once per (address, tx); its failure does not fail the deposit |
-| U5 | Tidepool's ed25519 quote signature key | not published | signature is kept, not verified |
+Sources: the official NEAR Intents 1Click API reference read on 2026-11-13 (`docs.near-intents.org/api-reference/oneclick/*`,
+OpenAPI 0.1.10 at `1click.chaindefuser.com/docs/v0/openapi.yaml`), which Tidepool says it is compatible with.
+**Matching the 1Click spec is not proof that Tidepool behaves the same.** Only a live call to Tidepool closes a U-item.
 
-## 4. Blocker on 2026-11-13
+| # | Point | 1Click spec says | Status | How the code protects itself |
+|---|---|---|---|---|
+| U1 | Live quote has `quote.depositAddress` and `quote.deadline` | `deadline` and `depositAddress` are inside `quote`. A dry response has neither (nor `timeWhenInactive`). `depositMemo` exists for memo deposit modes | ✅ spec · ⏳ Tidepool live | missing `depositAddress` → error; missing deadline → not fundable; **any `depositMemo` → refused** (memo not supported); the echoed `quoteRequest` must match our assets / amount / recipient / refund address |
+| U2 | SPL deposit goes to the ATA of `depositAddress` | only says "transfer to depositAddress"; ATAs are not mentioned | ⚠️ standard Solana convention, unverified | tx creates the ATA idempotently. ⚠️ If Tidepool expected a token-account address instead, the funds would land on an ATA it does not watch: **verify on the first 1 USDC test** |
+| U3 | `GET /v0/status?depositAddress=` shape | `{correlationId, quoteResponse, status, updatedAt, swapDetails}`; `swapDetails.originChainTxHashes / destinationChainTxHashes` = `[{hash, explorerUrl}]`, plus `refundedAmount`, `refundReason`; 404 if the address is unknown | ✅ spec · ⏳ Tidepool live | unknown status → error; `quoteResponse.quote.depositAddress` must equal ours; `refundedAmount` recorded |
+| U4 | `POST /v0/deposit/submit {txHash, depositAddress}` | same fields (+ optional `nearSenderAccount`, `memo`); optional; returns the status shape | ✅ spec · ⏳ Tidepool live | sent once per pair; its failure never fails the deposit |
+| U5 | quote signature | SHA-256 of a stable-stringified JSON, checked with the 1Click SDK `verifyQuoteSignature`; no key published in the docs | ❌ not verifiable (Tidepool key unknown) | signature kept, not verified. Safety comes from the echo checks and the NEAR balance check instead |
 
-`www.usetidepool.tech` (CNAME `k7hxymjg.up.railway.app`) does not resolve on the development machine's DNS
-resolver, and the web-fetch tool hit the same `ENOTFOUND`. Public DNS (Cloudflare DoH) does resolve it. U1–U4
-can be checked as soon as the host is reachable: `pnpm --filter @sol2near/crosschain live:dry` (read-only), then a
-live transfer, which needs the user's approval, a Devnet Phantom wallet, faucet USDC and ~0.01 SOL.
+New guarantees added on 2026-11-13 (unit-tested with mocks):
+- The Solana deposit is confirmed on-chain before anything else. A failed tx gives `solana_tx_failed`.
+- Tidepool `SUCCESS` is not trusted alone: the recipient's balance on `usdc.tidepool-sandbox.testnet` must rise by at least `minAmountOut`, otherwise `settlement_mismatch`.
+- Every transfer is persisted. A reload never re-signs, and an interrupted signing is blocked (`interrupted`).
+
+## 4. Why Tidepool is unreachable here (diagnosed 2026-11-13)
+
+| Check | Result |
+|---|---|
+| Windows DNS servers | `10.5.30.11`, `10.0.30.11` (Wi-Fi, search domain `atlas.local`) |
+| `www.usetidepool.tech` / `usetidepool.tech` via system DNS | **CNAME `sinkhole.paloaltonetworks.com`**, no A record |
+| Same names asked directly to `1.1.1.1` and `8.8.8.8` | **same sinkhole answer**: port-53 traffic is intercepted by the network |
+| `k7hxymjg.up.railway.app` (Tidepool's real host) via system DNS | resolves (`153.52.255.37`); Railway itself is not blocked |
+| WSL | uses the Windows resolver (`10.255.255.254`) → no address |
+| Chrome | same failure (error page) |
+| Public DoH from another vantage point (Cloudflare, 2026-11-13 morning) | `www.usetidepool.tech` → CNAME `k7hxymjg.up.railway.app` → `153.52.255.37`: the service exists |
+
+**Conclusion: not a code problem, not an obsolete endpoint.** The network's Palo Alto firewall deliberately sinkholes the
+`usetidepool.tech` domain. This is a security policy of that network. It must not be bypassed (no hosts-file
+override, DoH, IP pinning or VPN on that network). The options are another network the user is entitled to use (home
+connection, phone hotspot), or asking the network administrator. A firewall category that sinkholes a domain is also a
+reason to send **test tokens only**, which is the plan anyway.

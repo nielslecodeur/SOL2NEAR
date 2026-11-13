@@ -45,14 +45,24 @@ const quoteResponse = (body: any) => ({
   },
 });
 
-const solanaMock = (balance = "5000000") => ({
+const solanaMock = (balance = "5000000", confirm: (sig: string) => Promise<void> = async () => {}) => ({
   latestBlockhash: async () => "EETubP5AKHgjPAhzPAFcb8BAY1hMH639CWCFTqi3hq1k",
   usdcBalance: async () => balance,
+  confirmSignature: confirm,
 });
+
+/** MOCK NEAR reader: returns the queued balances in order (last one repeats). */
+const nearMock = (...balances: string[]) => {
+  let i = 0;
+  return { usdcBalance: async () => balances[Math.min(i++, balances.length - 1)]! };
+};
 
 const client = (routes: Record<string, Route>, extra: Partial<TidepoolClientOptions> = {}) => {
   const m = mockFetch(routes);
-  return { c: createTidepoolClient({ fetch: m.f, now: () => NOW, solana: solanaMock(), ...extra }), calls: m.calls };
+  return {
+    c: createTidepoolClient({ fetch: m.f, now: () => NOW, solana: solanaMock(), near: nearMock("0"), ...extra }),
+    calls: m.calls,
+  };
 };
 
 const failsWith = (kind: string) => (e: unknown) => {
@@ -189,7 +199,7 @@ test("wallet error that may have broadcast is NOT retried automatically", async 
   let asked = 0;
   const flaky = { signAndSendTransaction: async () => { asked++; throw new Error("RPC timeout"); } };
   await assert.rejects(c.deposit(q, PAYER, flaky), failsWith("network"));
-  await assert.rejects(c.deposit(q, PAYER, flaky), failsWith("network"));
+  await assert.rejects(c.deposit(q, PAYER, flaky), failsWith("interrupted"));
   assert.equal(asked, 1);
 });
 

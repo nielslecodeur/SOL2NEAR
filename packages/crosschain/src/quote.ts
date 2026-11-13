@@ -51,8 +51,9 @@ export function buildQuoteBody(req: BridgeQuoteRequest, dry: boolean, now = Date
 interface RawQuoteResponse {
   correlationId?: unknown;
   signature?: unknown;
-  quoteRequest?: { deadline?: unknown };
+  quoteRequest?: Record<string, unknown>;
   quote?: {
+    depositMemo?: unknown;
     amountIn?: unknown;
     amountOut?: unknown;
     minAmountOut?: unknown;
@@ -64,10 +65,27 @@ interface RawQuoteResponse {
 
 const isAtomic = (v: unknown): v is string => typeof v === "string" && /^\d+$/.test(v);
 
-/** Validates a Tidepool quote response. Never fills a missing field with a guess. */
-export function parseQuote(raw: unknown, requested: { amountAtomic: string; dry: boolean }): BridgeQuote {
+/** Fields of our request that Tidepool echoes back (1Click `quoteRequest`) and that decide where funds go. */
+const ECHOED = ["originAsset", "destinationAsset", "amount", "recipient", "refundTo", "swapType", "depositType", "recipientType"] as const;
+
+/**
+ * Validates a Tidepool quote response. Never fills a missing field with a guess.
+ * When `body` (the request we sent) is given and Tidepool echoes `quoteRequest`, every field that decides
+ * where the funds go must match exactly, so a quote for another asset or recipient can never be signed.
+ */
+export function parseQuote(
+  raw: unknown,
+  requested: { amountAtomic: string; dry: boolean; body?: ReturnType<typeof buildQuoteBody> },
+): BridgeQuote {
   const r = raw as RawQuoteResponse;
   const q = r?.quote;
+  const echo = r?.quoteRequest;
+  if (requested.body && echo && typeof echo === "object")
+    for (const k of ECHOED)
+      if (k in echo && echo[k] !== requested.body[k])
+        throw fail("http", `Tidepool quote echoes ${k}=${JSON.stringify(echo[k])}, we asked ${JSON.stringify(requested.body[k])}`);
+  if (typeof q?.depositMemo === "string" && q.depositMemo)
+    throw fail("unsupported_route", "this deposit address requires a memo (depositMode MEMO), which this client does not send");
   if (!q || !isAtomic(q.amountIn) || !isAtomic(q.amountOut) || !isAtomic(q.minAmountOut))
     throw fail("http", "Tidepool quote response is missing amountIn / amountOut / minAmountOut");
   if (q.amountIn !== requested.amountAtomic)
@@ -92,6 +110,7 @@ export function parseQuote(raw: unknown, requested: { amountAtomic: string; dry:
     ...(depositAddress && { depositAddress }),
     ...(deadline && { deadline }),
     signature: r.signature,
+    ...(requested.body && { nearRecipient: requested.body.recipient, solanaRefundAddress: requested.body.refundTo }),
   };
 }
 

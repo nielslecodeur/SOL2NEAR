@@ -67,6 +67,29 @@ export class SolanaDevnet {
     }
   }
 
+  /**
+   * Waits until the deposit is `confirmed` on Solana devnet. A transaction that landed with an error
+   * throws `solana_tx_failed`; one not seen before the timeout throws `network` (it may still land:
+   * check status before doing anything else).
+   */
+  async confirmSignature(signature: string, opts: { timeoutMs?: number; intervalMs?: number } = {}): Promise<void> {
+    const deadline = Date.now() + (opts.timeoutMs ?? 90_000);
+    for (;;) {
+      let st;
+      try {
+        st = (await this.conn.getSignatureStatuses([signature], { searchTransactionHistory: true })).value[0];
+      } catch (e) {
+        st = undefined; // transient RPC error: keep polling until the deadline
+        if (Date.now() > deadline) throw fail("network", `Solana devnet getSignatureStatuses: ${errMessage(e)}`);
+      }
+      if (st?.err) throw fail("solana_tx_failed", `Solana deposit ${signature} failed on-chain: ${JSON.stringify(st.err)}`);
+      if (st?.confirmationStatus === "confirmed" || st?.confirmationStatus === "finalized") return;
+      if (Date.now() > deadline)
+        throw fail("network", `Solana deposit ${signature} not confirmed after ${(opts.timeoutMs ?? 90_000) / 1000}s: check its status before retrying`);
+      await new Promise((r) => setTimeout(r, opts.intervalMs ?? 2_000));
+    }
+  }
+
   /** USDC atomic balance of the payer's ATA ("0" if the account does not exist). */
   async usdcBalance(owner: string): Promise<string> {
     const ata = getAssociatedTokenAddressSync(new PublicKey(SOL_USDC.mint), pubkey("owner", owner), false, TOKEN_PROGRAM_ID);

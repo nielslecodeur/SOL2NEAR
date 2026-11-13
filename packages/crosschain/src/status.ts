@@ -20,13 +20,23 @@ const hashes = (v: unknown): string[] =>
 const str = (v: unknown) => (typeof v === "string" ? v : undefined);
 
 export function parseStatus(raw: unknown, depositAddress: string): BridgeResult {
-  const r = raw as { status?: unknown; updatedAt?: unknown; swapDetails?: Record<string, unknown> };
+  const r = raw as {
+    status?: unknown;
+    updatedAt?: unknown;
+    swapDetails?: Record<string, unknown>;
+    quoteResponse?: { quote?: { depositAddress?: unknown } };
+  };
   if (typeof r?.status !== "string" || !ALL.includes(r.status as BridgeStatus))
     throw fail("http", `Tidepool returned an unknown status: ${JSON.stringify(r?.status)}`);
+  // 1Click echoes the original quote: it must be about the address we asked for.
+  const echoed = r.quoteResponse?.quote?.depositAddress;
+  if (typeof echoed === "string" && echoed !== depositAddress)
+    throw fail("http", `Tidepool status is for deposit address ${echoed}, we asked ${depositAddress}`);
   const d = r.swapDetails ?? {};
   const amountIn = str(d.amountIn);
   const amountOut = str(d.amountOut);
   const refundReason = str(d.refundReason);
+  const refundedAmount = str(d.refundedAmount);
   const updatedAt = str(r.updatedAt);
   return {
     status: r.status as BridgeStatus,
@@ -36,6 +46,7 @@ export function parseStatus(raw: unknown, depositAddress: string): BridgeResult 
     solanaTxHashes: hashes(d.originChainTxHashes),
     nearTxHashes: hashes(d.destinationChainTxHashes),
     ...(refundReason && { refundReason }),
+    ...(refundedAmount && { refundedAmount }),
     ...(updatedAt && { updatedAt }),
   };
 }
@@ -75,8 +86,8 @@ export async function watchStatus(
       if (key !== last) { last = key; onUpdate(r); }
       if (isTerminal(r.status)) return r;
     } catch (e) {
-      // An unknown status is a real answer, not a transient error: stop.
-      if ((e as { kind?: string }).kind === "http" && /unknown status/.test(errMessage(e))) throw e;
+      // An unknown status or a status for another address is a real answer, not a transient error: stop.
+      if ((e as { kind?: string }).kind === "http" && /unknown status|status is for deposit address/.test(errMessage(e))) throw e;
       if (++errors >= maxErrors) throw e;
     }
     await sleep(interval, opts.signal);

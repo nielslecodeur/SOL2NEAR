@@ -100,17 +100,24 @@ export function App() {
 }
 
 function Dashboard({ snap, account }: { snap: Snapshot; account: string }) {
-  const total = snap.deposits.reduce((s, d) => s + BigInt(d.amount), 0n);
-  const sum = (k: "lp_budget" | "reserve" | "community") => snap.deposits.reduce((s, d) => s + BigInt(d[k]), 0n);
+  // With a creator loaded: that creator's deposits. Without: the Treasury's global accounting.
+  const creator = account.trim() && snap.deposits.length > 0 ? account.trim() : null;
+  const sum = (k: "amount" | "lp_budget" | "reserve" | "community") => snap.deposits.reduce((s, d) => s + BigInt(d[k]), 0n);
+  const a = snap.accounting;
+  const total = creator ? sum("amount") : BigInt(a?.total_received ?? 0);
+  const reserve = creator ? sum("reserve") : BigInt(a?.reserve_total ?? 0);
+  const community = creator ? sum("community") : BigInt(a?.community_total ?? 0);
+  const lpBudget = creator ? sum("lp_budget") : total - reserve - community; // exact: the split is done in atomic units
   const confirmed = snap.deposits.filter((d) => d.status === "LpConfirmed");
-  const shares = confirmed.reduce((s, d) => s + BigInt(d.lp_shares), 0n);
+  const shares = creator ? confirmed.reduce((s, d) => s + BigInt(d.lp_shares), 0n) : BigInt(a?.recorded_shares ?? 0);
+  const scope = creator ? `from ${creator}` : "all creators";
   return (
     <main>
       <section className="grid4">
-        <Stat label="USDC received by Treasury" value={usdc(total)} />
-        <Stat label="LP budget (90 %)" value={usdc(sum("lp_budget"))} />
-        <Stat label="Creator reserve (8 %)" value={usdc(sum("reserve"))} />
-        <Stat label="Community (2 %)" value={usdc(sum("community"))} />
+        <Stat label={`USDC received by Treasury (${scope})`} value={usdc(total)} />
+        <Stat label="LP budget (90 %)" value={usdc(lpBudget)} />
+        <Stat label="Creator reserve (8 %)" value={usdc(reserve)} />
+        <Stat label="Community (2 %)" value={usdc(community)} />
       </section>
       {total > 0n && (
         <div className="split" aria-label="90/8/2 split">
@@ -119,7 +126,7 @@ function Dashboard({ snap, account }: { snap: Snapshot; account: string }) {
       )}
       <section className="grid2">
         <div className="card">
-          <h3>LP shares held by Treasury</h3>
+          <h3>LP shares held by Treasury ({scope})</h3>
           <p className="big">{wnear(shares)} <small>shares (MFT, 24 dec.)</small></p>
           <p className="muted">
             Ref reports {snap.refTreasuryShares ? wnear(snap.refTreasuryShares) : "—"} shares for the Treasury; recorded{" "}

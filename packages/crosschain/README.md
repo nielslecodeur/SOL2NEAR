@@ -11,7 +11,7 @@ const preview = await tidepool.quote({ amountAtomic: "1000000", solanaRefundAddr
 
 | Command | What it does |
 |---|---|
-| `pnpm --filter @sol2near/crosschain test` | 21 unit tests (mocked Tidepool + Solana RPC) |
+| `pnpm --filter @sol2near/crosschain test` | 34 unit tests (mocked Tidepool, Solana RPC, NEAR RPC, wallet, storage) |
 | `pnpm --filter @sol2near/crosschain typecheck` | `tsc` on `src/` and `examples/` |
 | `pnpm --filter @sol2near/crosschain live:dry` | read-only live check: health, route, one dry quote |
 
@@ -22,6 +22,8 @@ const preview = await tidepool.quote({ amountAtomic: "1000000", solanaRefundAddr
 | `src/solana.ts` | unsigned SPL deposit tx, devnet reads |
 | `src/wallet.ts` | wallet boundary (no keys here) |
 | `src/status.ts` | status parsing and polling |
+| `src/near.ts` | NEAR receipt check (USDC balance delta) |
+| `src/store.ts` | persisted transfer records (reload-safe) |
 | `src/errors.ts` | `CrosschainFailure` |
 | `src/client.ts` | public client |
 
