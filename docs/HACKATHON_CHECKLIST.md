@@ -137,7 +137,7 @@ Chaque preuve va dans le README avec un lien explorer (`testnet.nearblocks.io`, 
 3. [x] (13/11 : seuls des faux positifs, le texte des règles ; aucune donnée perso) Faire le scan des secrets et données personnelles sur ce qui sera poussé :
    `git diff origin/main..HEAD | grep -iE 'ed25519:[1-9A-HJ-NP-Za-km-z]{80,}|secret_key|private_key|mnemonic'` → doit être vide ;
    `git ls-tree -r --name-only HEAD | grep -iE '\.env|credential|keypair|id\.json'` → doit être vide.
-4. [ ] Faire tourner les étapes « action → résultat » du README sur une copie propre (`git clone` → build → tests) et vérifier les sorties.
+4. [x] (13/11 sur un clone propre : TS 6+21+6 pass, cargo Treasury 34 + FUEL 31 pass ; sur Windows, garder `target` hors du dossier Temp car MSBuild y refuse aws-lc-sys) Faire tourner les étapes « action → résultat » du README sur une copie propre (`git clone` → build → tests) et vérifier les sorties.
 5. [x] Vérifier chaque lien de preuve du README (13/11 : les 12 tx confirmées par RPC, A8–B2 via archival ; C7 échoue avec `ERR_ALREADY_CLAIMED` comme prévu).
 6. [ ] Tenir le tableau §5 à jour : rien n'est marqué ☑ sans preuve.
 7. [x] Déclarations §4 présentes dans le README (bibliothèques Solana ajoutées le 13/11).
