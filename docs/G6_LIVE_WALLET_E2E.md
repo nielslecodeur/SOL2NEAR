@@ -1,6 +1,6 @@
 # G6 — Live NEAR wallet, first Treasury deposit from the dashboard
 
-Date: 2026-11-13. Solo project. **Status: deposit PASS · execute_lp PASS · FUEL registration NOT ADMITTED (window expired) · claim not applicable.**
+Date: 2026-11-13. Solo project. **Status: scenario 1 (deposit #1): deposit + LP PASS, registration rejected (window expired). Scenario 2 (deposit #2, 12 USDC): deposit, LP, registration, FUEL storage PASS; close_season + claim pending (allowed from 19:25:02 UTC).**
 
 ## 1. Environment
 
@@ -28,6 +28,10 @@ Date: 2026-11-13. Solo project. **Status: deposit PASS · execute_lp PASS · FUE
 | E2 | `storage_deposit` on FUEL for `lowarena9362.testnet` | NOT_RUN | only needed for a claim; not needed in scenario 1 |
 | E3 | `register_position(1)` | **REJECTED by FUEL (window expired)** | signed by the user in Meteor; tx [`3HsEr7b3Mr1zYLmLi3q6ApgcthXarUTwe9tg5xxXQRzF`](https://testnet.nearblocks.io/txns/3HsEr7b3Mr1zYLmLi3q6ApgcthXarUTwe9tg5xxXQRzF) included 18:10:57 UTC (block 277545024), after the season 67 deadline of 17:54:02. Event `position_rejected {position_id "1", reason ERR_REGISTRATION_WINDOW_CLOSED}`, nothing written. **The request was sent at 18:10:46 without re-checking the clock (assistant error)**; the dashboard now shows a countdown and disables the button once the window closed. Deposit #1 can no longer enter FUEL |
 | E4 | `close_season` / `claim` | NOT APPLICABLE | season 67 is empty: it cannot be closed, so nothing is burned |
+| **D2** | **Deposit 12 USDC** (scenario 2, full FUEL path) | **PASS** | tx [`DmbsT6ce7U9GPqVZYPgv2Kc5hmMn8cNeYKKDq8u1g9Gi`](https://testnet.nearblocks.io/txns/DmbsT6ce7U9GPqVZYPgv2Kc5hmMn8cNeYKKDq8u1g9Gi): deposit #2, 10.8 / 0.96 / 0.24; user 98 → 86 USDC; Treasury 4 → 14.2 USDC (2.2 left after #1's LP left for Ref, + 12); accounting 34 USDC received, 3 deposits |
+| **E1b** | **`execute_lp(2)`** | **PASS** | tx [`CundGCKWCSnC14tTRkaJ8EiRzDRttQvhQ3SjFgfTpHyD`](https://testnet.nearblocks.io/txns/CundGCKWCSnC14tTRkaJ8EiRzDRttQvhQ3SjFgfTpHyD): `LpConfirmed`, verified, swapped 5213946 + in LP 5586053 + dust 1 = 10800000 = lp_budget; 87827896964884103917701 shares; Treasury recorded = Ref `get_pool_shares` = 268750243691052670214318; LP confirmed at 19:08:25 UTC, i.e. **season 70** (registration deadline 19:24:02) |
+| **E3b** | **`register_position(2)`** | **PASS** | tx [`SrFHSmHCx41j2ytekUvZhV5sX4AHkSsQCrBNLZbsghM`](https://testnet.nearblocks.io/txns/SrFHSmHCx41j2ytekUvZhV5sX4AHkSsQCrBNLZbsghM): `position_admitted` season 70, usdc_in_lp 5586053, committed 4.4688424 FUEL creator / 1.1172106 community; registered at 19:10:36 UTC (the dashboard countdown showed 14m left); season 70 progress **5586053 / 5000000**, 1 position, status Open |
+| **E2b** | **FUEL `storage_deposit`** | **PASS** | tx [`DntEzzYDmLsznGpMEyDcW9Q872Y7azKT6NMqzv3GPQFg`](https://testnet.nearblocks.io/txns/DntEzzYDmLsznGpMEyDcW9Q872Y7azKT6NMqzv3GPQFg): `storage_balance_of(lowarena9362.testnet)` = 0.00125 NEAR |
 
 ### E1 — on-chain verification of `execute_lp(1)` (independent RPC)
 
