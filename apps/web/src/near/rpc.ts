@@ -21,6 +21,8 @@ export interface NearRpc {
   codeHash(accountId: string): Promise<string | null>;
   /** Final outcome of a tx, or null while it is unknown / not final yet (never treated as a failure). */
   txStatus(hash: string, signerId: string): Promise<TxOutcome | null>;
+  /** Timestamp (ns) of the latest final block: the chain's clock, used for locks and deadlines. */
+  blockTimestampNs(): Promise<bigint>;
 }
 
 /** Public testnet providers, tried in order (both listed by docs.near.org; rpc.testnet.near.org was deprecated). */
@@ -92,6 +94,10 @@ export function nearRpc(urls: string | string[] = NEAR_RPC_URLS, doFetch: FetchL
         if (/UNKNOWN_ACCOUNT|does not exist/.test((e as Error).message)) return null;
         throw e;
       }
+    },
+    async blockTimestampNs() {
+      const r = await call("block", { finality: "final" });
+      return BigInt(r.header.timestamp_nanosec);
     },
     async txStatus(hash, signerId) {
       try {

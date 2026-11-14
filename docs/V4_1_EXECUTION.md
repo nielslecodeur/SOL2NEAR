@@ -28,11 +28,11 @@ The deployed contracts (Treasury V3, FUEL) and their proofs are untouched.
 
 | Piece | Where |
 |---|---|
-| TreasuryV4 contract | `contracts/treasury-v4` (lib.rs ~1 130 lines, 44 tests). wasm 299.3 KB, SHA-256 `ffffe9e794919c017c609d443d046b670ceaeccf537a31ac6582896525938c1c` (cargo-near 0.22.0, non-reproducible build) |
+| TreasuryV4 contract | `contracts/treasury-v4` (lib.rs ~1 130 lines, 44 tests). wasm 299.3 KB, SHA-256 `ffffe9e7…8c1c` at V4.1A; **superseded in V4.1B** by `66479af16be1ddbeda710e2e038a0a56430f5e5268b63c9fadef1971dfa600ed` (302.5 KB, leftover-job reconcile fix) |
 | Sandbox test token | `contracts/sandbox-meme` (S2NMEME, 18 dec., 3 tests). wasm 149.3 KB, SHA-256 `7265aa4e6cce5843a10f20fef4ab8c25d4268e5b22a28eee8cbd0e3767e9283c` |
 | Local sandbox run | `sandbox-tests/` (near-workspaces 0.24, neard sandbox 2.14 in WSL). Run with `wsl -d Ubuntu -- bash sandbox-tests/run.sh`, after `node scripts/probes/fetch-sandbox-wasm.mjs` and `bash scripts/build-wasm.sh treasury-v4 sandbox-meme`. Log: `docs/v4/sandbox-run.log` |
 | Client | `packages/near-client/src/treasuryV4.ts` (+5 tests) |
-| UI | `apps/web/src/PilotV41.tsx` on the Pools page (+2 e2e). Screenshots `docs/v4/pilot-card.jpg`, `docs/v4/pilot-journey.jpg` |
+| UI | `apps/web/src/PilotV41.tsx` on the Pools page (+2 e2e). Screenshots: superseded by the V4.1B pages (`docs/v4/v41b-*.jpg`, see `V4_1B_EXECUTION.md`) |
 | Probes | `scripts/probes/verify-g6-g7.mjs`, `scripts/probes/fetch-sandbox-wasm.mjs` (read-only `view_code`) |
 | Build script | `scripts/build-wasm.sh [contract …]`. The default is still the two deployed contracts |
 

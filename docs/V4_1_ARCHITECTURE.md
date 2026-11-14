@@ -129,7 +129,7 @@ A contract cannot see transaction hashes, so an indexer or the dashboard history
 | Job failed (guard, swap, add) | funds parked `InRef` or `Swapped`. The creator either resumes (`execute_lp` with a fresh plan) or `abort_lp` | no double spend: a resume never re-sends the budget to Ref |
 | Abort | `BudgetAllocated` → the budget goes to the creator's USDC reserve. `InRef` / `Swapped` → leftovers of this deposit | status `Aborted`. Allowed only before the LP exists |
 | Leftovers (dust after LP, or aborted funds) | `withdraw_leftover(deposit, token)`: Ref `withdraw` to Treasury, then Ref `get_deposits`. Credited to the creator's reserve (USDC) or base balance (S2NMEME) **only if Ref's balance really dropped**. Then `withdraw_reserve` / `withdraw_base` (ft_transfer, re-credit on failure) | judged from Ref state, because Ref re-credits a failed withdraw. One job at a time. No double withdraw (`ERR_NOTHING_TO_WITHDRAW`) |
-| Lost callback (gas, crash) | `reconcile` after 10 min: the stage is re-derived from Ref `get_pool_shares` and `get_deposits` (pre-swap check → back to `InRef`) | stale or replayed reconcile is ignored |
+| Lost callback (gas, crash) | `reconcile` after 10 min: an LP job's stage is re-derived from Ref `get_pool_shares` and `get_deposits` (pre-swap check → back to `InRef`); a leftover job is settled from Ref `get_deposits` (V4.1B fix) | stale or replayed reconcile is ignored |
 
 **V3 vs V4:** V3 cannot recover leftovers and has no abort. Its `withdraw_lp` exists in code but **has never been exercised on-chain**. V4.1 adds the recovery path and exercises the whole exit against the real Ref code in the sandbox.
 

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { POOL_REGISTRY_VERSION, selectPool, type Assessment, type LivePool, type PoolDescriptor } from "../../../packages/near-client/src/index.ts";
 import { formatUnits, parseUnits, usdc } from "./format.ts";
 import { DEFAULT_SLIPPAGE_BPS } from "./near/actions.ts";
-import { PilotV41 } from "./PilotV41.tsx";
+import { V4Pilot } from "./v4/V4.tsx";
 import { loadSelection, poolReaders, saveSelection, type Catalog, type Preflight, type PoolRow } from "./pools/live.ts";
 
 const readers = poolReaders();
@@ -13,7 +13,7 @@ const STATUS_TONE = { ELIGIBLE: "confirmed", OBSERVE_ONLY: "neutral", SUSPENDED:
 const explorer = (d: PoolDescriptor, account: string) =>
   d.network === "near-testnet" ? `https://testnet.nearblocks.io/address/${account}` : `https://nearblocks.io/address/${account}`;
 
-export function PoolsPage() {
+export function PoolsPage({ wallet = null }: { wallet?: string | null }) {
   const [cat, setCat] = useState<Catalog | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -69,7 +69,7 @@ export function PoolsPage() {
 
       {sel && cat?.treasury && <SelectedPool row={sel} onClear={() => { setSelected(null); saveSelection(null); }} treasury={cat.treasury} />}
 
-      <PilotV41 read={readers.readPilot} />
+      <V4Pilot wallet={wallet} />
 
       <section className="poolgrid">
         {cat?.rows.map((r) => <PoolCard key={r.d.key} row={r} selected={r.d.key === selected} onSelect={() => choose(r.d.key)} />)}

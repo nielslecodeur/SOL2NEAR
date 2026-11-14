@@ -106,3 +106,12 @@ h2 { margin: 6px 0; overflow-wrap: anywhere; }
 .pilot { display: grid; gap: 10px; }
 .pilot details summary { cursor: pointer; color: var(--muted); }
 .pilot button.locked, .pilot button[disabled] { opacity: .55; cursor: not-allowed; justify-self: start; background: transparent; color: var(--muted); border: 1px dashed var(--line); }
+/* V4.1B: long ids / JSON payloads must wrap on phones */
+.kv div { grid-template-columns: 110px minmax(0, 1fr); }
+.watch select { max-width: 100%; min-width: 0; }
+.locked-action { display: grid; gap: 4px; }
+.pilot h4, .pool h4 { margin: 12px 0 4px; }
+.pools { grid-template-columns: minmax(0, 1fr); }
+.pools > * { min-width: 0; }
+.pilot, .pool { grid-template-columns: minmax(0, 1fr); }
+.pilot > *, .pool > * { min-width: 0; }

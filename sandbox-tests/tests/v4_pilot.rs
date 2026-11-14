@@ -63,6 +63,25 @@ async fn view(c: &AccountId, w: &Worker<Sandbox>, method: &str, args: Value) -> 
     Ok(w.view(c, method).args_json(args).await?.json::<Value>()?)
 }
 
+/// Real contract views captured during the run, written to packages/near-client/src/fixtures/ for the TS/UI tests.
+async fn snap(e: &Env, t: &AccountId, pool_id: u64, alice: &AccountId, out: &mut serde_json::Map<String, Value>, key: &str, id: &str) -> anyhow::Result<()> {
+    let now = e.w.view_block().await?.timestamp();
+    let position = view(t, &e.w, "get_position", json!({ "deposit_id": id })).await?;
+    let in_flight = view(t, &e.w, "get_in_flight", json!({})).await?;
+    let ref_treasury_shares = view(e.reff.id(), &e.w, "get_pool_shares", json!({ "pool_id": pool_id, "account_id": t })).await?;
+    let mft_registered = view(e.reff.id(), &e.w, "mft_has_registered", json!({ "token_id": format!(":{pool_id}"), "account_id": alice })).await?;
+    let shares = position["deposit"]["lp_shares"].as_str().unwrap_or("0").to_string();
+    let predict_remove = if shares != "0" && position["deposit"]["status"] == "LpConfirmed" {
+        view(e.reff.id(), &e.w, "predict_remove_liquidity", json!({ "pool_id": pool_id, "shares": shares })).await?
+    } else {
+        Value::Null
+    };
+    let creator_reserve = view(t, &e.w, "get_reserve", json!({ "creator": alice })).await?;
+    let creator_base_balance = view(t, &e.w, "get_base_balance", json!({ "creator": alice })).await?;
+    out.insert(key.into(), json!({ "now_ns": now.to_string(), "position": position, "in_flight": in_flight, "ref_treasury_shares": ref_treasury_shares, "creator_mft_registered": mft_registered, "predict_remove_liquidity": predict_remove, "creator_reserve": creator_reserve, "creator_base_balance": creator_base_balance }));
+    Ok(())
+}
+
 async fn sub(root: &Account, name: &str, near: u128) -> anyhow::Result<Account> {
     Ok(root.create_subaccount(name).initial_balance(NearToken::from_near(near)).transact().await?.into_result()?)
 }
@@ -133,6 +152,7 @@ async fn v4_classic_pilot_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     must("A3", "S2NMEME new (sandbox token, supply minted once to lp)", meme.call("new").args_json(json!({
         "owner_id": lp.id(), "total_supply": (1_000_000_000 * MEME1).to_string() })).transact().await?)?;
     let e = Env { w, root, reff, usdc, meme };
+    let mut fx = serde_json::Map::new();
     let m = view(e.usdc.id(), &e.w, "ft_metadata", json!({})).await?;
     anyhow::ensure!(m["decimals"] == 6, "USDC decimals {m}");
 
@@ -170,6 +190,8 @@ async fn v4_classic_pilot_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     must("C1", "setup (storage, register_tokens, get_pool + ft_metadata checks)", r)?;
     let cfg = view(t.id(), &e.w, "get_config", json!({})).await?;
     anyhow::ensure!(cfg["ready"] == true && cfg["fuel"] == "FUEL_NOT_ELIGIBLE", "config {cfg}");
+    fx.insert("config".into(), cfg.clone());
+    fx.insert("ref_metadata".into(), view(e.reff.id(), &e.w, "metadata", json!({})).await?);
 
     // ---------- intake ----------
     must_fail("D0", "deposit of the wrong token (S2NMEME) is refunded", {
@@ -186,6 +208,8 @@ async fn v4_classic_pilot_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let d = view(t.id(), &e.w, "get_deposit", json!({ "deposit_id": "0" })).await?;
     anyhow::ensure!((u(&d["lp_budget"]), u(&d["reserve"]), u(&d["community"])) == (18 * USDC1, 1_600_000, 400_000), "split {d}");
     println!("[D1] split 90/8/2: {} / {} / {}", d["lp_budget"], d["reserve"], d["community"]);
+    snap(&e, t.id(), pool_id, alice.id(), &mut fx, "budget_allocated", "0").await?;
+    fx.insert("pool_before_lp".into(), view(e.reff.id(), &e.w, "get_pool", json!({ "pool_id": pool_id })).await?);
 
     // ---------- plan from live Ref views ----------
     let now = e.w.view_block().await?.timestamp();
@@ -209,6 +233,7 @@ async fn v4_classic_pilot_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     println!("[E2] status {} · last_error {}", d["status"], d["last_error"]);
     anyhow::ensure!(d["status"]["InRef"].is_object() && d["last_error"].as_str().unwrap().starts_with("guard_slippage"), "{d}");
     anyhow::ensure!(!events(&r).iter().any(|e| e.ends_with("swap_confirmed")));
+    snap(&e, t.id(), pool_id, alice.id(), &mut fx, "parked_guard_slippage", "0").await?;
 
     // ---------- resume with a correct plan: swap -> add_liquidity -> verify ----------
     let r = must("E3", "alice resumes with a correct plan", alice.call(t.id(), "execute_lp").args_json(json!({ "deposit_id": "0", "plan": plan(swap_in, quote, 9_950) })).gas(tgas(300)).transact().await?)?;
@@ -224,6 +249,7 @@ async fn v4_classic_pilot_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     anyhow::ensure!(d["status"] == "LpConfirmed" && d["lp_verified"] == true && ref_shares == shares && shares > 0);
     anyhow::ensure!(u(&d["usdc_swapped"]) + u(&d["usdc_in_lp"]) + u(&d["dust_usdc"]) == 18 * USDC1, "USDC reconciliation");
     anyhow::ensure!(pos["locked"] == true && pos["fuel_status"] == "FUEL_NOT_ELIGIBLE");
+    snap(&e, t.id(), pool_id, alice.id(), &mut fx, "lp_confirmed_locked", "0").await?;
 
     // ---------- price-impact guard on a budget too large for the pool, then abort + recovery ----------
     must("F1", "alice deposits 900 USDC (LP budget 810 in a ~1 000 USDC pool)", alice.call(e.usdc.id(), "ft_transfer_call").args_json(json!({
@@ -237,11 +263,14 @@ async fn v4_classic_pilot_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let d1 = view(t.id(), &e.w, "get_deposit", json!({ "deposit_id": "1" })).await?;
     println!("[F2] status {} · last_error {}", d1["status"], d1["last_error"]);
     anyhow::ensure!(d1["last_error"].as_str().unwrap().starts_with("guard_price_impact"), "{d1}");
+    snap(&e, t.id(), pool_id, alice.id(), &mut fx, "parked_price_impact", "1").await?;
     must("F3", "alice aborts deposit #1 (budget stays hers)", alice.call(t.id(), "abort_lp").args_json(json!({ "deposit_id": "1" })).transact().await?)?;
     let usdc_before = u(&view(e.usdc.id(), &e.w, "ft_balance_of", json!({ "account_id": alice.id() })).await?);
+    snap(&e, t.id(), pool_id, alice.id(), &mut fx, "aborted_with_leftovers", "1").await?;
     must("F4", "withdraw_leftover USDC of #1 (real Ref withdraw, checked with get_deposits)", alice.call(t.id(), "withdraw_leftover").args_json(json!({ "deposit_id": "1", "token_id": e.usdc.id() })).deposit(yocto(1)).gas(tgas(150)).transact().await?)?;
     let d1 = view(t.id(), &e.w, "get_deposit", json!({ "deposit_id": "1" })).await?;
     anyhow::ensure!(u(&d1["dust_usdc"]) == 0 && u(&d1["usdc_recovered"]) == 810 * USDC1, "{d1}");
+    snap(&e, t.id(), pool_id, alice.id(), &mut fx, "aborted_recovered", "1").await?;
     let reserve = u(&view(t.id(), &e.w, "get_reserve", json!({ "creator": alice.id() })).await?);
     must("F5", "withdraw_reserve (8 % reserves + recovered 810 USDC)", alice.call(t.id(), "withdraw_reserve").args_json(json!({ "amount": reserve.to_string() })).deposit(yocto(1)).gas(tgas(100)).transact().await?)?;
     let usdc_after = u(&view(e.usdc.id(), &e.w, "ft_balance_of", json!({ "account_id": alice.id() })).await?);
@@ -256,12 +285,15 @@ async fn v4_classic_pilot_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
         e.w.fast_forward(50).await?;
     }
     println!("[G3] sandbox time is past unlock_at {unlock}");
+    snap(&e, t.id(), pool_id, alice.id(), &mut fx, "lp_unlocked_not_registered", "0").await?;
     must("G3", "alice mft_register for the pool shares", alice.call(e.reff.id(), "mft_register").args_json(json!({ "token_id": format!(":{pool_id}"), "account_id": alice.id() })).deposit(milli(10)).transact().await?)?;
+    snap(&e, t.id(), pool_id, alice.id(), &mut fx, "lp_unlocked_registered", "0").await?;
     must("G4", "withdraw_lp after the lock", alice.call(t.id(), "withdraw_lp").args_json(json!({ "deposit_id": "0" })).deposit(yocto(1)).gas(tgas(100)).transact().await?)?;
     let alice_shares = u(&view(e.reff.id(), &e.w, "get_pool_shares", json!({ "pool_id": pool_id, "account_id": alice.id() })).await?);
     let t_shares = u(&view(e.reff.id(), &e.w, "get_pool_shares", json!({ "pool_id": pool_id, "account_id": t.id() })).await?);
     println!("[G4] Ref: alice holds {alice_shares} shares, Treasury {t_shares}");
     anyhow::ensure!(alice_shares == shares && t_shares == 0);
+    snap(&e, t.id(), pool_id, alice.id(), &mut fx, "lp_withdrawn", "0").await?;
     must_fail("G5", "second withdraw_lp", alice.call(t.id(), "withdraw_lp").args_json(json!({ "deposit_id": "0" })).deposit(yocto(1)).gas(tgas(100)).transact().await?, "ERR_NO_CONFIRMED_LP")?;
 
     // ---------- the creator leaves the pool with Ref itself ----------
@@ -295,6 +327,11 @@ async fn v4_classic_pilot_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     anyhow::ensure!(t_meme == u(&a["base_balance_total"]), "base on token");
     anyhow::ensure!(ref_usdc == u(&a["ref_expected_usdc"]) && ref_meme == u(&a["ref_expected_base"]), "Ref deposits");
     anyhow::ensure!(u(&a["recorded_shares"]) == 0 && u(&a["total_received"]) == 920 * USDC1);
+    fx.insert("accounting_final".into(), a.clone());
+    fx.insert("_note".into(), json!("REAL TreasuryV4 / Ref views captured in a LOCAL near-workspaces sandbox (sandbox-tests/tests/v4_pilot.rs). Not testnet. Accounts are *.test.near."));
+    std::fs::write("../packages/near-client/src/fixtures/v4_sandbox_views.json", serde_json::to_string_pretty(&Value::Object(fx))? + "
+")?;
+    println!("fixture written: packages/near-client/src/fixtures/v4_sandbox_views.json");
     println!("ALL V4.1 SANDBOX CHECKS PASSED (local sandbox, not testnet)");
     Ok(())
 }

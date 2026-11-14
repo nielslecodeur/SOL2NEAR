@@ -808,3 +808,62 @@ fn base_of_someone_else_cannot_be_withdrawn() {
     ctx.set_deposit(BOB, 1);
     t.withdraw_base(U128(7));
 }
+
+// ------------------------- V4.1B audit fix: a lost leftover callback must not block the contract -------------------------
+
+#[test]
+fn lost_leftover_callback_is_reconciled_from_ref_balances() {
+    let mut ctx = Ctx { now: T0 };
+    let mut t = ready_t(&ctx);
+    happy(&mut t, &ctx); // dust 7 MEME-atomic in Ref
+    ctx.set_deposit(ALICE, 1);
+    t.withdraw_leftover(U64(0), acc(MEME)); // on_leftover never arrives
+    let since = t.get_in_flight().unwrap().since;
+    // every other job is blocked while it is in flight
+    ctx.now = T0 + RECONCILE_TIMEOUT_NS;
+    ctx.set(BOB);
+    t.reconcile();
+    ctx.set(TREASURY);
+    let mut deps = HashMap::new();
+    deps.insert(acc(MEME), U128(0)); // Ref balance did drop: the withdraw went through
+    assert!(t.on_reconcile_leftover(U64(0), since, Ok(deps.clone())));
+    assert!(t.get_in_flight().is_none(), "the contract is free again");
+    assert_eq!(t.get_base_balance(acc(ALICE)).0, 7);
+    assert_eq!(t.get_deposit(U64(0)).unwrap().dust_base.0, 0);
+    // replay: ignored
+    assert!(!t.on_reconcile_leftover(U64(0), since, Ok(deps)));
+    assert_eq!(t.get_base_balance(acc(ALICE)).0, 7);
+}
+
+#[test]
+fn leftover_reconcile_when_ref_did_not_move_releases_the_job_without_crediting() {
+    let mut ctx = Ctx { now: T0 };
+    let mut t = ready_t(&ctx);
+    happy(&mut t, &ctx);
+    ctx.set_deposit(ALICE, 1);
+    t.withdraw_leftover(U64(0), acc(USDC));
+    let since = t.get_in_flight().unwrap().since;
+    ctx.now = T0 + RECONCILE_TIMEOUT_NS;
+    ctx.set(TREASURY);
+    // views failed: the job stays in flight, reconcile can be called again
+    assert!(!t.on_reconcile_leftover(U64(0), since, Err(PromiseError::Failed)));
+    assert!(t.get_in_flight().is_some());
+    let mut deps = HashMap::new();
+    deps.insert(acc(USDC), U128(10)); // still there: Ref re-credited a failed transfer
+    assert!(!t.on_reconcile_leftover(U64(0), since, Ok(deps)));
+    assert!(t.get_in_flight().is_none());
+    assert_eq!(t.get_deposit(U64(0)).unwrap().dust_usdc.0, 10, "nothing credited, still recoverable");
+    assert_eq!(t.get_reserve(acc(ALICE)).0, 1_600_000);
+}
+
+#[test]
+#[should_panic(expected = "ERR_RECONCILE_TOO_EARLY")]
+fn leftover_reconcile_waits_for_the_timeout() {
+    let ctx = Ctx { now: T0 };
+    let mut t = ready_t(&ctx);
+    happy(&mut t, &ctx);
+    ctx.set_deposit(ALICE, 1);
+    t.withdraw_leftover(U64(0), acc(MEME));
+    ctx.set(BOB);
+    t.reconcile();
+}

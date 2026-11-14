@@ -46,7 +46,7 @@ locked true · fuel "FUEL_NOT_ELIGIBLE"
 [F5] alice USDC 80000000 -> 963600000 (+883600000) = reserve 883600000
 [G1] withdraw_lp during the lock: refused as expected (ERR_LP_LOCKED)
 [G2] bob withdraws alice's LP: refused as expected (ERR_NOT_CREATOR)
-[G3] sandbox time is past unlock_at 1794613591014696843
+[G3] sandbox time is past unlock_at 1794615830967692150
 [G3] alice mft_register for the pool shares: OK · events []
 [G4] withdraw_lp after the lock: OK · events ["sol2near:lp_withdraw_started", "sol2near:lp_withdrawn", 
 "sol2near:proof_of_liquidity"]
@@ -62,7 +62,8 @@ recorded_shares":"0","ref_expected_base":"0","ref_expected_usdc":"0","reserve_to
 [R] Treasury USDC on token 18400001 = reserve "1" + community "18400000" + pending "0"
 [R] Treasury S2NMEME on token 1 = base balances "1"
 [R] Treasury deposits on Ref: USDC 0 (expected "0"), S2NMEME 0 (expected "0")
+fixture written: packages/near-client/src/fixtures/v4_sandbox_views.json
 ALL V4.1 SANDBOX CHECKS PASSED (local sandbox, not testnet)
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 29.21s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 29.39s
 
 

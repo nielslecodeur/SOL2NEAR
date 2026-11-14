@@ -5,15 +5,17 @@ import { demoSnapshot, mockCrosschain } from "./demo.ts";
 import { BridgeLive } from "./BridgeLive.tsx";
 import { NearPanel } from "./NearPanel.tsx";
 import { PoolsPage } from "./PoolsPage.tsx";
+import { PositionsPage } from "./v4/V4.tsx";
 import { bridgeTone, depositStatus, duration, fuel, pct, usdc, wnear, type Tone } from "./format.ts";
 
-type Route = { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" } | { page: "pools" };
+type Route = { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" } | { page: "pools" } | { page: "positions" };
 
 function parseRoute(): Route {
   const [, page, id] = location.hash.split("/");
   if (page === "vault" && id) return { page: "vault", id };
   if (page === "reactor") return { page: "reactor" };
   if (page === "pools") return { page: "pools" };
+  if (page === "positions") return { page: "positions" };
   return { page: "dashboard" };
 }
 
@@ -34,6 +36,8 @@ export function App() {
   }, []);
 
   const [tidepoolOk, setTidepoolOk] = useState<boolean | null>(null);
+  /** The account of the CONNECTED wallet (testnet only), distinct from the watched account. */
+  const [walletAccount, setWalletAccount] = useState<string | null>(null);
 
   // Only the latest request may update the screen: a slower earlier read (other account, or testnet
   // data arriving after a switch to demo) must never overwrite it.
@@ -69,7 +73,8 @@ export function App() {
         <nav>
           <a href="#/" className={route.page === "dashboard" || route.page === "vault" ? "on" : ""}>Dashboard</a>
           <a href="#/reactor" className={route.page === "reactor" ? "on" : ""}>FUEL Reactor</a>
-          <a href="#/pools" className={route.page === "pools" ? "on" : ""}>Pools (V4.0)</a>
+          <a href="#/pools" className={route.page === "pools" ? "on" : ""}>Pools (V4)</a>
+          <a href="#/positions" className={route.page === "positions" ? "on" : ""}>Positions (V4)</a>
         </nav>
         <div className="net">
           <Badge tone="pending">TESTNET</Badge>
@@ -97,7 +102,7 @@ export function App() {
       {!demo && (
         <NearPanel
           tidepoolReachable={tidepoolOk}
-          onAccount={(id) => { if (id) { setAccount(id); localStorageSet("account", id); refresh(id); } }}
+          onAccount={(id) => { setWalletAccount(id); if (id) { setAccount(id); localStorageSet("account", id); refresh(id); } }}
           onChanged={() => refresh()}
         />
       )}
@@ -114,7 +119,10 @@ export function App() {
       {snap && route.page === "reactor" && <ReactorPage snap={snap} />}
       {route.page === "pools" && (demo
         ? <main><div className="banner sim">The Pool Explorer has no simulated data: switch to Live testnet to read the real DEX pools.</div></main>
-        : <PoolsPage />)}
+        : <PoolsPage wallet={walletAccount} />)}
+      {route.page === "positions" && (demo
+        ? <main><div className="banner sim">The Position Manager has no simulated data mode: switch to Live testnet (it also offers a labelled local-sandbox preview).</div></main>
+        : <PositionsPage wallet={walletAccount} />)}
 
       <footer>
         Contracts: <a href={explorerAccount(TREASURY_ACCOUNT_ID)} target="_blank" rel="noreferrer">{TREASURY_ACCOUNT_ID}</a> ·{" "}

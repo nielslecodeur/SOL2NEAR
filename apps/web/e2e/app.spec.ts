@@ -5,6 +5,7 @@
 // No test clicks anything that could reach a real wallet signature: the only "Confirm & open wallet" clicks
 // happen with the mocked wallet, which rejects and never touches the network.
 import { expect, test, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 const RPCS = ["https://near-testnet.drpc.org", "https://test.rpc.fastnear.com"];
 const DEV = "sol2near-dev.testnet";
@@ -318,37 +319,197 @@ test.describe("@mock V4.0 Pool Explorer failure cases", () => {
   });
 });
 
-// ---- V4.1 Classic pilot card: LOCKED, read-only. TreasuryV4 / S2NMEME are NOT deployed. ----
-test.describe("@live V4.1 pilot card (real testnet reads)", () => {
-  test("shows NOT DEPLOYED from live reads, FUEL_NOT_ELIGIBLE from the deployed FUEL config, every step LOCKED, nothing signable", async ({ page }) => {
+// ---- V4.1B: TreasuryV4 journey + Position Manager. Signing is LOCKED; TreasuryV4 is NOT deployed on testnet. ----
+const pilot = (page: Page) => page.getByLabel("V4.1 Classic pilot");
+const SANDBOX_VIEWS = JSON.parse(readFileSync(new URL("../../../packages/near-client/src/fixtures/v4_sandbox_views.json", import.meta.url), "utf8"));
+async function preview(page: Page, stage: string, path = "/#/positions") {
+  await page.addInitScript((st) => { localStorage.setItem("sol2near:v4-source", "sandbox-snapshot"); localStorage.setItem("sol2near:v4-stage", st); }, stage);
+  await page.goto(path);
+}
+const position = (page: Page, id = "0") => page.getByLabel(`Position ${id}`);
+async function allLockedButtonsDisabled(page: Page) {
+  const locked = page.getByRole("button", { name: /— locked$/ });
+  expect(await locked.count()).toBeGreaterThan(0);
+  for (const b of await locked.all()) await expect(b).toBeDisabled();
+}
+
+test.describe("@live V4.1B on public testnet (read only)", () => {
+  test("pilot: NOT DEPLOYED from live reads, FUEL_NOT_ELIGIBLE from the deployed FUEL, no quote, tracker NOT_DEPLOYED, nothing signable", async ({ page }) => {
     await mockWallet(page, DEV);
     const errors = watchErrors(page);
     const fuelCfg = (await view<{ config: { treasury_id: string } }>("fuel.sol2near-dev.testnet", "get_reactor")).config;
     await page.goto("/#/pools");
-    const pilot = page.getByLabel("V4.1 Classic pilot");
-    await expect(pilot).toContainText("NOT DEPLOYED", { timeout: 30_000 });
-    await expect(pilot).toContainText("treasury-v4.sol2near-dev.testnet");
-    await expect(pilot).toContainText("FUEL_NOT_ELIGIBLE");
-    await expect(pilot).toContainText(fuelCfg.treasury_id);
-    await expect(pilot).toContainText("SANDBOX TEST TOKEN · NO VALUE");
-    await expect(pilot).toContainText("Not a yield, not guaranteed");
-    const steps = pilot.getByLabel("Pilot journey").locator("li");
-    await expect(steps).toHaveCount(7);
-    await expect(steps.filter({ hasText: "LOCKED" })).toHaveCount(7);
-    await expect(pilot.getByRole("button", { name: /Fund the pilot pool/ })).toBeDisabled();
-    await pilot.getByText("Exact calls a creator would sign").click();
-    await expect(pilot).toContainText("treasury-v4.sol2near-dev.testnet.execute_lp");
+    await expect(pilot(page).getByTestId("deployment")).toHaveText("NOT DEPLOYED", { timeout: 30_000 });
+    await expect(pilot(page)).toContainText("FUEL_NOT_ELIGIBLE");
+    await expect(pilot(page)).toContainText(fuelCfg.treasury_id);
+    await expect(pilot(page).getByLabel("Estimate problems")).toContainText("not deployed");
+    await expect(pilot(page)).toContainText("none exists on testnet yet");
+    await expect(pilot(page).locator('[data-state="NOT_DEPLOYED"]')).toBeVisible();
+    await page.goto("/#/positions");
+    await expect(page.getByTestId("no-positions")).toBeVisible({ timeout: 30_000 });
     expect(await page.evaluate(() => (window as any).__signCalls)).toBe(0);
     expect(errors).toEqual([]);
   });
+
+  test("mobile 390px: the Position Manager has no horizontal page scroll", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await preview(page, "lp_confirmed_locked");
+    await expect(position(page)).toBeVisible({ timeout: 30_000 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+  });
 });
 
-test.describe("@mock V4.1 pilot card failure", () => {
-  test("testnet RPC down: the pilot card says the read failed and unlocks nothing", async ({ page }) => {
-    await page.route(/near-testnet\.drpc\.org|test\.rpc\.fastnear\.com/, (route) => route.abort("failed")); // MOCK testnet outage
+test.describe("@preview V4.1B Position Manager on REAL contract views from the LOCAL sandbox (not testnet)", () => {
+  test("LOCKED: verified shares, lock end, withdraw refused (lock, sandbox network), FUEL not eligible, every action locked", async ({ page }) => {
+    await preview(page, "lp_confirmed_locked");
+    await expect(page.getByRole("note")).toContainText("LOCAL SANDBOX SNAPSHOT");
+    const p = position(page);
+    await expect(p).toHaveAttribute("data-state", "LOCKED", { timeout: 30_000 });
+    await expect(p).toContainText("verified on Ref");
+    await expect(p).toContainText("✓ USDC reconciles");
+    await expect(p).toContainText("LOCAL SANDBOX · NOT AN INVESTMENT");
+    await expect(p).toContainText("FUEL_NOT_ELIGIBLE");
+    await expect(p).toContainText("not a profit figure");
+    const blocked = p.getByLabel("Withdraw blocked");
+    await expect(blocked).toContainText("Locked until");
+    await expect(blocked).toContainText("Wrong network (sandbox)");
+    await allLockedButtonsDisabled(page);
+    await page.screenshot({ path: "test-results/v41b-locked.png", fullPage: true });
+  });
+
+  test("WITHDRAWABLE after the lock: only network / account reasons remain, no prerequisite once mft-registered, still locked", async ({ page }) => {
+    await preview(page, "lp_unlocked_registered");
+    const p = position(page);
+    await expect(p).toHaveAttribute("data-state", "WITHDRAWABLE", { timeout: 30_000 });
+    await expect(p.getByLabel("Withdraw blocked")).not.toContainText("Locked until");
+    await expect(p.getByLabel("Withdraw", { exact: true })).not.toContainText("mft_register");
+    await expect(p.getByRole("button", { name: "Withdraw LP — locked" })).toBeDisabled();
+  });
+
+  test("not mft-registered: the prerequisite is shown; WITHDRAWN: a second withdrawal is refused", async ({ page }) => {
+    await preview(page, "lp_unlocked_not_registered");
+    await expect(position(page).getByLabel("Withdraw", { exact: true })).toContainText("mft_register", { timeout: 30_000 });
+    await page.getByLabel("Sandbox stage").selectOption("lp_withdrawn");
+    await expect(position(page)).toHaveAttribute("data-state", "WITHDRAWN");
+    await expect(position(page).getByLabel("Withdraw blocked")).toContainText("already withdrawn");
+  });
+
+  test("RECOVERY_REQUIRED after the price-impact guard: resume or abort only, each explained; ABORTED: the 810 USDC leftover is recoverable", async ({ page }) => {
+    await preview(page, "parked_price_impact");
+    const p = position(page, "1");
+    await expect(p).toHaveAttribute("data-state", "RECOVERY_REQUIRED", { timeout: 30_000 });
+    await expect(p).toContainText("guard_price_impact");
+    for (const id of ["resume_lp", "abort_lp"]) {
+      const r = p.getByLabel(`Recovery ${id}`);
+      for (const k of ["Objective", "Funds", "Preconditions", "Recipient", "Risks"]) await expect(r).toContainText(k);
+      await expect(r.getByRole("button")).toBeDisabled();
+    }
+    await expect(p.getByLabel(/^Recovery withdraw_leftover/)).toHaveCount(0); // nothing parked as leftover yet
+    await expect(p.getByLabel("Recovery withdraw_reserve")).toContainText("73600000 USDC-atomic"); // 8 % reserves of both deposits (1.6 + 72)
+    await page.getByLabel("Sandbox stage").selectOption("aborted_with_leftovers");
+    await expect(p).toHaveAttribute("data-state", "ABORTED");
+    await expect(p.getByLabel("Recovery withdraw_leftover_usdc")).toContainText("810000000 USDC-atomic");
+    await expect(p.getByLabel("Recovery resume_lp")).toHaveCount(0);
+  });
+
+  test("estimator + review on the sandbox pool: 20 USDC planned like the contract did; 900 USDC refused by the impact guard; sign locked", async ({ page }) => {
+    await preview(page, "budget_allocated", "/#/pools");
+    const est = pilot(page).getByLabel("Estimate");
+    await expect(est).toContainText("LP budget 18", { timeout: 30_000 });
+    await expect(est).toContainText("Swap 8.97332 USDC");
+    const review = pilot(page).getByLabel("Review");
+    await expect(review).toContainText("usdc.test.near.ft_transfer_call");
+    await expect(review).toContainText("treasury-v4.test.near.execute_lp");
+    await expect(review.getByRole("button", { name: "Sign deposit — locked" })).toBeDisabled();
+    await expect(review).toContainText("Signing is disabled in V4.1B");
+    await pilot(page).getByLabel("USDC amount").fill("900");
+    await expect(pilot(page).getByLabel("Estimate problems")).toContainText("price impact");
+    await page.screenshot({ path: "test-results/v41b-estimator.png", fullPage: true });
+  });
+});
+
+/** MOCK: answers the public testnet RPC as if the pilot were deployed. Everything else goes to the real RPC. */
+async function mockDeployedPilot(page: Page, o: { config: object; position?: object; inFlight?: object | null; nowNs: string }) {
+  const bytes = (v: unknown) => Array.from(Buffer.from(JSON.stringify(v)));
+  await page.route(/near-testnet\.drpc\.org|test\.rpc\.fastnear\.com/, async (route) => {
+    const body = JSON.parse(route.request().postData() ?? "{}");
+    const p = body.params ?? {};
+    const reply = (result: unknown) => route.fulfill({ json: { jsonrpc: "2.0", id: body.id, result } });
+    if (body.method === "block") return reply({ header: { timestamp_nanosec: o.nowNs, height: 1 } });
+    if (body.method === "query" && p.request_type === "view_account" && /^(treasury-v4|s2nmeme)\.sol2near-dev\.testnet$/.test(p.account_id))
+      return reply({ amount: "1", locked: "0", code_hash: "E2EMockCodeHash1111111111111111111111111111", storage_usage: 1, block_height: 1, block_hash: "x" });
+    if (body.method === "query" && p.request_type === "call_function") {
+      const args = JSON.parse(Buffer.from(p.args_base64 ?? "", "base64").toString() || "{}");
+      const k = `${p.account_id}.${p.method_name}`;
+      const answer: Record<string, unknown> = {
+        "treasury-v4.sol2near-dev.testnet.get_config": o.config,
+        "treasury-v4.sol2near-dev.testnet.get_in_flight": o.inFlight ?? null,
+        "treasury-v4.sol2near-dev.testnet.get_creator_deposits": o.position ? [{ id: "0" }] : [],
+        "treasury-v4.sol2near-dev.testnet.get_position": o.position ?? null,
+        "treasury-v4.sol2near-dev.testnet.get_reserve": "0",
+        "treasury-v4.sol2near-dev.testnet.get_base_balance": "0",
+        "s2nmeme.sol2near-dev.testnet.storage_balance_of": { total: "1250000000000000000000", available: "0" },
+      };
+      if (k in answer) return reply({ result: bytes(answer[k]), logs: [], block_height: 1, block_hash: "x" });
+      if (p.account_id === "ref-finance-101.testnet" && args.pool_id === 9999) {
+        const pool = { pool_kind: "SIMPLE_POOL", token_account_ids: ["usdc.tidepool-sandbox.testnet", "s2nmeme.sol2near-dev.testnet"], amounts: ["1000000000", "1000000000000000000000000"], total_fee: 30, shares_total_supply: "1000000000000000000000000", amp: 0 };
+        const ref: Record<string, unknown> = { get_pool: pool, get_return: "8867071669659872053870", get_pool_shares: "0", mft_has_registered: false, predict_remove_liquidity: ["0", "0"] };
+        if (p.method_name in ref) return reply({ result: bytes(ref[p.method_name]), logs: [], block_height: 1, block_hash: "x" });
+      }
+    }
+    return route.continue();
+  });
+}
+const plannedConfig = (poolId: number) => ({
+  config: { network: "testnet", pool: { dex: "ref-finance-101.testnet", pool_id: poolId, usdc_token: "usdc.tidepool-sandbox.testnet", base_token: "s2nmeme.sol2near-dev.testnet", usdc_decimals: 6, base_decimals: 18 },
+    min_deposit: "1000000", lp_lock_duration_ns: "600000000000", guards: { max_slippage_bps: 100, max_price_impact_bps: 1000, max_plan_ttl_ns: "600000000000" } },
+  lp_bps: 9000, reserve_bps: 800, community_bps: 200, ready: true, usdc_pool_index: 0, fuel: "FUEL_NOT_ELIGIBLE",
+});
+
+test.describe("@mock V4.1B with an intercepted RPC (no contract exists on testnet)", () => {
+  test("deployed with the WRONG configuration (the sandbox config): DEPLOYED · NOT READY, nothing unlocked", async ({ page }) => {
+    await mockDeployedPilot(page, { config: SANDBOX_VIEWS.config, nowNs: SANDBOX_VIEWS.budget_allocated.now_ns });
     await page.goto("/#/pools");
-    const pilot = page.getByLabel("V4.1 Classic pilot");
-    await expect(pilot).toContainText("Live read failed", { timeout: 30_000 });
-    await expect(pilot.getByRole("button", { name: /Fund the pilot pool/ })).toBeDisabled();
+    await expect(pilot(page).getByTestId("deployment")).toContainText("DEPLOYED · NOT READY", { timeout: 30_000 });
+    await expect(pilot(page).locator('[data-state="NOT_DEPLOYED"]')).toBeVisible();
+  });
+
+  test("deployed and READY, a job in flight: SWAP_PENDING survives a reload (state from the chain), no resend, reconcile not yet; signing still locked", async ({ page }) => {
+    await mockWallet(page, "alice.testnet");
+    const nowNs = (BigInt(Date.now()) * 1_000_000n).toString();
+    const real = SANDBOX_VIEWS.budget_allocated.position;
+    const pos = { ...real, deposit: { ...real.deposit, creator: "alice.testnet", dex: "ref-finance-101.testnet", base_token: "s2nmeme.sol2near-dev.testnet", status: { SwapPending: { usdc: "18000000" } } } };
+    await mockDeployedPilot(page, { config: plannedConfig(9999), position: pos, inFlight: { deposit_id: "0", since: nowNs, job: "Lp" }, nowNs });
+    await page.goto("/#/positions");
+    for (const pass of ["first load", "after reload"]) {
+      const p = position(page);
+      await expect(p, pass).toHaveAttribute("data-state", "SWAP_PENDING", { timeout: 30_000 });
+      await expect(p.getByTestId("state-detail")).toContainText("do not resend");
+      await expect(p.getByLabel("Recovery reconcile")).toContainText("Too early");
+      await expect(p.getByLabel("Recovery resume_lp")).toHaveCount(0);
+      await expect(p.getByLabel("Withdraw blocked")).toContainText("No confirmed LP");
+      await allLockedButtonsDisabled(page);
+      if (pass === "first load") await page.reload();
+    }
+    expect(await page.evaluate(() => (window as any).__signCalls)).toBe(0);
+  });
+
+  test("deployed and READY: the estimator plans against the live (intercepted) pool and Ref get_return; the review is prepared, signing stays locked", async ({ page }) => {
+    await mockWallet(page, "alice.testnet");
+    await mockDeployedPilot(page, { config: plannedConfig(9999), nowNs: (BigInt(Date.now()) * 1_000_000n).toString() });
+    await page.goto("/#/pools");
+    await expect(pilot(page).getByTestId("deployment")).toContainText("DEPLOYED · awaiting validation", { timeout: 30_000 });
+    await expect(pilot(page).getByLabel("Estimate")).toContainText("Ref get_return ✓ equals the plan");
+    await expect(pilot(page).locator('[data-state="READY"]')).toBeVisible();
+    await expect(pilot(page).getByRole("button", { name: "Sign deposit — locked" })).toBeDisabled();
+    await expect(pilot(page).getByLabel("Review")).toContainText("Signing is disabled in V4.1B");
+  });
+
+  test("testnet RPC down: the pilot and the Position Manager say the read failed and unlock nothing", async ({ page }) => {
+    await page.route(/near-testnet\.drpc\.org|test\.rpc\.fastnear\.com/, (route) => route.abort("failed")); // MOCK outage
+    await page.goto("/#/pools");
+    await expect(pilot(page)).toContainText("Live read failed", { timeout: 30_000 });
+    await page.goto("/#/positions");
+    await expect(page.getByText(/Live read failed/)).toBeVisible({ timeout: 30_000 });
   });
 });

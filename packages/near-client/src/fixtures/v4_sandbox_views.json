@@ -1,0 +1,761 @@
+{
+  "_note": "REAL TreasuryV4 / Ref views captured in a LOCAL near-workspaces sandbox (sandbox-tests/tests/v4_pilot.rs). Not testnet. Accounts are *.test.near.",
+  "aborted_recovered": {
+    "creator_base_balance": "0",
+    "creator_mft_registered": false,
+    "creator_reserve": "883600000",
+    "in_flight": null,
+    "now_ns": "1794615804121459445",
+    "position": {
+      "deposit": {
+        "amount": "900000000",
+        "base_in_lp": "0",
+        "base_recovered": "0",
+        "base_token": "s2nmeme.test.near",
+        "community": "18000000",
+        "created_at": "1794615801467800261",
+        "creator": "alice.test.near",
+        "dex": "ref.test.near",
+        "dust_base": "0",
+        "dust_usdc": "0",
+        "id": "1",
+        "last_error": null,
+        "lp_budget": "810000000",
+        "lp_confirmed_at": null,
+        "lp_confirmed_block": null,
+        "lp_shares": "0",
+        "lp_verified": false,
+        "marks": [
+          {
+            "at": "1794615801467800261",
+            "block": "156",
+            "stage": "deposit_allocated"
+          },
+          {
+            "at": "1794615802475338805",
+            "block": "164",
+            "stage": "amm_deposit_confirmed"
+          },
+          {
+            "at": "1794615802726860592",
+            "block": "166",
+            "stage": "lp_job_failed"
+          },
+          {
+            "at": "1794615803103534841",
+            "block": "169",
+            "stage": "lp_aborted"
+          },
+          {
+            "at": "1794615804121459445",
+            "block": "177",
+            "stage": "leftover_recovered"
+          }
+        ],
+        "plan": {
+          "deadline_ns": "1794616098113535534",
+          "min_amounts": [
+            "458697041",
+            "250928359338995968676769"
+          ],
+          "min_swap_out": "252195674285152513973116",
+          "swap_amount_in": "346669655"
+        },
+        "pool_id": null,
+        "reserve": "72000000",
+        "status": "Aborted",
+        "unlock_at": null,
+        "updated_at": "1794615804121459445",
+        "usdc_in_lp": "0",
+        "usdc_recovered": "810000000",
+        "usdc_returned_to_reserve": "0",
+        "usdc_swapped": "0"
+      },
+      "fuel_reason": "The deployed FUEL contract reads positions only from treasury.sol2near-dev.testnet and pool 2951 (immutable config). TreasuryV4 positions earn no FUEL until a separately approved FUEL version accepts them.",
+      "fuel_status": "FUEL_NOT_ELIGIBLE",
+      "leftovers_recoverable": false,
+      "locked": false,
+      "lp_withdrawable": false
+    },
+    "predict_remove_liquidity": null,
+    "ref_treasury_shares": "8946400039999999999998"
+  },
+  "aborted_with_leftovers": {
+    "creator_base_balance": "0",
+    "creator_mft_registered": false,
+    "creator_reserve": "73600000",
+    "in_flight": null,
+    "now_ns": "1794615803103534841",
+    "position": {
+      "deposit": {
+        "amount": "900000000",
+        "base_in_lp": "0",
+        "base_recovered": "0",
+        "base_token": "s2nmeme.test.near",
+        "community": "18000000",
+        "created_at": "1794615801467800261",
+        "creator": "alice.test.near",
+        "dex": "ref.test.near",
+        "dust_base": "0",
+        "dust_usdc": "810000000",
+        "id": "1",
+        "last_error": "guard_price_impact 2557 bps > 1000",
+        "lp_budget": "810000000",
+        "lp_confirmed_at": null,
+        "lp_confirmed_block": null,
+        "lp_shares": "0",
+        "lp_verified": false,
+        "marks": [
+          {
+            "at": "1794615801467800261",
+            "block": "156",
+            "stage": "deposit_allocated"
+          },
+          {
+            "at": "1794615802475338805",
+            "block": "164",
+            "stage": "amm_deposit_confirmed"
+          },
+          {
+            "at": "1794615802726860592",
+            "block": "166",
+            "stage": "lp_job_failed"
+          },
+          {
+            "at": "1794615803103534841",
+            "block": "169",
+            "stage": "lp_aborted"
+          }
+        ],
+        "plan": {
+          "deadline_ns": "1794616098113535534",
+          "min_amounts": [
+            "458697041",
+            "250928359338995968676769"
+          ],
+          "min_swap_out": "252195674285152513973116",
+          "swap_amount_in": "346669655"
+        },
+        "pool_id": null,
+        "reserve": "72000000",
+        "status": "Aborted",
+        "unlock_at": null,
+        "updated_at": "1794615803103534841",
+        "usdc_in_lp": "0",
+        "usdc_recovered": "0",
+        "usdc_returned_to_reserve": "0",
+        "usdc_swapped": "0"
+      },
+      "fuel_reason": "The deployed FUEL contract reads positions only from treasury.sol2near-dev.testnet and pool 2951 (immutable config). TreasuryV4 positions earn no FUEL until a separately approved FUEL version accepts them.",
+      "fuel_status": "FUEL_NOT_ELIGIBLE",
+      "leftovers_recoverable": true,
+      "locked": false,
+      "lp_withdrawable": false
+    },
+    "predict_remove_liquidity": null,
+    "ref_treasury_shares": "8946400039999999999998"
+  },
+  "accounting_final": {
+    "base_balance_total": "1",
+    "community_total": "18400000",
+    "deposits_count": "2",
+    "pending_budget_total": "0",
+    "recorded_shares": "0",
+    "ref_expected_base": "0",
+    "ref_expected_usdc": "0",
+    "reserve_total": "1",
+    "total_received": "920000000"
+  },
+  "budget_allocated": {
+    "creator_base_balance": "0",
+    "creator_mft_registered": false,
+    "creator_reserve": "1600000",
+    "in_flight": null,
+    "now_ns": "1794615798113535534",
+    "position": {
+      "deposit": {
+        "amount": "20000000",
+        "base_in_lp": "0",
+        "base_recovered": "0",
+        "base_token": "s2nmeme.test.near",
+        "community": "400000",
+        "created_at": "1794615797990931282",
+        "creator": "alice.test.near",
+        "dex": "ref.test.near",
+        "dust_base": "0",
+        "dust_usdc": "0",
+        "id": "0",
+        "last_error": null,
+        "lp_budget": "18000000",
+        "lp_confirmed_at": null,
+        "lp_confirmed_block": null,
+        "lp_shares": "0",
+        "lp_verified": false,
+        "marks": [
+          {
+            "at": "1794615797990931282",
+            "block": "128",
+            "stage": "deposit_allocated"
+          }
+        ],
+        "plan": null,
+        "pool_id": null,
+        "reserve": "1600000",
+        "status": "BudgetAllocated",
+        "unlock_at": null,
+        "updated_at": "1794615797990931282",
+        "usdc_in_lp": "0",
+        "usdc_recovered": "0",
+        "usdc_returned_to_reserve": "0",
+        "usdc_swapped": "0"
+      },
+      "fuel_reason": "The deployed FUEL contract reads positions only from treasury.sol2near-dev.testnet and pool 2951 (immutable config). TreasuryV4 positions earn no FUEL until a separately approved FUEL version accepts them.",
+      "fuel_status": "FUEL_NOT_ELIGIBLE",
+      "leftovers_recoverable": false,
+      "locked": false,
+      "lp_withdrawable": false
+    },
+    "predict_remove_liquidity": null,
+    "ref_treasury_shares": "0"
+  },
+  "config": {
+    "community_bps": 200,
+    "config": {
+      "guards": {
+        "max_plan_ttl_ns": "600000000000",
+        "max_price_impact_bps": 1000,
+        "max_slippage_bps": 100
+      },
+      "lp_lock_duration_ns": "30000000000",
+      "min_deposit": "1000000",
+      "network": "sandbox",
+      "pool": {
+        "base_decimals": 18,
+        "base_token": "s2nmeme.test.near",
+        "dex": "ref.test.near",
+        "pool_id": 0,
+        "usdc_decimals": 6,
+        "usdc_token": "usdc.test.near"
+      }
+    },
+    "fuel": "FUEL_NOT_ELIGIBLE",
+    "lp_bps": 9000,
+    "ready": true,
+    "reserve_bps": 800,
+    "usdc_pool_index": 0
+  },
+  "lp_confirmed_locked": {
+    "creator_base_balance": "0",
+    "creator_mft_registered": false,
+    "creator_reserve": "1600000",
+    "in_flight": null,
+    "now_ns": "1794615800967692150",
+    "position": {
+      "deposit": {
+        "amount": "20000000",
+        "base_in_lp": "8867071669659872053869",
+        "base_recovered": "0",
+        "base_token": "s2nmeme.test.near",
+        "community": "400000",
+        "created_at": "1794615797990931282",
+        "creator": "alice.test.near",
+        "dex": "ref.test.near",
+        "dust_base": "1",
+        "dust_usdc": "1",
+        "id": "0",
+        "last_error": null,
+        "lp_budget": "18000000",
+        "lp_confirmed_at": "1794615800967692150",
+        "lp_confirmed_block": "152",
+        "lp_shares": "8946400039999999999998",
+        "lp_verified": true,
+        "marks": [
+          {
+            "at": "1794615797990931282",
+            "block": "128",
+            "stage": "deposit_allocated"
+          },
+          {
+            "at": "1794615799354940347",
+            "block": "139",
+            "stage": "amm_deposit_confirmed"
+          },
+          {
+            "at": "1794615799603911463",
+            "block": "141",
+            "stage": "lp_job_failed"
+          },
+          {
+            "at": "1794615800471519527",
+            "block": "148",
+            "stage": "swap_confirmed"
+          },
+          {
+            "at": "1794615800967692150",
+            "block": "152",
+            "stage": "lp_confirmed"
+          }
+        ],
+        "plan": {
+          "deadline_ns": "1794616098113535534",
+          "min_amounts": [
+            "8936413",
+            "8778400952963273333331"
+          ],
+          "min_swap_out": "8822736311311572693600",
+          "swap_amount_in": "8973320"
+        },
+        "pool_id": 0,
+        "reserve": "1600000",
+        "status": "LpConfirmed",
+        "unlock_at": "1794615830967692150",
+        "updated_at": "1794615800967692150",
+        "usdc_in_lp": "9026679",
+        "usdc_recovered": "0",
+        "usdc_returned_to_reserve": "0",
+        "usdc_swapped": "8973320"
+      },
+      "fuel_reason": "The deployed FUEL contract reads positions only from treasury.sol2near-dev.testnet and pool 2951 (immutable config). TreasuryV4 positions earn no FUEL until a separately approved FUEL version accepts them.",
+      "fuel_status": "FUEL_NOT_ELIGIBLE",
+      "leftovers_recoverable": true,
+      "locked": true,
+      "lp_withdrawable": false
+    },
+    "predict_remove_liquidity": [
+      "9026678",
+      "8867071669659872053868"
+    ],
+    "ref_treasury_shares": "8946400039999999999998"
+  },
+  "lp_unlocked_not_registered": {
+    "creator_base_balance": "0",
+    "creator_mft_registered": false,
+    "creator_reserve": "0",
+    "in_flight": null,
+    "now_ns": "1794615836584195370",
+    "position": {
+      "deposit": {
+        "amount": "20000000",
+        "base_in_lp": "8867071669659872053869",
+        "base_recovered": "0",
+        "base_token": "s2nmeme.test.near",
+        "community": "400000",
+        "created_at": "1794615797990931282",
+        "creator": "alice.test.near",
+        "dex": "ref.test.near",
+        "dust_base": "1",
+        "dust_usdc": "1",
+        "id": "0",
+        "last_error": null,
+        "lp_budget": "18000000",
+        "lp_confirmed_at": "1794615800967692150",
+        "lp_confirmed_block": "152",
+        "lp_shares": "8946400039999999999998",
+        "lp_verified": true,
+        "marks": [
+          {
+            "at": "1794615797990931282",
+            "block": "128",
+            "stage": "deposit_allocated"
+          },
+          {
+            "at": "1794615799354940347",
+            "block": "139",
+            "stage": "amm_deposit_confirmed"
+          },
+          {
+            "at": "1794615799603911463",
+            "block": "141",
+            "stage": "lp_job_failed"
+          },
+          {
+            "at": "1794615800471519527",
+            "block": "148",
+            "stage": "swap_confirmed"
+          },
+          {
+            "at": "1794615800967692150",
+            "block": "152",
+            "stage": "lp_confirmed"
+          }
+        ],
+        "plan": {
+          "deadline_ns": "1794616098113535534",
+          "min_amounts": [
+            "8936413",
+            "8778400952963273333331"
+          ],
+          "min_swap_out": "8822736311311572693600",
+          "swap_amount_in": "8973320"
+        },
+        "pool_id": 0,
+        "reserve": "1600000",
+        "status": "LpConfirmed",
+        "unlock_at": "1794615830967692150",
+        "updated_at": "1794615800967692150",
+        "usdc_in_lp": "9026679",
+        "usdc_recovered": "0",
+        "usdc_returned_to_reserve": "0",
+        "usdc_swapped": "8973320"
+      },
+      "fuel_reason": "The deployed FUEL contract reads positions only from treasury.sol2near-dev.testnet and pool 2951 (immutable config). TreasuryV4 positions earn no FUEL until a separately approved FUEL version accepts them.",
+      "fuel_status": "FUEL_NOT_ELIGIBLE",
+      "leftovers_recoverable": true,
+      "locked": false,
+      "lp_withdrawable": true
+    },
+    "predict_remove_liquidity": [
+      "9026678",
+      "8867071669659872053868"
+    ],
+    "ref_treasury_shares": "8946400039999999999998"
+  },
+  "lp_unlocked_registered": {
+    "creator_base_balance": "0",
+    "creator_mft_registered": true,
+    "creator_reserve": "0",
+    "in_flight": null,
+    "now_ns": "1794615837081480916",
+    "position": {
+      "deposit": {
+        "amount": "20000000",
+        "base_in_lp": "8867071669659872053869",
+        "base_recovered": "0",
+        "base_token": "s2nmeme.test.near",
+        "community": "400000",
+        "created_at": "1794615797990931282",
+        "creator": "alice.test.near",
+        "dex": "ref.test.near",
+        "dust_base": "1",
+        "dust_usdc": "1",
+        "id": "0",
+        "last_error": null,
+        "lp_budget": "18000000",
+        "lp_confirmed_at": "1794615800967692150",
+        "lp_confirmed_block": "152",
+        "lp_shares": "8946400039999999999998",
+        "lp_verified": true,
+        "marks": [
+          {
+            "at": "1794615797990931282",
+            "block": "128",
+            "stage": "deposit_allocated"
+          },
+          {
+            "at": "1794615799354940347",
+            "block": "139",
+            "stage": "amm_deposit_confirmed"
+          },
+          {
+            "at": "1794615799603911463",
+            "block": "141",
+            "stage": "lp_job_failed"
+          },
+          {
+            "at": "1794615800471519527",
+            "block": "148",
+            "stage": "swap_confirmed"
+          },
+          {
+            "at": "1794615800967692150",
+            "block": "152",
+            "stage": "lp_confirmed"
+          }
+        ],
+        "plan": {
+          "deadline_ns": "1794616098113535534",
+          "min_amounts": [
+            "8936413",
+            "8778400952963273333331"
+          ],
+          "min_swap_out": "8822736311311572693600",
+          "swap_amount_in": "8973320"
+        },
+        "pool_id": 0,
+        "reserve": "1600000",
+        "status": "LpConfirmed",
+        "unlock_at": "1794615830967692150",
+        "updated_at": "1794615800967692150",
+        "usdc_in_lp": "9026679",
+        "usdc_recovered": "0",
+        "usdc_returned_to_reserve": "0",
+        "usdc_swapped": "8973320"
+      },
+      "fuel_reason": "The deployed FUEL contract reads positions only from treasury.sol2near-dev.testnet and pool 2951 (immutable config). TreasuryV4 positions earn no FUEL until a separately approved FUEL version accepts them.",
+      "fuel_status": "FUEL_NOT_ELIGIBLE",
+      "leftovers_recoverable": true,
+      "locked": false,
+      "lp_withdrawable": true
+    },
+    "predict_remove_liquidity": [
+      "9026678",
+      "8867071669659872053868"
+    ],
+    "ref_treasury_shares": "8946400039999999999998"
+  },
+  "lp_withdrawn": {
+    "creator_base_balance": "0",
+    "creator_mft_registered": true,
+    "creator_reserve": "0",
+    "in_flight": null,
+    "now_ns": "1794615837951457455",
+    "position": {
+      "deposit": {
+        "amount": "20000000",
+        "base_in_lp": "8867071669659872053869",
+        "base_recovered": "0",
+        "base_token": "s2nmeme.test.near",
+        "community": "400000",
+        "created_at": "1794615797990931282",
+        "creator": "alice.test.near",
+        "dex": "ref.test.near",
+        "dust_base": "1",
+        "dust_usdc": "1",
+        "id": "0",
+        "last_error": null,
+        "lp_budget": "18000000",
+        "lp_confirmed_at": "1794615800967692150",
+        "lp_confirmed_block": "152",
+        "lp_shares": "8946400039999999999998",
+        "lp_verified": true,
+        "marks": [
+          {
+            "at": "1794615797990931282",
+            "block": "128",
+            "stage": "deposit_allocated"
+          },
+          {
+            "at": "1794615799354940347",
+            "block": "139",
+            "stage": "amm_deposit_confirmed"
+          },
+          {
+            "at": "1794615799603911463",
+            "block": "141",
+            "stage": "lp_job_failed"
+          },
+          {
+            "at": "1794615800471519527",
+            "block": "148",
+            "stage": "swap_confirmed"
+          },
+          {
+            "at": "1794615800967692150",
+            "block": "152",
+            "stage": "lp_confirmed"
+          },
+          {
+            "at": "1794615837454790980",
+            "block": "300",
+            "stage": "lp_withdraw_started"
+          },
+          {
+            "at": "1794615837703212785",
+            "block": "302",
+            "stage": "lp_withdrawn"
+          }
+        ],
+        "plan": {
+          "deadline_ns": "1794616098113535534",
+          "min_amounts": [
+            "8936413",
+            "8778400952963273333331"
+          ],
+          "min_swap_out": "8822736311311572693600",
+          "swap_amount_in": "8973320"
+        },
+        "pool_id": 0,
+        "reserve": "1600000",
+        "status": "LpWithdrawn",
+        "unlock_at": "1794615830967692150",
+        "updated_at": "1794615837703212785",
+        "usdc_in_lp": "9026679",
+        "usdc_recovered": "0",
+        "usdc_returned_to_reserve": "0",
+        "usdc_swapped": "8973320"
+      },
+      "fuel_reason": "The deployed FUEL contract reads positions only from treasury.sol2near-dev.testnet and pool 2951 (immutable config). TreasuryV4 positions earn no FUEL until a separately approved FUEL version accepts them.",
+      "fuel_status": "FUEL_NOT_ELIGIBLE",
+      "leftovers_recoverable": true,
+      "locked": false,
+      "lp_withdrawable": false
+    },
+    "predict_remove_liquidity": null,
+    "ref_treasury_shares": "0"
+  },
+  "parked_guard_slippage": {
+    "creator_base_balance": "0",
+    "creator_mft_registered": false,
+    "creator_reserve": "1600000",
+    "in_flight": null,
+    "now_ns": "1794615799603911463",
+    "position": {
+      "deposit": {
+        "amount": "20000000",
+        "base_in_lp": "0",
+        "base_recovered": "0",
+        "base_token": "s2nmeme.test.near",
+        "community": "400000",
+        "created_at": "1794615797990931282",
+        "creator": "alice.test.near",
+        "dex": "ref.test.near",
+        "dust_base": "0",
+        "dust_usdc": "0",
+        "id": "0",
+        "last_error": "guard_slippage: min_swap_out 4433535834829936026935 < quote 8867071669659872053870 - 100 bps",
+        "lp_budget": "18000000",
+        "lp_confirmed_at": null,
+        "lp_confirmed_block": null,
+        "lp_shares": "0",
+        "lp_verified": false,
+        "marks": [
+          {
+            "at": "1794615797990931282",
+            "block": "128",
+            "stage": "deposit_allocated"
+          },
+          {
+            "at": "1794615799354940347",
+            "block": "139",
+            "stage": "amm_deposit_confirmed"
+          },
+          {
+            "at": "1794615799603911463",
+            "block": "141",
+            "stage": "lp_job_failed"
+          }
+        ],
+        "plan": {
+          "deadline_ns": "1794616098113535534",
+          "min_amounts": [
+            "8936413",
+            "8778400952963273333331"
+          ],
+          "min_swap_out": "4433535834829936026935",
+          "swap_amount_in": "8973320"
+        },
+        "pool_id": null,
+        "reserve": "1600000",
+        "status": {
+          "InRef": {
+            "usdc": "18000000"
+          }
+        },
+        "unlock_at": null,
+        "updated_at": "1794615799603911463",
+        "usdc_in_lp": "0",
+        "usdc_recovered": "0",
+        "usdc_returned_to_reserve": "0",
+        "usdc_swapped": "0"
+      },
+      "fuel_reason": "The deployed FUEL contract reads positions only from treasury.sol2near-dev.testnet and pool 2951 (immutable config). TreasuryV4 positions earn no FUEL until a separately approved FUEL version accepts them.",
+      "fuel_status": "FUEL_NOT_ELIGIBLE",
+      "leftovers_recoverable": false,
+      "locked": false,
+      "lp_withdrawable": false
+    },
+    "predict_remove_liquidity": null,
+    "ref_treasury_shares": "0"
+  },
+  "parked_price_impact": {
+    "creator_base_balance": "0",
+    "creator_mft_registered": false,
+    "creator_reserve": "73600000",
+    "in_flight": null,
+    "now_ns": "1794615802726860592",
+    "position": {
+      "deposit": {
+        "amount": "900000000",
+        "base_in_lp": "0",
+        "base_recovered": "0",
+        "base_token": "s2nmeme.test.near",
+        "community": "18000000",
+        "created_at": "1794615801467800261",
+        "creator": "alice.test.near",
+        "dex": "ref.test.near",
+        "dust_base": "0",
+        "dust_usdc": "0",
+        "id": "1",
+        "last_error": "guard_price_impact 2557 bps > 1000",
+        "lp_budget": "810000000",
+        "lp_confirmed_at": null,
+        "lp_confirmed_block": null,
+        "lp_shares": "0",
+        "lp_verified": false,
+        "marks": [
+          {
+            "at": "1794615801467800261",
+            "block": "156",
+            "stage": "deposit_allocated"
+          },
+          {
+            "at": "1794615802475338805",
+            "block": "164",
+            "stage": "amm_deposit_confirmed"
+          },
+          {
+            "at": "1794615802726860592",
+            "block": "166",
+            "stage": "lp_job_failed"
+          }
+        ],
+        "plan": {
+          "deadline_ns": "1794616098113535534",
+          "min_amounts": [
+            "458697041",
+            "250928359338995968676769"
+          ],
+          "min_swap_out": "252195674285152513973116",
+          "swap_amount_in": "346669655"
+        },
+        "pool_id": null,
+        "reserve": "72000000",
+        "status": {
+          "InRef": {
+            "usdc": "810000000"
+          }
+        },
+        "unlock_at": null,
+        "updated_at": "1794615802726860592",
+        "usdc_in_lp": "0",
+        "usdc_recovered": "0",
+        "usdc_returned_to_reserve": "0",
+        "usdc_swapped": "0"
+      },
+      "fuel_reason": "The deployed FUEL contract reads positions only from treasury.sol2near-dev.testnet and pool 2951 (immutable config). TreasuryV4 positions earn no FUEL until a separately approved FUEL version accepts them.",
+      "fuel_status": "FUEL_NOT_ELIGIBLE",
+      "leftovers_recoverable": false,
+      "locked": false,
+      "lp_withdrawable": false
+    },
+    "predict_remove_liquidity": null,
+    "ref_treasury_shares": "8946400039999999999998"
+  },
+  "pool_before_lp": {
+    "amounts": [
+      "1000000000",
+      "1000000000000000000000000"
+    ],
+    "amp": 0,
+    "pool_kind": "SIMPLE_POOL",
+    "shares_total_supply": "1000000000000000000000000",
+    "token_account_ids": [
+      "usdc.test.near",
+      "s2nmeme.test.near"
+    ],
+    "total_fee": 30
+  },
+  "ref_metadata": {
+    "admin_fee_bps": 0,
+    "auto_whitelisted_postfix": [],
+    "boost_farm_id": "test.near",
+    "burrowland_id": "test.near",
+    "cumulative_info_record_interval_sec": 720,
+    "guardians": [],
+    "owner": "test.near",
+    "pool_count": 1,
+    "state": "Running",
+    "version": "1.9.19",
+    "wnear_id": null
+  }
+}

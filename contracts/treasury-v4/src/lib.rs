@@ -475,13 +475,35 @@ impl TreasuryV4 {
 
     // ======================= recovery =======================
 
-    /// Re-derives the stage of a stuck LP job from Treasury's real Ref balances, after a timeout.
+    /// Re-derives a stuck job from Treasury's real Ref balances, after a timeout. Permissionless.
+    /// LP job: the stage of the deposit. Leftover job (V4.1B fix): whether Ref's balance really dropped; without this
+    /// a lost `on_leftover` callback would have left `in_flight` set forever and blocked every job of the contract.
     pub fn reconcile(&mut self) -> Promise {
         let f = self.in_flight.clone().unwrap_or_else(|| env::panic_str("ERR_NOTHING_IN_FLIGHT"));
-        require!(f.job == Job::Lp, "ERR_NOT_AN_LP_JOB");
         require!(env::block_timestamp() >= f.since.0 + RECONCILE_TIMEOUT_NS, "ERR_RECONCILE_TOO_EARLY");
-        self.verify_promise()
-            .then(Self::ext(env::current_account_id()).with_static_gas(tgas(T_CB)).on_reconcile(f.deposit_id, f.since))
+        let me = env::current_account_id();
+        match f.job {
+            Job::Lp => self.verify_promise().then(Self::ext(me).with_static_gas(tgas(T_CB)).on_reconcile(f.deposit_id, f.since)),
+            Job::Leftover { .. } => ext_ref::ext(self.config.pool.dex.clone())
+                .with_static_gas(tgas(T_VIEW))
+                .get_deposits(me.clone())
+                .then(Self::ext(me).with_static_gas(tgas(T_CB)).on_reconcile_leftover(f.deposit_id, f.since)),
+        }
+    }
+
+    #[private]
+    pub fn on_reconcile_leftover(&mut self, deposit_id: U64, since: U64, #[callback_result] deps: Result<HashMap<AccountId, U128>, PromiseError>) -> bool {
+        let (token, amount) = match &self.in_flight {
+            Some(InFlight { deposit_id: id, since: s, job: Job::Leftover { token, amount } }) if *id == deposit_id && *s == since => (token.clone(), *amount),
+            _ => return false,
+        };
+        let Ok(deps) = deps else {
+            events::emit("reconcile_failed", json!({ "deposit_id": deposit_id, "reason": "views_failed" }));
+            return false; // job stays in flight; reconcile can be called again
+        };
+        self.in_flight = None;
+        let actual = deps.get(&token).map_or(0, |v| v.0);
+        self.settle_leftover(deposit_id, token, amount, Some(actual))
     }
 
     #[private]
@@ -626,35 +648,8 @@ impl TreasuryV4 {
             _ => return false,
         }
         self.in_flight = None;
-        let mut d = self.get_deposit_or_panic(deposit_id.0);
-        let is_usdc = token_id == self.config.pool.usdc_token;
-        let expected = if is_usdc { self.ref_expected_usdc } else { self.ref_expected_base };
         let actual = deps.ok().map(|m| m.get(&token_id).map_or(0, |v| v.0));
-        // Withdrawn only if Ref's balance really dropped by `amount` (a failed transfer is re-credited by Ref).
-        let withdrawn = actual.is_some_and(|a| a + amount.0 <= expected);
-        if !withdrawn {
-            d.last_error = Some("leftover_withdraw_failed".into());
-            self.emit_stage(&mut d, "leftover_withdraw_failed");
-            self.save(d);
-            return false;
-        }
-        if is_usdc {
-            self.ref_expected_usdc -= amount.0;
-            d.dust_usdc = U128(d.dust_usdc.0 - amount.0);
-            d.usdc_recovered = U128(d.usdc_recovered.0 + amount.0);
-            *self.reserves.entry(d.creator.clone()).or_insert(0) += amount.0;
-            self.reserve_total += amount.0;
-        } else {
-            self.ref_expected_base -= amount.0;
-            d.dust_base = U128(d.dust_base.0 - amount.0);
-            d.base_recovered = U128(d.base_recovered.0 + amount.0);
-            *self.base_balances.entry(d.creator.clone()).or_insert(0) += amount.0;
-            self.base_balance_total += amount.0;
-        }
-        d.last_error = None;
-        self.emit_stage(&mut d, "leftover_recovered");
-        self.save(d);
-        true
+        self.settle_leftover(deposit_id, token_id, amount, actual)
     }
 
     // ======================= creator withdrawals =======================
@@ -857,6 +852,39 @@ fn mark(d: &mut Deposit, stage: &str) {
 }
 
 impl TreasuryV4 {
+    /// Shared by on_leftover and on_reconcile_leftover. Withdrawn only if Ref's balance really dropped by `amount`
+    /// (a failed transfer is re-credited by Ref).
+    fn settle_leftover(&mut self, deposit_id: U64, token_id: AccountId, amount: U128, actual: Option<u128>) -> bool {
+        let mut d = self.get_deposit_or_panic(deposit_id.0);
+        let is_usdc = token_id == self.config.pool.usdc_token;
+        let expected = if is_usdc { self.ref_expected_usdc } else { self.ref_expected_base };
+
+        let withdrawn = actual.is_some_and(|a| a + amount.0 <= expected);
+        if !withdrawn {
+            d.last_error = Some("leftover_withdraw_failed".into());
+            self.emit_stage(&mut d, "leftover_withdraw_failed");
+            self.save(d);
+            return false;
+        }
+        if is_usdc {
+            self.ref_expected_usdc -= amount.0;
+            d.dust_usdc = U128(d.dust_usdc.0 - amount.0);
+            d.usdc_recovered = U128(d.usdc_recovered.0 + amount.0);
+            *self.reserves.entry(d.creator.clone()).or_insert(0) += amount.0;
+            self.reserve_total += amount.0;
+        } else {
+            self.ref_expected_base -= amount.0;
+            d.dust_base = U128(d.dust_base.0 - amount.0);
+            d.base_recovered = U128(d.base_recovered.0 + amount.0);
+            *self.base_balances.entry(d.creator.clone()).or_insert(0) += amount.0;
+            self.base_balance_total += amount.0;
+        }
+        d.last_error = None;
+        self.emit_stage(&mut d, "leftover_recovered");
+        self.save(d);
+        true
+    }
+
     fn get_deposit_or_panic(&self, id: u64) -> Deposit {
         self.deposits.get(&id).cloned().unwrap_or_else(|| env::panic_str("ERR_UNKNOWN_DEPOSIT"))
     }

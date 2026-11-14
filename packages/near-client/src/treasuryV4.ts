@@ -141,26 +141,32 @@ export function checkPlanGuards(pv: V4PlanPreview, quotedOut: bigint, nowNs: big
 
 export interface V4Call { receiverId: string; methodName: string; args: Record<string, unknown>; gas: bigint; deposit: bigint }
 
-export const v4Calls = {
-  deposit: (amount: bigint): V4Call => ({
-    receiverId: V41_PILOT.usdcTokenId, methodName: "ft_transfer_call",
-    args: { receiver_id: V41_PILOT.treasuryId, amount: amount.toString(), msg: JSON.stringify({ action: "deposit" }) }, gas: 100n * TGAS, deposit: 1n,
-  }),
-  executeLp: (depositId: string, plan: V4Plan | null): V4Call => ({
-    receiverId: V41_PILOT.treasuryId, methodName: "execute_lp", args: { deposit_id: depositId, plan }, gas: 300n * TGAS, deposit: 0n,
-  }),
-  abortLp: (depositId: string): V4Call => ({ receiverId: V41_PILOT.treasuryId, methodName: "abort_lp", args: { deposit_id: depositId }, gas: 30n * TGAS, deposit: 0n }),
-  withdrawLeftover: (depositId: string, tokenId: string): V4Call => ({
-    receiverId: V41_PILOT.treasuryId, methodName: "withdraw_leftover", args: { deposit_id: depositId, token_id: tokenId }, gas: 150n * TGAS, deposit: 1n,
-  }),
-  withdrawReserve: (amount: bigint): V4Call => ({ receiverId: V41_PILOT.treasuryId, methodName: "withdraw_reserve", args: { amount: amount.toString() }, gas: 100n * TGAS, deposit: 1n }),
-  withdrawBase: (amount: bigint): V4Call => ({ receiverId: V41_PILOT.treasuryId, methodName: "withdraw_base", args: { amount: amount.toString() }, gas: 100n * TGAS, deposit: 1n }),
-  /** Needed once before withdraw_lp: the creator registers for the pool shares on Ref. */
-  mftRegister: (poolId: number, accountId: string): V4Call => ({
-    receiverId: V41_PILOT.dex, methodName: "mft_register", args: { token_id: `:${poolId}`, account_id: accountId }, gas: 30n * TGAS, deposit: 10n ** 22n,
-  }),
-  withdrawLp: (depositId: string): V4Call => ({ receiverId: V41_PILOT.treasuryId, methodName: "withdraw_lp", args: { deposit_id: depositId }, gas: 100n * TGAS, deposit: 1n }),
-};
+/** Accounts the calls are built for: the planned testnet pilot by default, or the accounts a source reports. */
+export interface V4CallIds { treasury: string; usdc: string; dex: string }
+
+export function v4CallsFor(ids: V4CallIds) {
+  return {
+    deposit: (amount: bigint): V4Call => ({
+      receiverId: ids.usdc, methodName: "ft_transfer_call",
+      args: { receiver_id: ids.treasury, amount: amount.toString(), msg: JSON.stringify({ action: "deposit" }) }, gas: 100n * TGAS, deposit: 1n,
+    }),
+    executeLp: (depositId: string, plan: V4Plan | null): V4Call => ({ receiverId: ids.treasury, methodName: "execute_lp", args: { deposit_id: depositId, plan }, gas: 300n * TGAS, deposit: 0n }),
+    abortLp: (depositId: string): V4Call => ({ receiverId: ids.treasury, methodName: "abort_lp", args: { deposit_id: depositId }, gas: 30n * TGAS, deposit: 0n }),
+    withdrawLeftover: (depositId: string, tokenId: string): V4Call => ({
+      receiverId: ids.treasury, methodName: "withdraw_leftover", args: { deposit_id: depositId, token_id: tokenId }, gas: 150n * TGAS, deposit: 1n,
+    }),
+    withdrawReserve: (amount: bigint): V4Call => ({ receiverId: ids.treasury, methodName: "withdraw_reserve", args: { amount: amount.toString() }, gas: 100n * TGAS, deposit: 1n }),
+    withdrawBase: (amount: bigint): V4Call => ({ receiverId: ids.treasury, methodName: "withdraw_base", args: { amount: amount.toString() }, gas: 100n * TGAS, deposit: 1n }),
+    /** Needed once before withdraw_lp: the creator registers for the pool shares on Ref. */
+    mftRegister: (poolId: number, accountId: string): V4Call => ({
+      receiverId: ids.dex, methodName: "mft_register", args: { token_id: `:${poolId}`, account_id: accountId }, gas: 30n * TGAS, deposit: 10n ** 22n,
+    }),
+    withdrawLp: (depositId: string): V4Call => ({ receiverId: ids.treasury, methodName: "withdraw_lp", args: { deposit_id: depositId }, gas: 100n * TGAS, deposit: 1n }),
+    reconcile: (): V4Call => ({ receiverId: ids.treasury, methodName: "reconcile", args: {}, gas: 50n * TGAS, deposit: 0n }),
+  };
+}
+export type V4Calls = ReturnType<typeof v4CallsFor>;
+export const v4Calls: V4Calls = v4CallsFor({ treasury: V41_PILOT.treasuryId, usdc: V41_PILOT.usdcTokenId, dex: V41_PILOT.dex });
 
 /** Ordered creator journey (spec §8): what is signed at each step, by whom. */
 export const V41_JOURNEY = [

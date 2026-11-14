@@ -186,7 +186,7 @@ test("Treasury: wrong signer or partial use is a mismatch, not a success", () =>
 });
 
 test("Treasury: contribution confirmed against get_deposit; pending tx stays pending", async () => {
-  const rpc = (dep: unknown, tx: TxOutcome | null = null): NearRpc => ({ view: async () => dep as never, nearBalance: async () => 0n, codeHash: async () => null, txStatus: async () => tx });
+  const rpc = (dep: unknown, tx: TxOutcome | null = null): NearRpc => ({ view: async () => dep as never, nearBalance: async () => 0n, codeHash: async () => null, txStatus: async () => tx, blockTimestampNs: async () => 0n });
   assert.deepEqual(await confirmInTreasury(rpc({ creator: DEV, amount: "20000000", status: "LpConfirmed" }), "0", DEV, "20000000"), { ok: true, status: "LpConfirmed" });
   assert.equal((await confirmInTreasury(rpc(null), "9", DEV, "1")).ok, false);
   assert.equal((await confirmInTreasury(rpc({ creator: "x.testnet", amount: "20000000" }), "0", DEV, "20000000")).ok, false);
