@@ -1,0 +1,120 @@
+{
+  "read_at": "2026-11-14T13:06:28.645Z",
+  "note": "READ-ONLY testnet views (get_creator_deposits, FUEL get_position) for the G6/G7 creator",
+  "creator": "lowarena9362.testnet",
+  "deposits": [
+    {
+      "id": "1",
+      "creator": "lowarena9362.testnet",
+      "amount": "2000000",
+      "lp_budget": "1800000",
+      "reserve": "160000",
+      "community": "40000",
+      "status": "LpConfirmed",
+      "plan": {
+        "swap_amount_in": "895473",
+        "min_swap_out": "179496673760245282779058",
+        "min_amounts": [
+          "895481",
+          "179496673760245282779058"
+        ]
+      },
+      "lp_shares": "15282093210022862277595",
+      "lp_verified": true,
+      "usdc_swapped": "895473",
+      "usdc_in_lp": "904526",
+      "wnear_in_lp": "181309736578080980783860",
+      "dust_usdc": "1",
+      "dust_wnear": "34896914254346502",
+      "unlock_at": "1794592013804055601",
+      "pool_id": 2951,
+      "lp_confirmed_at": "1794591413804055601",
+      "lp_confirmed_block": "277541544",
+      "last_error": null,
+      "created_at": "1794590775068422205",
+      "updated_at": "1794591413804055601"
+    },
+    {
+      "id": "2",
+      "creator": "lowarena9362.testnet",
+      "amount": "12000000",
+      "lp_budget": "10800000",
+      "reserve": "960000",
+      "community": "240000",
+      "status": "LpConfirmed",
+      "plan": {
+        "swap_amount_in": "5213946",
+        "min_swap_out": "960160860661200293100630",
+        "min_amounts": [
+          "5530193",
+          "960160860661200293100630"
+        ]
+      },
+      "lp_shares": "87827896964884103917701",
+      "lp_verified": true,
+      "usdc_swapped": "5213946",
+      "usdc_in_lp": "5586053",
+      "wnear_in_lp": "969859370286442843997727",
+      "dust_usdc": "1",
+      "dust_wnear": "84926890785396849",
+      "unlock_at": "1794597505665427154",
+      "pool_id": 2951,
+      "lp_confirmed_at": "1794596905665427154",
+      "lp_confirmed_block": "277550963",
+      "last_error": null,
+      "created_at": "1794596820732760167",
+      "updated_at": "1794596905665427154"
+    },
+    {
+      "id": "3",
+      "creator": "lowarena9362.testnet",
+      "amount": "87994800",
+      "lp_budget": "79195320",
+      "reserve": "7039584",
+      "community": "1759896",
+      "status": "BudgetAllocated",
+      "plan": null,
+      "lp_shares": "0",
+      "lp_verified": false,
+      "usdc_swapped": "0",
+      "usdc_in_lp": "0",
+      "wnear_in_lp": "0",
+      "dust_usdc": "0",
+      "dust_wnear": "0",
+      "unlock_at": null,
+      "pool_id": null,
+      "lp_confirmed_at": null,
+      "lp_confirmed_block": null,
+      "last_error": null,
+      "created_at": "1794606345833792160",
+      "updated_at": "1794606345833792160"
+    }
+  ],
+  "fuel": {
+    "1": null,
+    "2": {
+      "position": {
+        "position_id": "2",
+        "creator_id": "lowarena9362.testnet",
+        "vault_id": "lowarena9362.testnet",
+        "pool_id": 2951,
+        "usdc_in_lp": "5586053",
+        "wnear_in_lp": "969859370286442843997727",
+        "lp_shares": "87827896964884103917701",
+        "confirmed_at": "1794596905665427154",
+        "confirmed_block": "277550963",
+        "unlock_at": "1794597505665427154",
+        "season_id": 70,
+        "reward_total": "5586053000000000000",
+        "creator_reward": "4468842400000000000",
+        "community_reward": "1117210600000000000",
+        "claimed": true,
+        "registered_at": "1794597036895269033",
+        "ref_treasury_shares": "268750243691052670214318",
+        "treasury_recorded_shares": "268750243691052670214318"
+      },
+      "reward_status": "Claimed"
+    },
+    "3": null
+  }
+}

@@ -66,7 +66,7 @@ interface Row { c: DclCandidate; live: DclLive | Error; a: DclAssessment }
 const KV = ({ k, children }: { k: string; children: React.ReactNode }) => <div><dt>{k}</dt><dd>{children}</dd></div>;
 const price = (c: DclCandidate, point: number) => pointToPrice(point, c.xDecimals, c.yDecimals).toExponential(4);
 
-export function V42Dcl() {
+export function V42Dcl({ withPreview = true }: { withPreview?: boolean } = {}) {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [readAt, setReadAt] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -101,7 +101,7 @@ export function V42Dcl() {
         {rows?.map((r) => <DclPoolCard key={r.c.key} row={r} selected={r.c.key === sel} onSelect={() => setSel(r.c.key)} />)}
       </div>
       {row && !(row.live instanceof Error) && <DclEstimator row={row} live={row.live} />}
-      <DclPositionPreview />
+      {withPreview && <DclPositionPreview />}
     </section>
   );
 }
@@ -134,7 +134,10 @@ function DclPoolCard({ row, selected, onSelect }: { row: Row; selected: boolean;
         {a.checks.map((k) => <li key={k.id} className={k.ok ? "ok" : "ko"}><b>{k.ok ? "✓" : "✗"} {k.id}</b> {k.detail}</li>)}
       </ul>
       <p className="observe"><b>Not executable.</b> {a.verdict === "FEASIBLE_FOR_LOCAL_DCL_TEST" ? "Same code and pool type reproduced in the local sandbox; a funded position needs mainnet assets SOL2NEAR does not use." : a.reasons.find((x) => !x.startsWith("network")) ?? a.reasons[0]}</p>
-      <button className="ghost" onClick={onSelect} disabled={selected}>{selected ? "Estimator below" : "Estimate (read-only)"}</button>
+      <div className="watch">
+        <button className="ghost" onClick={onSelect} disabled={selected}>{selected ? "Estimator below" : "Estimate (read-only)"}</button>
+        <button disabled title="TreasuryDCL is not deployed and these pools are on mainnet">Fund — execution not available yet</button>
+      </div>
     </article>
   );
 }
@@ -223,7 +226,7 @@ const STAGES = [
   { key: "position_withdrawn", label: "Position withdrawn to the creator" },
 ] as const;
 
-function DclPositionPreview() {
+export function DclPositionPreview() {
   const [k, setK] = useState<(typeof STAGES)[number]["key"]>("position_confirmed");
   const v = (sandboxViews as unknown as Record<string, DclPositionView>)[k]!;
   const d = v.deposit;

@@ -763,7 +763,7 @@ impl TreasuryDcl {
         }
     }
 
-    /// Lost zap callback. The DCL HotZap is all-or-nothing (measured on the real wasm: a refused zap returns
+    /// Lost zap callback. Inside the DCL's own receipt the HotZap is all-or-nothing (measured on the real wasm: a refused zap returns
     /// `used = 0` and the token refunds everything; an accepted one uses the whole amount and creates the
     /// position), so the position's existence on the DCL decides: found → used, not found → refunded.
     #[private]

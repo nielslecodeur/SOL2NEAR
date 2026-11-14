@@ -476,5 +476,20 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     fx.insert("pool_raw".into(), view(&e.w, e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() })).await?);
     std::fs::write("../packages/near-client/src/fixtures/v42_dcl_sandbox_views.json", serde_json::to_string_pretty(&Value::Object(fx))? + "\n")?;
     println!("fixture written: packages/near-client/src/fixtures/v42_dcl_sandbox_views.json");
+
+    // ---------- V4.3A: an artificially inflated balance proves nothing ----------
+    // A plain ft_transfer (no ft_on_transfer, no deposit) raises Treasury's USDC balance. The books must not move,
+    // nobody is credited, and no refund can be inferred from it (reconcile of a zap reads the DCL, not this balance).
+    let before = view(&e.w, t.id(), "get_accounting", json!({})).await?;
+    let wallet0 = u(&view(&e.w, e.usdc.id(), "ft_balance_of", json!({ "account_id": t.id() })).await?);
+    must("S1", "lp gifts 5 USDC to TreasuryDCL by plain ft_transfer", lp.call(e.usdc.id(), "ft_transfer").args_json(json!({ "receiver_id": t.id(), "amount": (5 * USDC1).to_string() })).deposit(y(1)).transact().await?)?;
+    let after = view(&e.w, t.id(), "get_accounting", json!({})).await?;
+    let wallet1 = u(&view(&e.w, e.usdc.id(), "ft_balance_of", json!({ "account_id": t.id() })).await?);
+    println!("[S1] Treasury USDC wallet {wallet0} -> {wallet1}; accounting unchanged = {}", before == after);
+    anyhow::ensure!(before == after, "books moved on a gift: {before} vs {after}");
+    anyhow::ensure!(wallet1 == wallet0 + 5 * USDC1);
+    let trader_bal = view(&e.w, t.id(), "get_balance", json!({ "account_id": lp.id(), "token_id": e.usdc.id() })).await?;
+    anyhow::ensure!(u(&trader_bal) == 0, "the gifter is credited nothing");
+    println!("[S1] unattributed USDC = wallet - (owed + community + pending + outstanding) = {} (nobody can withdraw it)", wallet1 - (u(&after["owed_usdc"]) + u(&after["community_total"]) + u(&after["pending_budget_total"]) + u(&after["zap_outstanding"])));
     Ok(())
 }

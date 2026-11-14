@@ -4,7 +4,8 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "e2e",
   timeout: 60_000,
-  retries: 0,
+  // Live tests read public NEAR / Solana / Tidepool endpoints without SLA: one retry absorbs a provider blip; the report lists retried tests as "flaky".
+  retries: 1,
   workers: 1,
   reporter: [["list"]],
   use: { channel: "chrome", headless: true, baseURL: "http://127.0.0.1:4181", screenshot: "only-on-failure" },

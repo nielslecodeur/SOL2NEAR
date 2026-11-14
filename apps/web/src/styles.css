@@ -119,3 +119,37 @@ h2 { margin: 6px 0; overflow-wrap: anywhere; }
 .dclpool { display: grid; gap: 8px; align-content: start; min-width: 0; grid-template-columns: minmax(0, 1fr); }
 .dclpool > * { min-width: 0; }
 .dclpool.sel { border-color: var(--near); }
+
+/* ---------- V4.3A Creator Portal ---------- */
+.portal { display: grid; gap: 12px; }
+.portal > * { min-width: 0; }
+.hero h2 { margin: 0 0 8px; font-size: 22px; line-height: 1.25; }
+.route { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; margin: 8px 0; }
+.route span { padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; }
+.route span:nth-child(even) { border: 0; padding: 0; color: var(--muted); }
+.modes { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.modes button { background: transparent; color: inherit; border: 1px solid var(--line); }
+.modes button.on { border-color: var(--near); color: var(--near); font-weight: 700; }
+.stepper { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.stepper button { background: transparent; color: var(--muted); border: 1px solid var(--line); font-size: 13px; }
+.stepper button.on { color: inherit; border-color: var(--near); font-weight: 700; }
+.stepper button.done { color: var(--near); }
+.navsteps { justify-content: space-between; }
+.wallets { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.wallets > * { min-width: 0; overflow-wrap: anywhere; }
+.offers { list-style: none; padding: 0; margin: 8px 0; display: grid; gap: 6px; font-size: 13px; overflow-wrap: anywhere; }
+table.sim, table.status { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+table.sim td, table.status td { border-top: 1px solid var(--line); padding: 6px 4px; vertical-align: top; overflow-wrap: anywhere; }
+table.sim td:first-child { width: 28px; color: var(--muted); }
+table.sim td:last-child { width: 108px; }
+table.status td:nth-child(2) { width: 34%; }
+table.sim tr.warn td:nth-child(3) { color: var(--warn); }
+.signs { display: grid; gap: 6px; font-size: 14px; padding-left: 20px; overflow-wrap: anywhere; }
+.unified { display: grid; gap: 8px; min-width: 0; }
+@media (max-width: 520px) {
+  table.sim td:last-child { width: 80px; }
+  table.status td:nth-child(3) { display: none; }
+  .hero h2 { font-size: 18px; }
+}
+nav { flex-wrap: wrap; }
+table.status .badge, table.sim .badge { white-space: normal; }

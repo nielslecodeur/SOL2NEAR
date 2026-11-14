@@ -59,7 +59,7 @@ test.describe("@live real testnet reads, real Wallet Selector", () => {
   test("loads without JS errors; Treasury totals equal get_accounting", async ({ page }) => {
     const errors = watchErrors(page);
     const acc = await view<{ total_received: string; recorded_shares: string }>(TREASURY, "get_accounting");
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     const total = (Number(BigInt(acc.total_received)) / 1e6).toString();
     await expect(page.locator(".stat", { hasText: "USDC received by Treasury (all creators)" }).locator("b")).toHaveText(total);
     await expect(page.getByText("BACKED ON REF")).toBeVisible();
@@ -69,7 +69,7 @@ test.describe("@live real testnet reads, real Wallet Selector", () => {
 
   test("no session: Connect button; the real modal lists MyNearWallet and Meteor; closing it signs nothing", async ({ page }) => {
     const errors = watchErrors(page);
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     const connect = nearPanel(page).getByRole("button", { name: "Connect NEAR wallet" });
     await expect(connect).toBeVisible();
     await connect.click();
@@ -83,7 +83,7 @@ test.describe("@live real testnet reads, real Wallet Selector", () => {
   });
 
   test("watch mode for the dev account shows the real G2 deposit and FUEL claim", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     await page.getByLabel("Creator account").fill(DEV);
     // exact match, inside the watch form: "Loading wallets…" (NEAR panel) also contains "Load"
     await page.locator("form.watch").getByRole("button", { name: "Load", exact: true }).click();
@@ -93,7 +93,7 @@ test.describe("@live real testnet reads, real Wallet Selector", () => {
   });
 
   test("demo mode is labelled SIMULATED and hides the NEAR panel; live mode shows no simulated data", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     await page.getByLabel("Data source").selectOption("demo");
     await expect(page.getByText("SIMULATED / DEMO DATA: nothing on this screen comes from a chain.")).toBeVisible();
     await expect(nearPanel(page)).toHaveCount(0);
@@ -114,7 +114,7 @@ test.describe("@live real testnet reads, real Wallet Selector", () => {
       return route.fulfill({ response: r, headers: { ...r.headers(), "content-security-policy": csp } });
     });
     const errors = watchErrors(page);
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     await expect(page.getByText("BACKED ON REF")).toBeVisible();
     await nearPanel(page).getByRole("button", { name: "Connect NEAR wallet" }).click();
     await expect(page.getByText("MyNearWallet", { exact: true })).toBeVisible({ timeout: 20_000 });
@@ -127,7 +127,7 @@ test.describe("@live real testnet reads, real Wallet Selector", () => {
     // Regression G6: the dev server rendered a blank page (`Buffer`/`global`/`process` not defined) while the
     // production build worked. src/polyfills.ts fixes it.
     const errors = watchErrors(page);
-    await page.goto("http://127.0.0.1:4184/");
+    await page.goto("http://127.0.0.1:4184/#/dashboard");
     const connect = nearPanel(page).getByRole("button", { name: "Connect NEAR wallet" });
     await expect(connect).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText("BACKED ON REF")).toBeVisible();
@@ -138,7 +138,7 @@ test.describe("@live real testnet reads, real Wallet Selector", () => {
 
   test("mobile 390px: no horizontal page scroll", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     await expect(nearPanel(page)).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     await page.screenshot({ path: "test-results/mobile.png", fullPage: true });
@@ -150,7 +150,7 @@ test.describe("@mock mocked wallet (e2e hook) + real testnet reads", () => {
   test("connected: balances read live, Treasury acceptance and storage shown", async ({ page }) => {
     await mockWallet(page, DEV);
     const errors = watchErrors(page);
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     const panel = nearPanel(page);
     await expect(panel.getByText(DEV, { exact: true })).toBeVisible();
     await expect(panel.getByText("accepted by Treasury")).toBeVisible();
@@ -162,7 +162,7 @@ test.describe("@mock mocked wallet (e2e hook) + real testnet reads", () => {
 
   test("deposit form: invalid, below minimum, over balance are refused before any review", async ({ page }) => {
     await mockWallet(page, DEV);
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     const panel = nearPanel(page);
     await expect(panel.getByText("accepted by Treasury")).toBeVisible();
     const input = panel.getByLabel("USDC amount");
@@ -176,7 +176,7 @@ test.describe("@mock mocked wallet (e2e hook) + real testnet reads", () => {
 
   test("2 USDC: 90/8/2 preview, exact review, mocked rejection recorded, nothing sent; history survives reload", async ({ page }) => {
     await mockWallet(page, DEV);
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     const panel = nearPanel(page);
     await expect(panel.getByText("accepted by Treasury")).toBeVisible();
     await panel.getByLabel("USDC amount").fill("2");
@@ -198,7 +198,7 @@ test.describe("@mock mocked wallet (e2e hook) + real testnet reads", () => {
 
   test("balances received after connecting appear with Refresh (G6 regression)", async ({ page }) => {
     await mockWallet(page, DEV);
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     const panel = nearPanel(page);
     await expect(panel.getByText("accepted by Treasury")).toBeVisible();
     // MOCK: from now on the RPC reports 123 USDC for the account (as if the faucet had just paid it)
@@ -214,7 +214,7 @@ test.describe("@mock mocked wallet (e2e hook) + real testnet reads", () => {
 
   test("mainnet account from the wallet is refused", async ({ page }) => {
     await mockWallet(page, "alice.near");
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     await expect(nearPanel(page).getByText("alice.near is not a NEAR testnet account")).toBeVisible();
     await expect(nearPanel(page).getByRole("button", { name: "Deposit to Treasury" })).toHaveCount(0);
   });
@@ -246,7 +246,7 @@ test.describe("@mock mocked wallet (e2e hook) + real testnet reads", () => {
     await mockWallet(page, DEV);
     const errors = watchErrors(page);
     await page.route(/near-testnet\.drpc\.org|test\.rpc\.fastnear\.com/, (route) => route.abort("failed")); // MOCK outage of BOTH providers
-    await page.goto("/");
+    await page.goto("/#/dashboard");
     await expect(nearPanel(page).getByText(/Could not read NEAR testnet/)).toBeVisible();
     await expect(page.getByText(/Testnet read failed/)).toBeVisible();
     expect(errors.filter((e) => e.startsWith("pageerror"))).toEqual([]);
@@ -362,7 +362,7 @@ test.describe("@live V4.1B on public testnet (read only)", () => {
 test.describe("@preview V4.1B Position Manager on REAL contract views from the LOCAL sandbox (not testnet)", () => {
   test("LOCKED: verified shares, lock end, withdraw refused (lock, sandbox network), FUEL not eligible, every action locked", async ({ page }) => {
     await preview(page, "lp_confirmed_locked");
-    await expect(page.getByRole("note")).toContainText("LOCAL SANDBOX SNAPSHOT");
+    await expect(page.getByRole("note").filter({ hasText: "LOCAL SANDBOX SNAPSHOT" })).toBeVisible(); // V4.3A: the DCL preview adds its own note
     const p = position(page);
     await expect(p).toHaveAttribute("data-state", "LOCKED", { timeout: 30_000 });
     await expect(p).toContainText("verified on Ref");
@@ -585,5 +585,196 @@ test.describe("@preview V4.2A TreasuryDCL position on REAL views from the LOCAL 
     await expect(page.locator("article.dclpool")).toHaveCount(3, { timeout: 60_000 });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow).toBeLessThanOrEqual(0);
+  });
+});
+
+// ---- V4.3A: Creator Portal (#/) — guided journey, two strictly separate modes, unified positions ----
+const portal = (page: Page) => page.locator("main.portal");
+const step = (page: Page, n: number) => portal(page).getByRole("list", { name: "Journey" }).getByRole("button").nth(n);
+/** MOCK Tidepool /v0/quote (dry): same response shape as the live API (packages/crosschain fixtures). */
+async function mockTidepoolQuote(page: Page, out: (amountIn: string) => { amountOut: string; minAmountOut: string }) {
+  await page.route(/usetidepool\.tech\/v0\/quote/, async (route) => {
+    const body = JSON.parse(route.request().postData() ?? "{}");
+    const o = out(body.amount);
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ correlationId: "e2e-mock", signature: "e2e-mock", quote: { amountIn: body.amount, ...o, timeEstimate: 30 } }) });
+  });
+}
+async function freshPortal(page: Page) {
+  await page.addInitScript(() => {
+    if (!sessionStorage.getItem("e2e-init")) {
+      localStorage.removeItem("sol2near:portal-step");
+      localStorage.removeItem("sol2near:portal-mode");
+      sessionStorage.setItem("e2e-init", "1");
+    }
+  });
+}
+
+test.describe("@live V4.3A Creator Portal", () => {
+  test("a new visitor lands on the portal: value proposition, networks, honest status per evidence kind, no JS error, nothing signed", async ({ page }) => {
+    const errors = watchErrors(page);
+    await freshPortal(page);
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: /Bring your Solana USDC to NEAR memecoin liquidity/ })).toBeVisible();
+    await expect(page.getByLabel("Networks")).toContainText("Tidepool");
+    await expect(page.getByLabel("Networks")).toContainText("community sandbox, not NEAR Intents");
+    const st = page.getByLabel("Feature status");
+    await expect(st.locator('[data-feature="deposit"] [data-evidence]')).toHaveText("Executed on NEAR testnet");
+    await expect(st.locator('[data-feature="bridge"] [data-evidence]')).toHaveText("Bridged once: Solana devnet → NEAR testnet");
+    await expect(st.locator('[data-feature="v42_dcl"] [data-evidence]')).toHaveText("Local sandbox only (real code, local state)");
+    await expect(st.locator('[data-feature="nearly_pools"] [data-evidence]')).toHaveText("Live read (no transaction)");
+    for (const f of ["memecoin_execution", "g8", "creator_fees", "phantom_only", "exit_v3"]) await expect(st.locator(`[data-feature="${f}"] [data-evidence]`)).toHaveText("Not available");
+    await expect(page.getByTestId("mode-note")).toContainText("not a memecoin");
+    await expect(page.getByText(/No yield\s+is promised/)).toBeVisible();
+    await expect(nearPanel(page)).toBeVisible(); // step 1 shows the real NEAR panel
+    await page.screenshot({ path: "../../docs/v4/v43a-portal-home.jpg", type: "jpeg", quality: 70, fullPage: true });
+    expect(await page.evaluate(() => (window as any).__signCalls ?? 0)).toBe(0);
+    expect(errors).toEqual([]);
+  });
+
+  test("live mode, step 2: only pool 2951 is available (labelled not a memecoin); every other pool is not available, with its reason", async ({ page }) => {
+    await freshPortal(page);
+    await page.goto("/");
+    await step(page, 1).click();
+    const s2 = page.getByLabel("Step 2 Choose pool");
+    await expect(s2.locator("li.ok")).toHaveCount(1, { timeout: 30_000 });
+    await expect(s2.locator("li.ok")).toContainText("ref-finance-101.testnet #2951");
+    await expect(s2.locator("li.ok")).toContainText("not a memecoin");
+    await expect(s2.locator("li.ko")).toHaveCount(5);
+    await expect(s2.locator('li[data-offer="near-testnet:ref-finance-101.testnet:2131"]')).toContainText("NOT AVAILABLE");
+  });
+
+  test("explore mode: banner, mainnet DCL cards with a disabled 'execution not available yet' button, sandbox preview in step 5; nothing enabled can execute", async ({ page }) => {
+    await freshPortal(page);
+    await page.goto("/");
+    await page.getByRole("tab", { name: /Explore/ }).click();
+    await expect(page.getByTestId("mode-note")).toContainText("EXPLORE MODE");
+    await expect(page.getByTestId("mode-note")).toContainText("Nothing in this mode can be signed or executed");
+    await expect(nearPanel(page)).toBeHidden(); // no NEAR wallet in this mode
+    await step(page, 1).click();
+    await page.getByRole("button", { name: "Read the 3 Nearly pools (mainnet, read-only)" }).click();
+    await expect(page.locator("article.dclpool")).toHaveCount(3, { timeout: 60_000 });
+    const fund = page.getByRole("button", { name: "Fund — execution not available yet" });
+    await expect(fund).toHaveCount(3);
+    for (let i = 0; i < 3; i++) await expect(fund.nth(i)).toBeDisabled();
+    await step(page, 3).click();
+    await expect(page.getByRole("button", { name: "Execute on DCL — not available yet" })).toBeDisabled();
+    await step(page, 4).click();
+    await expect(page.getByLabel("DCL position preview")).toContainText("PREVIEW — TreasuryDCL views from a LOCAL SANDBOX");
+    // no enabled button anywhere in explore mode says fund / execute / sign / deposit
+    const actionable = await page.locator("button:enabled:visible").allInnerTexts();
+    expect(actionable.filter((t) => /^s*(fund|execute|sign|deposit|bridge|deploy|claim|withdraw)/i.test(t))).toEqual([]);
+  });
+
+  test("step 5: the real G6/G7 creator's positions in the common shape — #1/#2 confirmed with verified shares, #3 (bridged) not LP; no exit offered", async ({ page }) => {
+    await freshPortal(page);
+    await page.goto("/");
+    await step(page, 4).click();
+    const s5 = page.getByLabel("Step 5 Track");
+    await s5.getByLabel("NEAR account").fill("lowarena9362.testnet");
+    await s5.getByRole("button", { name: "Load" }).click();
+    await expect(s5.locator("article.unified")).toHaveCount(3, { timeout: 30_000 });
+    const c2 = s5.getByLabel("Position v3:2");
+    await expect(c2).toContainText("CONFIRMED ON NEAR TESTNET");
+    await expect(c2).toContainText("verified on the DEX");
+    await expect(c2).toContainText("FUEL Claimed");
+    await expect(c2).toContainText("Not offered: V3 withdraw_lp exists in the contract but was never exercised on-chain");
+    await expect(s5.getByLabel("Position v3:3")).toContainText("NOT CONFIRMED AS LP");
+    await expect(s5.getByLabel("Position v3:3")).toContainText("LP budget 79.19532 USDC waiting");
+  });
+
+  test("Positions page: V3 live cards, V4.1 pilot (not deployed) and the DCL sandbox preview are separate and labelled", async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem("sol2near:account", "lowarena9362.testnet"));
+    await page.goto("/#/positions");
+    await expect(page.getByLabel("Unified positions").locator("article.unified")).toHaveCount(3, { timeout: 30_000 });
+    await expect(page.getByTestId("no-positions")).toContainText("TreasuryV4 is not deployed on testnet", { timeout: 30_000 });
+    await expect(page.getByLabel("DCL position preview")).toContainText("LOCAL SANDBOX");
+    await page.screenshot({ path: "../../docs/v4/v43a-positions.jpg", type: "jpeg", quality: 60, fullPage: true });
+  });
+
+  test("mobile 390px: every portal step has no horizontal page scroll", async ({ page }) => {
+    await freshPortal(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    for (let i = 0; i < 5; i++) {
+      await step(page, i).click();
+      await page.waitForTimeout(400);
+      const wide = await page.evaluate(() => [...document.querySelectorAll("body *")].filter((e) => e.getBoundingClientRect().right > window.innerWidth + 1).slice(-3).map((e) => `${e.tagName}.${e.className}:${Math.round(e.getBoundingClientRect().right)}`));
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), `step ${i + 1} ${wide.join(" ")}`).toBeLessThanOrEqual(0);
+    }
+  });
+});
+
+test.describe("@mock V4.3A Creator Portal with an intercepted Tidepool quote (pool 2951 read live)", () => {
+  test("simulator: 14 rows from the quote, the live pool and the rules; split on the guaranteed minimum; a quote older than 60 s blocks", async ({ page }) => {
+    await page.clock.install();
+    await freshPortal(page);
+    await mockTidepoolQuote(page, () => ({ amountOut: "1994800", minAmountOut: "1994800" })); // the G7 numbers
+    await page.goto("/");
+    await step(page, 2).click();
+    const s3 = page.getByLabel("Step 3 Simulate");
+    await s3.getByLabel("USDC to send from Solana").fill("2");
+    await s3.getByRole("button", { name: "Simulate (read-only)" }).click();
+    const t = s3.getByLabel("Contribution simulation");
+    await expect(t.locator("tr")).toHaveCount(14, { timeout: 30_000 });
+    await expect(t).toContainText("2 → 1.9948 USDC, cost 0.0052 USDC");
+    await expect(t).toContainText("LP 1.79532 · creator reserve 0.159584 · community 0.039896 USDC");
+    await expect(t).toContainText(/Ref get_return = plan/);
+    await expect(s3.getByTestId("sim-ok")).toBeVisible();
+    await page.clock.fastForward(65_000);
+    await expect(t).toContainText("STALE, refresh before signing");
+    await expect(s3.getByLabel("Blocking")).toContainText("quote older than 60 s");
+    await page.screenshot({ path: "../../docs/v4/v43a-simulator.jpg", type: "jpeg", quality: 70, fullPage: true });
+  });
+  test("simulator: 1 USDC (0.9974 arrives) is blocked below the Treasury minimum; Tidepool down → nothing downstream is computed", async ({ page }) => {
+    await freshPortal(page);
+    await mockTidepoolQuote(page, () => ({ amountOut: "997400", minAmountOut: "997400" }));
+    await page.goto("/");
+    await step(page, 2).click();
+    const s3 = page.getByLabel("Step 3 Simulate");
+    await s3.getByLabel("USDC to send from Solana").fill("1");
+    await s3.getByRole("button", { name: "Simulate (read-only)" }).click();
+    await expect(s3.getByLabel("Blocking")).toContainText("below the Treasury minimum deposit 1", { timeout: 30_000 });
+    await page.unroute(/usetidepool\.tech\/v0\/quote/);
+    await page.route(/usetidepool\.tech/, (r) => r.abort("failed")); // MOCK Tidepool outage
+    await s3.getByRole("button", { name: "Simulate (read-only)" }).click();
+    await expect(s3.getByLabel("Blocking")).toContainText("no bridge quote", { timeout: 30_000 });
+    await expect(s3.getByLabel("Contribution simulation")).not.toContainText("LP 0.");
+    await expect(s3.getByLabel("Contribution simulation")).toContainText("unknown without a quote");
+  });
+  test("Phantom (MOCK injected provider): absent → explained; trusted session restored after reload; empty devnet USDC balance read from Solana devnet", async ({ page }) => {
+    await freshPortal(page);
+    await page.goto("/");
+    await expect(page.getByLabel("Solana wallet")).toContainText("Phantom not detected");
+    await expect(page.getByRole("button", { name: "Connect Phantom" })).toBeDisabled();
+    // MOCK provider: approves only an explicit connect, then reconnects silently (onlyIfTrusted) like Phantom
+    await page.addInitScript(() => {
+      const pk = { toBase58: () => "11111111111111111111111111111111" };
+      (window as any).phantom = { solana: {
+        publicKey: null,
+        connect: async (o?: { onlyIfTrusted?: boolean }) => {
+          if (o?.onlyIfTrusted && !localStorage.getItem("e2e-trusted")) throw new Error("User rejected");
+          localStorage.setItem("e2e-trusted", "1");
+          return { publicKey: pk };
+        },
+        signAndSendTransaction: async () => { (window as any).__solSign = ((window as any).__solSign ?? 0) + 1; throw new Error("e2e: never sign"); },
+      } };
+    });
+    await page.reload();
+    await page.getByRole("button", { name: "Connect Phantom" }).click();
+    await expect(page.getByLabel("Solana wallet")).toContainText("Connected 11111111111111111111111111111111");
+    await expect(page.getByTestId("sol-usdc")).toHaveText("0", { timeout: 30_000 }); // real Solana devnet read: no token account
+    await expect(page.getByLabel("Solana wallet")).toContainText("No devnet USDC on this address");
+    await page.reload();
+    await expect(page.getByLabel("Solana wallet")).toContainText("Connected 11111111111111111111111111111111"); // session restored, no click
+    expect(await page.evaluate(() => (window as any).__solSign ?? 0)).toBe(0);
+  });
+  test("reload keeps the mode and the step (per-viewer convenience)", async ({ page }) => {
+    await freshPortal(page);
+    await page.goto("/");
+    await page.getByRole("tab", { name: /Explore/ }).click();
+    await step(page, 3).click();
+    await page.reload();
+    await expect(page.getByTestId("mode-note")).toContainText("EXPLORE MODE");
+    await expect(step(page, 3)).toHaveAttribute("aria-current", "step");
   });
 });

@@ -36,13 +36,14 @@ const tidepool = createTidepoolClient({ store: browserStore() });
 /** Only for DRY previews before a Solana wallet is connected: the Tidepool devnet USDC mint address. */
 const DRY_PREVIEW_REFUND_PLACEHOLDER = "7pafEGXSmR35rLKNaD6inpfLYuEnRX9DyBc1c7M8r4Xr";
 
-type InjectedWallet = {
+export type InjectedWallet = {
   publicKey: { toBase58(): string } | null;
-  connect(): Promise<{ publicKey: { toBase58(): string } }>;
+  /** `onlyIfTrusted`: reconnect silently only if the user already approved this site (no popup, no signature). */
+  connect(opts?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: { toBase58(): string } }>;
   signAndSendTransaction(tx: Transaction): Promise<{ signature: string }>;
 };
 /** Phantom first, then any injected provider with the same API (window.solana). */
-const injected = (): InjectedWallet | undefined => {
+export const injected = (): InjectedWallet | undefined => {
   const w = window as unknown as { phantom?: { solana?: InjectedWallet }; solana?: InjectedWallet };
   const p = w.phantom?.solana ?? w.solana;
   return typeof p?.connect === "function" && typeof p?.signAndSendTransaction === "function" ? p : undefined;
@@ -99,6 +100,8 @@ export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onH
       (h) => { onHealth?.(true); setHealth(h.ok && h.solanaRouteOk ? "up · Solana devnet route ok" : `degraded · ok=${h.ok} solanaRoute=${h.solanaRouteOk}`); },
       (e) => { onHealth?.(false); setHealth(`unreachable from this network (${explain(e)}). Path B is unavailable here; the direct NEAR deposit still works.`); },
     );
+    // session restore: Phantom reconnects without a popup only if this site was already approved
+    injected()?.connect({ onlyIfTrusted: true }).then((r) => setSolAddr(r.publicKey.toBase58()), () => { /* not trusted yet: the user clicks Connect */ });
     const ctrl = new AbortController();
     abort.current = ctrl;
     // Resume every transfer a previous page load left in progress. An abort (unmount) is not an error to show.

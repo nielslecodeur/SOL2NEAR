@@ -6,9 +6,13 @@ import { BridgeLive } from "./BridgeLive.tsx";
 import { NearPanel } from "./NearPanel.tsx";
 import { PoolsPage } from "./PoolsPage.tsx";
 import { PositionsPage } from "./v4/V4.tsx";
+import { CreatorPortal } from "./portal/CreatorPortal.tsx";
+import { UnifiedCard } from "./portal/UnifiedCard.tsx";
+import { DclPositionPreview } from "./v4/Dcl.tsx";
+import { fromV3Deposit } from "../../../packages/near-client/src/index.ts";
 import { bridgeTone, depositStatus, duration, fuel, pct, usdc, wnear, type Tone } from "./format.ts";
 
-type Route = { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" } | { page: "pools" } | { page: "positions" };
+type Route = { page: "creator" } | { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" } | { page: "pools" } | { page: "positions" };
 
 function parseRoute(): Route {
   const [, page, id] = location.hash.split("/");
@@ -16,7 +20,8 @@ function parseRoute(): Route {
   if (page === "reactor") return { page: "reactor" };
   if (page === "pools") return { page: "pools" };
   if (page === "positions") return { page: "positions" };
-  return { page: "dashboard" };
+  if (page === "dashboard") return { page: "dashboard" };
+  return { page: "creator" };
 }
 
 const Badge = ({ tone, children }: { tone: Tone; children: React.ReactNode }) => <span className={`badge ${tone}`}>{children}</span>;
@@ -66,12 +71,22 @@ export function App() {
   }, [source]);
 
   const demo = source === "demo";
+  // ONE NEAR panel instance (wallet session): in the page header area, or inside the Creator Portal steps.
+  const nearPanel = (
+    <NearPanel
+      tidepoolReachable={tidepoolOk}
+      onAccount={(id) => { setWalletAccount(id); if (id) { setAccount(id); localStorageSet("account", id); refresh(id); } }}
+      onChanged={() => refresh()}
+    />
+  );
+  const watch = (a: string) => { setAccount(a); localStorageSet("account", a); refresh(a); };
   return (
     <div className="app">
       <header>
         <a href="#/" className="logo">SOL<span>2</span>NEAR</a>
         <nav>
-          <a href="#/" className={route.page === "dashboard" || route.page === "vault" ? "on" : ""}>Dashboard</a>
+          <a href="#/" className={route.page === "creator" ? "on" : ""}>Creator Portal</a>
+          <a href="#/dashboard" className={route.page === "dashboard" || route.page === "vault" ? "on" : ""}>Dashboard</a>
           <a href="#/reactor" className={route.page === "reactor" ? "on" : ""}>FUEL Reactor</a>
           <a href="#/pools" className={route.page === "pools" ? "on" : ""}>Pools (V4)</a>
           <a href="#/positions" className={route.page === "positions" ? "on" : ""}>Positions (V4)</a>
@@ -90,7 +105,7 @@ export function App() {
         Tidepool, used for the Solana Devnet → NEAR bridge, is a <b>community sandbox, not official NEAR Intents</b>. Test tokens have no value.
       </div>
 
-      {!demo && (
+      {!demo && route.page !== "creator" && (
         <form className="watch" onSubmit={(e) => { e.preventDefault(); localStorageSet("account", account); refresh(); }}>
           <label htmlFor="acct">Creator account</label>
           <input id="acct" placeholder="you.testnet" value={account} onChange={(e) => setAccount(e.target.value)} />
@@ -99,13 +114,7 @@ export function App() {
         </form>
       )}
 
-      {!demo && (
-        <NearPanel
-          tidepoolReachable={tidepoolOk}
-          onAccount={(id) => { setWalletAccount(id); if (id) { setAccount(id); localStorageSet("account", id); refresh(id); } }}
-          onChanged={() => refresh()}
-        />
-      )}
+      {!demo && route.page !== "creator" && nearPanel}
 
       {error && <div className="banner err">{error}</div>}
       {snap && !demo && !snap.deployed.treasury && (
@@ -114,6 +123,9 @@ export function App() {
         </div>
       )}
 
+      {route.page === "creator" && (demo
+        ? <main><div className="banner sim">The Creator Portal has no simulated data: switch to Live testnet.</div></main>
+        : <CreatorPortal wallet={walletAccount} account={account} snap={snap} nearPanel={nearPanel} onWatch={watch} />)}
       {snap && route.page === "dashboard" && <Dashboard snap={snap} account={account} onTidepool={setTidepoolOk} />}
       {snap && route.page === "vault" && <Vault snap={snap} id={route.id} />}
       {snap && route.page === "reactor" && <ReactorPage snap={snap} />}
@@ -122,7 +134,11 @@ export function App() {
         : <PoolsPage wallet={walletAccount} />)}
       {route.page === "positions" && (demo
         ? <main><div className="banner sim">The Position Manager has no simulated data mode: switch to Live testnet (it also offers a labelled local-sandbox preview).</div></main>
-        : <PositionsPage wallet={walletAccount} />)}
+        : <>
+            <UnifiedPositions snap={snap} account={account} />
+            <PositionsPage wallet={walletAccount} />
+            <main className="pools"><section className="card"><h3>Positions (V4.2A) · TreasuryDCL — not deployed</h3><DclPositionPreview /></section></main>
+          </>)}
 
       <footer>
         Contracts: <a href={explorerAccount(TREASURY_ACCOUNT_ID)} target="_blank" rel="noreferrer">{TREASURY_ACCOUNT_ID}</a> ·{" "}
@@ -232,7 +248,7 @@ function Vault({ snap, id }: { snap: Snapshot; id: string }) {
   ];
   return (
     <main>
-      <a href="#/" className="muted">← Dashboard</a>
+      <a href="#/dashboard" className="muted">← Dashboard</a>
       <h2>Vault {d.creator} · deposit #{d.id}</h2>
       <ol className="pipeline">
         {steps.map((s) => (
@@ -302,4 +318,20 @@ function localStorageGet(k: string): string | null {
 }
 function localStorageSet(k: string, v: string) {
   try { localStorage.setItem(`sol2near:${k}`, v); } catch { /* private mode: not persisted */ }
+}
+
+/** Where the creator's capital is: V3 Treasury positions read live on testnet, in the common position shape. */
+function UnifiedPositions({ snap, account }: { snap: Snapshot | null; account: string }) {
+  const nowNs = BigInt(Date.now()) * 1_000_000n;
+  const ps = (snap?.deposits ?? []).map((d) => fromV3Deposit(d as never, snap?.positions[d.id] ?? null, TREASURY_ACCOUNT_ID, nowNs));
+  return (
+    <main className="pools" aria-label="Unified positions">
+      <section className="card">
+        <h3>Your positions · V3 Treasury (deployed, live NEAR testnet)</h3>
+        <p className="muted">Account <code>{account || "—"}</code>. Classic LP shares held by <code>{TREASURY_ACCOUNT_ID}</code> for you. Below: the V4.1 Classic pilot and the V4.2A DCL adapter, neither deployed (sandbox previews, clearly labelled).</p>
+        {snap && ps.length === 0 && <p className="muted">No Treasury deposit for this account.</p>}
+      </section>
+      {ps.map((p) => <UnifiedCard key={p.key} p={p} />)}
+    </main>
+  );
 }

@@ -52,7 +52,7 @@ So the testnet DCL is **not** a faithful copy of the mainnet DCL. The local sand
 | Token registration (v2.4.2) | each user must call `register_tokens` with paid storage (1 yocto → `E104 insufficient deposit`). **Without it, every deposit is silently refunded** | explore run 1 vs run 2 |
 | Deposit | `ft_transfer_call(dcl, amount, "\"Deposit\"")` credits the **sender's** internal DCL balance (`list_user_assets`) | explore D1 |
 | Creation | `add_liquidity(pool_id, left_point, right_point, amount_x, amount_y, min_amount_x, min_amount_y)` from the internal balance. **Returns the `lpt_id`** `"<pool>#<n>"` (a global sequence). Event `add_liquidity` with `paid_token_x/y`. The unused part stays in the internal balance | explore D2, F1 |
-| Creation in one receipt | `ft_transfer_call` with `{"HotZap":{"swap_infos":[…],"add_liquidity_infos":[…]}}`: swaps along given pool paths, then add. **All or nothing** (a refused zap returns `used = 0` and the token refunds everything). It does **not** return the `lpt_id`: it is read back with `list_liquidities` (as Nearly's locker does) | explore E4/E5, sandbox F1 |
+| Creation with one call (several receipts, see §3.1) | `ft_transfer_call` with `{"HotZap":{"swap_infos":[…],"add_liquidity_infos":[…]}}`: swaps along given pool paths, then add. Swaps and add run **inside one DCL receipt**, so either all of them apply or none does (a refused zap returns `used = 0` and the token refunds everything). It does **not** return the `lpt_id`: it is read back with `list_liquidities` (as Nearly's locker does) | explore E4/E5, sandbox F1 |
 | Simulation | `predict_hotzap(token_in, amount_in, swap_infos, add_liquidity_infos)` → `[[{need_x, need_y, liquidity_amount}], {token: left}]`. **out = left + need.** It simulates the swaps **in sequence** (independent `quote`s overestimate a second leg that shares a pool: −1.3 % measured). It panics where the zap would fail | probe_hotzap, sandbox E4b |
 | Owner | the predecessor of `add_liquidity` / the zap sender. `get_liquidity(lpt_id).owner_id`. A **contract** can own positions (TreasuryDCL in the sandbox, `lock*.nearlytrade.near` on mainnet) | sandbox F1 |
 | Standard | full **NEP-171**: `nft_token`, `nft_transfer` (exactly 1 yocto), `nft_transfer_call`, approvals, `nft_tokens_for_owner`, metadata "REF DCL LIQUIDITY NFT" / RDL. After a transfer, the old owner gets `E215: not liquidity owner` | explore I0–I2, sandbox H3 |
@@ -65,6 +65,28 @@ So the testnet DCL is **not** a faithful copy of the mainnet DCL. The local sand
 | Fees | `get_liquidity.unclaimed_fee_x/y`. **Claim = `remove_liquidity(lpt_id, "0", "0", "0", skip_refund_transfer)`**: it returns `[fee_x, fee_y]` and credits them to the owner's DCL account. A second claim returns `[0, 0]` | explore H1/H2, sandbox G3/G4 |
 | Errors / callbacks | panics with `E…` codes (≈ 80 codes in the wasm strings). Promise results: `add_liquidity` → `String`, `remove_liquidity` → `[U128, U128]`, `withdraw_asset` → `bool`, `ft_transfer_call` → used amount | sandbox logs |
 | Views quirks | `list_liquidities(account_id, from_index: u64, limit: u64)`: raw JSON numbers, `"0"` is refused. Multi-hop `quote` needs more than 5 Tgas | sandbox runs 6–9 |
+
+### 3.1 What "atomic" means for the HotZap (corrected in V4.3A)
+
+The V4.2A text called the HotZap "atomic" without saying at which level. Precisely:
+
+| Receipt | Contract | What is committed when it ends |
+|---|---|---|
+| R1 `execute_dcl_lp` | TreasuryDCL | plan stored, status `PreflightPending`, job lock taken. Nothing has moved |
+| R2 views (`get_pool`, `predict_hotzap`, 2 `quote`s) | DCL | nothing (views) |
+| R3 `on_preflight` | TreasuryDCL | guards passed → status `ZapPending{sent}`, `pending_budget_total -= sent`, `zap_outstanding += sent`. Guards failed → back to `BudgetAllocated`, nothing sent |
+| R4 `ft_transfer_call` | USDC token | USDC moved Treasury → DCL (NEP-141 first half) |
+| R5 `ft_on_transfer` (the HotZap) | DCL | **all swaps + the add_liquidity, or nothing**: they run in this single receipt, so a failing step (slippage E204, range, storage) reverts every one of them. Leftovers stay in Treasury's DCL account |
+| R6 `ft_resolve_transfer` | USDC token | refund of what R5 did not use (everything if R5 failed) back to Treasury |
+| R7 `on_zap` → `list_liquidities` → `on_lookup` → views → `on_confirm` | TreasuryDCL / DCL | the position is recorded only after it is read back from the DCL |
+
+So **atomicity holds only inside R5**. The flow as a whole is asynchronous:
+- the price can move between R2 and R5: bounded by the plan's min outs and minimum amounts, or R5 reverts;
+- R4 and R5 can succeed while R7 is lost (gas): the position exists but is not recorded → `reconcile` finds it on the DCL;
+- R5 can fail with R6 refunding while R7 is lost → `reconcile` finds no position → refunded;
+- leftovers are not returned by the zap: recovering them is a separate, later job (`withdraw_dex_balance`).
+
+`reconcile` assumes the observed behaviour "a successful zap uses the whole amount". If a future DCL version returned a partial refund in R6 while R7 is lost, the refunded part would sit in Treasury's USDC balance **unattributed**: credited to nobody, never re-spent. That is the safe direction; it would need manual attribution. An inflated USDC balance is never read as proof of anything (sandbox step S1).
 
 **A DCL position is not a Classic LP share.**
 - **Classic:** fungible shares; fees are inside the share value; no range.
@@ -145,7 +167,7 @@ None of them is executable in the dashboard: they are mainnet, observe only by c
 | Position | fungible shares (`get_pool_shares`) | NEP-171 NFT `lpt_id` with a range |
 | Price exposure | whole curve | only inside `[left, right]`; one-sided outside |
 | Fees | inside the share value, inseparable from price moves | separate, claimable per position (`remove_liquidity(0)`), exact amounts |
-| Entry | Ref deposit → swap → add (3 calls) | one USDC `ft_transfer_call` with HotZap (2 swaps + add, atomic) |
+| Entry | Ref deposit → swap → add (3 calls) | one USDC `ft_transfer_call` with HotZap (2 swaps + add inside one DCL receipt; the whole flow is still asynchronous, §3.1) |
 | Position id | none (shares) | read back with `list_liquidities` (HotZap does not return it) |
 | Exit | `mft_transfer` of shares | `nft_transfer` of the position |
 | Storage | 0.1 NEAR on Ref | 0.5 NEAR + 0.1 NEAR registration; 40 slots |

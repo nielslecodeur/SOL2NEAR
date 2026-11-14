@@ -34,7 +34,7 @@ pool RAWMEME/wNEAR {"current_point":0,"fee":10000,"liquidity":"28912897097555868
 [E5] books vs real: USDC wallet 20000000 = owed+community+pending 20000000; X wallet 0 = owed_x 0; wNEAR wallet 0 = owed_y 0; DCL acct X 0 = 0, Y 0 = 0, USDC 0 = 0
       plan: point 0 range [-20000, 20200] usdc 8079648/8920352 → predicted out 2641784302668536591653364 / 3045343772441025231412583, need 2641784302668536591645896 / 3044928792142292620967437
 [F1] execute_dcl_lp: guards → HotZap (USDC→wNEAR→RAWMEME, USDC→wNEAR, add_liquidity) → lookup → confirm: OK · 139 Tgas · events ["preflight_started", "zap_sent", "zap_confirmed", "position_found", "position_confirmed"]
-[F1] position_confirmed {"creator":"alice.test.near","deposit_id":"0","dex":"dcl.test.near","fuel":"FUEL_NOT_ELIGIBLE","left_point":-20000,"leftover_usdc":"0","leftover_x":"13208921513342682967999","leftover_y":"15639624259444073552636","liquidity":"222745662302570594080","lpt_id":"rawmeme.test.near|wrap.test.near|10000#4","pool_id":"rawmeme.test.near|wrap.test.near|10000","position_x":"2628575381155193908685364","position_y":"3029704148181581157859945","right_point":20200,"unlock_at":"1794660024611702156","usdc_used":"17000000"}
+[F1] position_confirmed {"creator":"alice.test.near","deposit_id":"0","dex":"dcl.test.near","fuel":"FUEL_NOT_ELIGIBLE","left_point":-20000,"leftover_usdc":"0","leftover_x":"13208921513342682967999","leftover_y":"15639624259444073552636","liquidity":"222745662302570594080","lpt_id":"rawmeme.test.near|wrap.test.near|10000#4","pool_id":"rawmeme.test.near|wrap.test.near|10000","position_x":"2628575381155193908685364","position_y":"3029704148181581157859945","right_point":20200,"unlock_at":"1794662700801463828","usdc_used":"17000000"}
 [F1] DCL get_liquidity {"amount":"222745662302570594080","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#4","mft_id":"","owner_id":"treasury-dcl.test.near","pool_id":"rawmeme.test.near|wrap.test.near|10000","right_point":20200,"unclaimed_fee_x":"0","unclaimed_fee_y":"0","v_liquidity":"0"}
 [F1] DCL nft_token owner "treasury-dcl.test.near"
 [F1] USDC used "17000000" + back to reserve "1000000" = 18 USDC budget; position x "2628575381155193908685364" y "3029704148181581157859945"; leftovers in DCL x "13208921513342682967999" y "15639624259444073552636" usdc "0"
@@ -62,7 +62,7 @@ pool RAWMEME/wNEAR {"current_point":0,"fee":10000,"liquidity":"28912897097555868
 [K6] books vs real: USDC wallet 11400000 = owed+community+pending 11400000; X wallet 0 = owed_x 0; wNEAR wallet 0 = owed_y 0; DCL acct X 26524760402193152684120 = 26524760402193152684120, Y 50417965130101416381497 = 50417965130101416381497, USDC 0 = 0
 [H1] withdraw_position during the lock: refused as expected (ERR_POSITION_LOCKED)
 [H2] bob withdraws alice's position: refused as expected (ERR_NOT_CREATOR)
-[H3] sandbox time is past unlock_at 1794660024611702156
+[H3] sandbox time is past unlock_at 1794662700801463828
 [H3] withdraw_position: nft_transfer to alice, owner checked: OK · 14 Tgas · events ["position_withdrawn"]
 [H3] DCL nft_token owner = "alice.test.near"
 [H4] second withdraw_position: refused as expected (ERR_NO_CONFIRMED_POSITION)
@@ -80,4 +80,7 @@ pool RAWMEME/wNEAR {"current_point":0,"fee":10000,"liquidity":"28912897097555868
 [R] books vs real: USDC wallet 11400000 = owed+community+pending 11400000; X wallet 0 = owed_x 0; wNEAR wallet 0 = owed_y 0; DCL acct X 8826282690692279974706 = 8826282690692279974706, Y 29413621888145799188222 = 29413621888145799188222, USDC 0 = 0
 [R] deposit 0: claimed fees x "4489556198158189741415" y "5364718982511543640639", recovered x "17698477711500872709414" y "21004343241955617193275", status "PositionWithdrawn"
 fixture written: packages/near-client/src/fixtures/v42_dcl_sandbox_views.json
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 64.50s
+[S1] lp gifts 5 USDC to TreasuryDCL by plain ft_transfer: OK · 2 Tgas · events []
+[S1] Treasury USDC wallet 11400000 -> 16400000; accounting unchanged = true
+[S1] unattributed USDC = wallet - (owed + community + pending + outstanding) = 5000000 (nobody can withdraw it)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 64.39s
