@@ -130,7 +130,7 @@ the recorded quote always carries its block.
 | live e2e, Creator Portal group | **10/10**, including a **LIVE** NEARLY quote from mainnet views and every transactional button disabled |
 | `pnpm check:public` | PASS: no wallet selector, no tx builder, no Phantom lookup, no SPL builder, no eval; CSP; `vercel.json` headers |
 | `pnpm check:release` | all release checks passed (no key material, no personal path, fixtures tracked, no destructive script) |
-| Clean clone | see §10 |
+| **Clean clone** of commit `b412948` (fresh `git clone`, Windows + WSL) | `pnpm install --frozen-lockfile`, typecheck, near-client 64, crosschain 36, web 48, web build, `check:release`, `check:public`, **e2e offline 18/18**; `nearly-proof.sh`: fetch + build (TreasuryDCL SHA-256 `66889832…7a83`, identical) + sandbox `1 passed` + **PASS export identical**: third independent identical run |
 
 ## 7. Verifiable results (where to look)
 
@@ -172,4 +172,4 @@ the recorded quote always carries its block.
 | `445ec68` (Vercel deployment record) and the H1–H4 commit(s) | **local only, not pushed** |
 | Public demo https://sol2near-demo.vercel.app | live, read-only, built from `ce3dff1`: **without** the NEARLY journey |
 | H1–H4 public build | built and tested locally (`dist-public`, `check:public` PASS); **not deployed** |
-| Clean clone of the local commit | see the commit's verification note in the final report |
+| Clean clone of `b412948` | reproduces everything above (§6) |
