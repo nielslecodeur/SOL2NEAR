@@ -3,10 +3,12 @@
 **Fuel memecoin liquidity across chains.** SOL2NEAR lets Solana memecoin creators route USDC they control into a
 liquidity position on NEAR that anyone can verify: who holds it, what it earned, how it exits.
 
-**Live demo → https://sol2near-demo.vercel.app** · read-only: the site has no wallet and no signing code, and cannot
-send a transaction. Test networks only; test tokens have no value.
+**Live demo → https://sol2near-demo.vercel.app** · explore without a wallet, or connect a real **NEAR testnet** wallet
+(MyNearWallet, Meteor) to read your own account. **Signing is locked**: the site cannot send a transaction. Test networks
+only; test tokens have no value.
 
-> The site serves commit `3cbf7d8` (H6), built from a clean clone with the public read-only build and its checks.
+> The site serves the **Try Testnet** build ([docs/TRY_TESTNET.md](docs/TRY_TESTNET.md)), built from a clean clone of `main`
+> and checked by `pnpm check:testnet`. The fully read-only build (no wallet code) is still `build:public` + `check:public`.
 
 ![SOL2NEAR home page](docs/h6/after-home-1440.jpg)
 
@@ -26,11 +28,11 @@ It is for creators who want to give their community verifiable liquidity, and fo
 
 ## Try it — do X, see Y
 
-In the browser (no wallet, nothing to install):
+In the browser (nothing to install; rows 1–8 need no wallet):
 
 | # | Do | See |
 |---|---|---|
-| 1 | Open https://sol2near-demo.vercel.app | "Fuel memecoin liquidity across chains." and the bar "Public read-only demo — … it cannot send any transaction" |
+| 1 | Open https://sol2near-demo.vercel.app | "Fuel memecoin liquidity across chains." and the bar "Try Testnet build — … Signing is locked: this build cannot send any transaction" |
 | 2 | Click **Explore the demo** | Step 1 **Choose**: NEARLY / wNEAR · Rhea DCL v2.4.2, "Mainnet pool · read-only", data "Snapshot · block 224535331", amount 100 USDC |
 | 3 | Click **Next: Preview** | **Historical quote** · Mainnet block 224535331 · 2026-11-14 15:51 UTC · "Not an executable offer": 100 USDC → 90 USDC to liquidity → 91,662 NEARLY + 13.91 wNEAR, price impact 0.11 % |
 | 4 | Click **Get a live indicative quote** | **Live indicative quote** with the current mainnet block (all views at that block). If a public RPC fails, the real error is shown and the historical quote stays |
@@ -38,14 +40,15 @@ In the browser (no wallet, nothing to install):
 | 6 | Open **Proof** → **Technical view** | 16 testnet / devnet transaction hashes, each linking to its explorer (nearblocks testnet, Solana explorer devnet) |
 | 7 | **Developers → Dashboard**, type `sol2near-dev.testnet` in *Creator account*, click **Load** | Live testnet reads: 20 USDC received, split 18 / 1.6 / 0.4, LP **BACKED ON REF**, FUEL `Claimed` |
 | 8 | **Developers → FUEL Reactor** | Reactor level, current season, supply buckets and season history read from `fuel.sol2near-dev.testnet` |
+| 9 | Click **Try Testnet** → **Connect NEAR wallet**, sign in with a **testnet** account (MyNearWallet or Meteor; no access key is requested) | Your account, its real NEAR and test-USDC balances, Treasury deposits and V3 positions. A review shows the exact contract call, then "Signing locked in this build": nothing can be sent |
 
 On your machine (commands and expected output in [Quick start](#quick-start) and [Reproduce the proof](#reproduce-the-proof)):
 
 | # | Do | See |
 |---|---|---|
-| 9 | `node scripts/probes/verify-testnet.mjs` and `node scripts/probes/verify-g6-g7.mjs` | `all checks passed`; `all G6/G7 proofs re-verified` (read-only RPC, no keys; Tidepool checks print `FAIL … fetch failed` on a network that filters its domain) |
-| 10 | `cargo test -p sol2near-fuel demo_walkthrough -- --nocapture` | 6 numbered steps on a mocked NEAR VM: a position admitted with its Ref / Treasury proof, a non-backed one refused, season close → level up, claim paid, **second claim REJECTED** |
-| 11 | `bash scripts/proofs/nearly-proof.sh` | `test result: ok. 1 passed`, 3 × `PASS … code = mainnet`, `PASS export identical … (58 steps)` |
+| 10 | `node scripts/probes/verify-testnet.mjs` and `node scripts/probes/verify-g6-g7.mjs` | `all checks passed`; `all G6/G7 proofs re-verified` (read-only RPC, no keys; Tidepool checks print `FAIL … fetch failed` on a network that filters its domain) |
+| 11 | `cargo test -p sol2near-fuel demo_walkthrough -- --nocapture` | 6 numbered steps on a mocked NEAR VM: a position admitted with its Ref / Treasury proof, a non-backed one refused, season close → level up, claim paid, **second claim REJECTED** |
+| 12 | `bash scripts/proofs/nearly-proof.sh` | `test result: ok. 1 passed`, 3 × `PASS … code = mainnet`, `PASS export identical … (58 steps)` |
 
 ## The memecoin mechanic: FUEL Reactor
 
@@ -155,7 +158,7 @@ The run rewrites the timestamps of `packages/near-client/src/fixtures/v42_dcl_sa
   [docs/G8_FINAL_EXECUTION.md](docs/G8_FINAL_EXECUTION.md).
 - **No V3 exit demonstrated:** `withdraw_lp` exists in code but was never exercised on-chain, and V3 cannot return an
   unused LP budget.
-- **The public demo is read-only.** Quotes are historical or indicative, never executable offers.
+- **The public demo cannot sign.** It can connect a testnet wallet and read it; every signature is locked. Quotes are historical or indicative, never executable offers.
 - **No yield is promised.** Pool fees vary and can be zero; a concentrated position earns nothing outside its range, and
   a memecoin can lose most of its value.
 - **Fees:** no bridge, swap or protocol fee is hard-coded; costs come from real quotes (Tidepool `/v0/quote`, Ref

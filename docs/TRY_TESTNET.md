@@ -1,11 +1,12 @@
 # Try Testnet — real wallet connection, signing locked
 
-A third build of the site, next to the full app and the public read-only demo. **Local only: not deployed.**
+A third build of the site, next to the full app and the read-only build. **Deployed at https://sol2near-demo.vercel.app**
+since H8 (2026-11-14, approved by the lead), replacing the read-only build there.
 
 | Build | Command | Wallet | Can sign |
 |---|---|---|---|
-| Public demo (deployed) | `pnpm --filter @sol2near/web build:public` | none (no wallet code in the bundle) | no |
-| **Try Testnet** | `pnpm --filter @sol2near/web build:testnet` | **real NEAR Wallet Selector**: MyNearWallet, Meteor (testnet); Phantom connect (devnet balance) | **no** — locked twice |
+| Read-only demo (deployed until H8) | `pnpm --filter @sol2near/web build:public` | none (no wallet code in the bundle) | no |
+| **Try Testnet** (deployed) | `pnpm --filter @sol2near/web build:testnet` | **real NEAR Wallet Selector**: MyNearWallet, Meteor (testnet); Phantom connect (devnet balance) | **no** — locked twice |
 | Full app | `pnpm --filter @sol2near/web dev` | same wallets | yes, each transaction reviewed, then approved in the user's own wallet |
 
 ## Run it
