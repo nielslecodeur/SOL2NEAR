@@ -50,13 +50,38 @@ function publicReadOnly(): Plugin {
   };
 }
 
+/**
+ * TRY TESTNET build (`vite build --mode testnet`): the REAL NEAR Wallet Selector (MyNearWallet, Meteor, testnet only) and
+ * Phantom connection stay, so a visitor can connect a real wallet and read their real testnet balances and Treasury
+ * deposits. Every signature is locked: VITE_SIGNING_LOCKED makes src/near/wallet.ts refuse before the wallet is asked and
+ * hides the send buttons, and the Solana signer (packages/crosschain/src/wallet.ts) is replaced by the refusing stub.
+ * Checked by scripts/check-testnet-bundle.mjs. Not deployed anywhere unless the lead approves it.
+ */
+function tryTestnet(): Plugin {
+  const ro = publicReadOnly();
+  return {
+    name: "sol2near-try-testnet",
+    enforce: "pre",
+    async resolveId(source, importer, options) {
+      const r = await this.resolve(source, importer, { ...options, skipSelf: true });
+      if (r && /[\\/]packages[\\/]crosschain[\\/]src[\\/]wallet\.ts$/.test(r.id.split("?")[0]!)) return here("src/public/noSigning.ts");
+      return null;
+    },
+    transformIndexHtml(html) {
+      const withCsp = (ro.transformIndexHtml as (h: string) => string)(html);
+      return withCsp.replace(/<title>[^<]*<\/title>/, "<title>SOL2NEAR — Try Testnet (connect and read, signing locked)</title>");
+    },
+  };
+}
+
 // `--mode e2e` (Playwright build only) enables the mocked-wallet test hook; the production build never has it.
 // `--mode public` builds the read-only demo (no signing code at all).
 export default defineConfig(({ mode }) => ({
-  plugins: mode === "public" ? [publicReadOnly(), react()] : [react()],
+  plugins: mode === "public" ? [publicReadOnly(), react()] : mode === "testnet" ? [tryTestnet(), react()] : [react()],
   base: "./",
   define:
     mode === "e2e" ? { "import.meta.env.VITE_E2E": JSON.stringify("1") }
     : mode === "public" ? { "import.meta.env.VITE_PUBLIC_READ_ONLY": JSON.stringify("1") }
+    : mode === "testnet" ? { "import.meta.env.VITE_SIGNING_LOCKED": JSON.stringify("1") }
     : {},
 }));

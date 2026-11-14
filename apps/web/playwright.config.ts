@@ -31,6 +31,13 @@ export default defineConfig({
       timeout: 60_000,
     },
     {
+      // The TRY TESTNET build (`build:testnet`): real Wallet Selector, every signature locked.
+      command: "npx vite preview --outDir dist-testnet --port 4185 --strictPort --host 127.0.0.1",
+      url: "http://127.0.0.1:4185",
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
+    {
       // The Vite DEV server, exactly what README step 6 runs (`pnpm --filter @sol2near/web dev`).
       command: "npx vite --port 4184 --strictPort --host 127.0.0.1",
       url: "http://127.0.0.1:4184",

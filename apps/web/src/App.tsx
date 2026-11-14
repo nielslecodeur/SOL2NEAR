@@ -16,6 +16,8 @@ import { EXPLORE_STEPS, NearlyJourney, type ExploreStep } from "./portal/NearlyJ
 
 /** Public read-only demo build (`vite build --mode public`): no wallet or signing code is bundled (see vite.config.ts). */
 const READ_ONLY = import.meta.env.VITE_PUBLIC_READ_ONLY === "1";
+/** Try Testnet build (`vite build --mode testnet`): real wallet connection, every signature locked. */
+const SIGNING_LOCKED = import.meta.env.VITE_SIGNING_LOCKED === "1";
 import { bridgeTone, depositStatus, duration, fuel, pct, usdc, wnear, type Tone } from "./format.ts";
 
 // H6 routes. Product: home, how, explore (3 steps), proofs. Developers: console (the former Creator Portal testnet journey,
@@ -122,6 +124,7 @@ export function App() {
           <a href="#/explore" aria-current={cur("explore")}>Explore</a>
           <a href="#/how" aria-current={cur("how")}>How it works</a>
           <a href="#/proofs" aria-current={cur("proofs")}>Proof</a>
+          {!READ_ONLY && <a href="#/console" aria-current={cur("console")}>Try Testnet</a>}
         </nav>
         <details className="devmenu" ref={devMenu}>
           <summary className={dev ? "on" : ""}>Developers</summary>
@@ -135,6 +138,12 @@ export function App() {
       {READ_ONLY && (
         <div className="statusbar" role="note" data-testid="read-only-banner">
           <span className="dot" aria-hidden="true" /><span><b>Public read-only demo</b> — this site contains no wallet and no signing code: it cannot send any transaction.</span>
+        </div>
+      )}
+
+      {SIGNING_LOCKED && (
+        <div className="statusbar" role="note" data-testid="signing-locked-banner">
+          <span className="dot" aria-hidden="true" /><span><b>Try Testnet build</b> — connect a real NEAR testnet wallet and read your account. Signing is locked: this build cannot send any transaction.</span>
         </div>
       )}
 

@@ -45,8 +45,8 @@ export function CreatorPortal({ wallet, account, snap, nearPanel, onWatch }: {
     <main className="portal">
       <header className="page-head compact">
         <p className="eyebrow">Developers · NEAR testnet</p>
-        <h1>Testnet console</h1>
-        <p className="muted" data-testid="mode-note">Deployed contracts on <b>NEAR testnet</b> only. {READ_ONLY ? "State is read live; signing is not available in this public demo (the full app, run locally, asks your own wallet to approve each transaction after a review)." : "Real transactions, each approved in your own wallet after a review."} The only fundable pool today is Ref Classic <b>#2951 USDC/wNEAR — not a memecoin</b>. The NEARLY memecoin journey is in <a href="#/explore">Explore</a>.</p>
+        <h1>{READ_ONLY ? "Testnet console" : "Try Testnet"}</h1>
+        <p className="muted" data-testid="mode-note">Deployed contracts on <b>NEAR testnet</b> only. {READ_ONLY ? "State is read live; signing is not available in this public demo (the full app, run locally, asks your own wallet to approve each transaction after a review)." : import.meta.env.VITE_SIGNING_LOCKED === "1" ? "Connect your own NEAR testnet wallet (MyNearWallet or Meteor) and read your real balances and Treasury deposits. Signing is locked in this build: the review shows the exact transaction, nothing can be sent." : "Real transactions, each approved in your own wallet after a review."} The only fundable pool today is Ref Classic <b>#2951 USDC/wNEAR — not a memecoin</b>. The NEARLY memecoin journey is in <a href="#/explore">Explore</a>.</p>
       </header>
       <section className="card" aria-label="Journey steps">
         <ol className="stepper" aria-label="Journey">

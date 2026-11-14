@@ -151,7 +151,9 @@ export function BridgeLive({ nearAccount, onHealth }: { nearAccount: string; onH
       </p>
       <div className="watch">
         <button onClick={quote} disabled={!atomic || !recipient || busy}>Preview (dry quote)</button>
-        <button onClick={bridge} disabled={!ready || !preview || coversMin === false}>Bridge {atomic ? usdc(atomic) : "—"} USDC</button>
+        {import.meta.env.VITE_SIGNING_LOCKED === "1"
+          ? <button disabled title="Try Testnet build: no Solana transaction can be signed">Bridge — signing locked in this build</button>
+          : <button onClick={bridge} disabled={!ready || !preview || coversMin === false}>Bridge {atomic ? usdc(atomic) : "—"} USDC</button>}
       </div>
       {preview && <p>Quote: {exact(preview.amountIn)} USDC → <b>{exact(preview.amountOut)}</b> USDC on NEAR (guaranteed min {exact(preview.minAmountOut)}), cost {exact((BigInt(preview.amountIn) - BigInt(preview.amountOut)).toString())} USDC, ~{preview.timeEstimateSec}s. Read from the quote, not hard-coded.</p>}
       {coversMin === true && <p className="muted">✓ The guaranteed minimum ({exact(preview!.minAmountOut)} USDC) covers the Treasury minimum deposit ({exact(minDeposit!)} USDC).</p>}

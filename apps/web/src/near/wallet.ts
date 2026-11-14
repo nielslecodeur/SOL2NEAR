@@ -16,6 +16,8 @@ import { WalletError, isRejection } from "./errors.ts";
 import { forgetSelectorSession } from "./session.ts";
 
 const SIGN_OUT_TIMEOUT_MS = 8000;
+/** Compile-time lock of the "Try Testnet" build (vite.config.ts, mode "testnet"). */
+export const SIGNING_LOCKED = import.meta.env.VITE_SIGNING_LOCKED === "1";
 
 export type SignResult = { hash: string; outcome?: TxOutcome } | { redirected: true };
 
@@ -67,6 +69,9 @@ async function create(): Promise<NearWallet> {
       return () => sub.unsubscribe();
     },
     async signAndSend(call) {
+      // "Try Testnet" build (`vite build --mode testnet`): the wallet connects and the app reads the account, but no
+      // transaction may leave the page. Checked before the wallet is even asked (second lock after the UI one).
+      if (SIGNING_LOCKED) throw new WalletError("SIGNING_LOCKED: this build connects and reads only; it cannot send a transaction", false);
       const accountId = current();
       if (!accountId) throw new WalletError("No testnet account connected", false);
       if (selector.options.network.networkId !== NETWORK_ID) throw new WalletError(`Wallet network is ${selector.options.network.networkId}, not testnet`, false);

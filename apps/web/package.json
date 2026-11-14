@@ -9,10 +9,12 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "node --test \"src/**/*.test.ts\"",
     "build:e2e": "vite build --mode e2e --outDir dist-e2e",
-    "e2e": "vite build --mode e2e --outDir dist-e2e && vite build --mode public --outDir dist-public && playwright test",
-    "e2e:offline": "vite build --mode e2e --outDir dist-e2e && vite build --mode public --outDir dist-public && playwright test --project offline",
-    "e2e:live": "vite build --mode e2e --outDir dist-e2e && playwright test --project live",
-    "build:public": "tsc -p tsconfig.json && vite build --mode public --outDir dist-public"
+    "e2e": "vite build --mode e2e --outDir dist-e2e && vite build --mode public --outDir dist-public && vite build --mode testnet --outDir dist-testnet && playwright test",
+    "e2e:offline": "vite build --mode e2e --outDir dist-e2e && vite build --mode public --outDir dist-public && vite build --mode testnet --outDir dist-testnet && playwright test --project offline",
+    "e2e:live": "vite build --mode e2e --outDir dist-e2e && vite build --mode public --outDir dist-public && vite build --mode testnet --outDir dist-testnet && playwright test --project live",
+    "build:public": "tsc -p tsconfig.json && vite build --mode public --outDir dist-public",
+    "build:testnet": "tsc -p tsconfig.json && vite build --mode testnet --outDir dist-testnet",
+    "preview:testnet": "vite preview --outDir dist-testnet --port 4185 --strictPort"
   },
   "dependencies": {
     "@near-js/transactions": "2.5.1",

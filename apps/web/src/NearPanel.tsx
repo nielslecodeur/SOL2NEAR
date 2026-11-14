@@ -19,6 +19,8 @@ import { nearRpc } from "./near/rpc.ts";
 import { WalletError, isRejection } from "./near/errors.ts";
 import { isTestnetAccount } from "./near/config.ts";
 import type { NearWallet } from "./near/wallet.ts";
+/** Try Testnet build: same review, but the button that would hand the call to the wallet is locked (wallet.ts locks it too). */
+const SIGNING_LOCKED = import.meta.env.VITE_SIGNING_LOCKED === "1";
 
 const rpc = nearRpc();
 
@@ -385,11 +387,14 @@ export function NearPanel({ onAccount, onChanged, tidepoolReachable }: {
           <h3>Review before signing ({review.kind})</h3>
           <ul>{review.lines.map((l) => <li key={l}>{l}</li>)}</ul>
           <p className="muted">Network: NEAR testnet only. Your wallet shows the same call; nothing is sent until you approve it there.</p>
+          {SIGNING_LOCKED && <p className="badge pending" data-testid="signing-locked-note">This Try Testnet build can show the exact transaction but cannot send it: signing needs the full app, run locally, and a separate approval.</p>}
           {review.ack && (
             <label className="ack"><input type="checkbox" checked={acked} onChange={(e) => setAcked(e.target.checked)} /> {review.ack}</label>
           )}
           <div className="watch">
-            <button disabled={busy || (!!review.ack && !acked)} onClick={sign}>{busy ? "Waiting for wallet…" : "Confirm & open wallet"}</button>
+            {SIGNING_LOCKED
+              ? <button disabled title="Try Testnet build: connect and read only" data-testid="signing-locked">Signing locked in this build</button>
+              : <button disabled={busy || (!!review.ack && !acked)} onClick={sign}>{busy ? "Waiting for wallet…" : "Confirm & open wallet"}</button>}
             <button className="ghost" disabled={busy} onClick={() => setReview(null)}>Cancel</button>
           </div>
         </div>
