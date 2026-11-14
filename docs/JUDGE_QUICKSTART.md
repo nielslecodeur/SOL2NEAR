@@ -6,7 +6,8 @@ What it proves, and what it does not: [`HACKATHON_MEMECOIN_PROOF.md`](HACKATHON_
 ## 0. Look first (2 minutes, nothing to install)
 
 - Public read-only demo: https://sol2near-demo.vercel.app. Its bundle contains no wallet and no signing code. It was
-  deployed from `ce3dff1`, before the NEARLY journey; to see that journey, use step 2 below.
+  deployed from `4c88875` and includes the NEARLY journey in its 8-step form (Creator Portal → *Explore · NEARLY
+  memecoin*). The three-step interface described in step 2 is in the repository and not deployed yet.
 - Proofs page (`#/proofs`): every testnet/devnet transaction hash with its explorer link.
 
 ## 1. Requirements
@@ -28,10 +29,15 @@ pnpm check:public                               # → "public bundle is read-onl
 pnpm --filter @sol2near/web exec vite preview --outDir dist-public
 ```
 
-Open the printed URL. The portal opens on **Explore · NEARLY memecoin**. Walk through the 8 steps:
-1. Step 2: the real pool, labelled with the block of its snapshot.
-2. Step 4: the recorded quote. **Get a live quote** runs Rhea's own `quote` / `predict_hotzap` views on mainnet.
-3. Step 7: the 58-step sandbox proof. Open any **proof** button to see the arguments, the result and the on-chain reads.
+Open the printed URL and click **Explore the demo**. Three steps:
+1. **Choose**: the real pool, labelled with the block of its snapshot (*Advanced details* for every identifier).
+2. **Preview**: the **historical quote** (mainnet block 224 535 331). **Get a live indicative quote** runs Rhea's own
+   `quote` / `predict_hotzap` views on mainnet, all at one block. Neither quote is an executable offer.
+3. **Proof**: the sandbox summary, then **View technical evidence** for the 58 steps. Open any **proof** button to see
+   the arguments, the result and the on-chain reads.
+
+The **Proof** page (`#/proofs`) lists the testnet transactions (simple and technical view). The developer tools
+(testnet console, Dashboard, Pools, Positions, FUEL Reactor) are under **Developers**.
 
 ## 3. Reproduce the NEARLY DCL execution (LOCAL SANDBOX, ≈ 3 min)
 
@@ -61,8 +67,8 @@ changes.
 
 ```bash
 pnpm typecheck && pnpm test:ts && pnpm --filter @sol2near/web test   # near-client 64, crosschain 36, web 48
-pnpm --filter @sol2near/web e2e:offline                              # 18 tests, every public endpoint blocked (needs Google Chrome)
-pnpm check:release                                                   # no keys, no personal paths, no eval
+pnpm --filter @sol2near/web e2e:offline                              # 20 tests, every public endpoint blocked (needs Google Chrome)
+pnpm check:release && pnpm check:docs                                # no keys, no personal paths, no eval; doc links resolve
 cargo test --workspace                                               # 34 + 31 + 47 + 3 + 41
 ```
 

@@ -35,4 +35,4 @@ pnpm typecheck; pnpm test:ts;   # near-client + crosschain (mocked)
 pnpm --filter @sol2near/crosschain live:dry   # read-only Tidepool check
  pnpm --filter @sol2near/web test; pnpm --filter @sol2near/web build
 ```
-FUEL rules: `docs/FUEL_REACTOR.md`. Current status: `README.md`; history in `docs/archive/`.
+FUEL rules: `docs/FUEL_REACTOR.md`. Current status: `README.md` and `docs/H6_UI_UX_RELEASE.md`; history in `docs/archive/`.

@@ -3,14 +3,14 @@
 Date: 2026-11-14. Solo project. Mission: *turn Solana creator capital into verifiable liquidity for NEAR memecoins.*
 
 **Verdict: `READY WITH LIMITATIONS`** (see §8). The NEARLY journey can be demonstrated and its local execution can be
-reproduced from a clean clone. No real funds are exposed. **No mainnet contribution exists**, and the public site does
-not include this journey until a new deployment is approved.
+reproduced from a clean clone. No real funds are exposed. **No mainnet contribution exists.** The public site
+(https://sol2near-demo.vercel.app, deployed from `4c88875` on 2026-11-14) includes this journey in its 8-step form; the
+H6 three-step layout (§1, last paragraph) is committed locally and not deployed yet.
 
 ## 1. The journey that is actually demonstrated
 
 A Solana creator picks **NEARLY**, a real NEAR memecoin, and follows how their USDC would become a verifiable
-concentrated-liquidity position. The journey has 8 steps: Creator Portal → *Explore · NEARLY memecoin*, in the local app
-and in the read-only public build.
+concentrated-liquidity position. The journey has 8 stages, in the local app and in the read-only public build.
 
 | Step | What the visitor sees | Evidence kind |
 |---|---|---|
@@ -23,8 +23,16 @@ and in the read-only public build.
 | 7 Sandbox proof | Code provenance, summary, and the 58 recorded steps of the run with the arguments, result and on-chain reads of each | **LOCAL SANDBOX** |
 | 8 Fees & exit | Test fees observed (not a forecast), repeated claim = 0, out of range = 0, lock, NFT exit, recovery of leftovers, what a real NEARLY contribution would still need | **LOCAL SANDBOX** + limits |
 
-Every transactional button in this mode is a disabled "not available" button: *Execute on mainnet*, *Fund NEARLY on
-mainnet*. The public build has no signing path at all (§5).
+Every transactional button in this mode is a disabled "not available" button. The public build has no signing path at
+all (§5).
+
+**Since H6 (local commit, not deployed yet)** the 8 stages are grouped in three screens at `#/explore`: **Choose**
+(stages 1–3), **Preview** (4–6; the quote detail, conversion and position sit under *Advanced details*) and **Proof**
+(7–8; a simple summary first, the 58 steps under *View technical evidence*). Quote labels are now **Historical quote**
+(mainnet block 224 535 331, 2026-11-14 15:51 UTC) and **Live indicative quote**; neither is an executable offer. A live
+quote now reads every view at **one** final block, like the probe script: before H6 the views were unpinned and a pool move
+between two reads could make Rhea answer `E101: insufficient balance` (about 1 attempt in 5 on the public site). Details:
+[H6_UI_UX_RELEASE.md](H6_UI_UX_RELEASE.md).
 
 ## 2. Components used (reused, no new architecture)
 
@@ -138,7 +146,8 @@ the recorded quote always carries its block.
 - `packages/near-client/src/fixtures/nearly_dcl_sandbox_proof.json`: the proof (LOCAL SANDBOX).
 - `packages/near-client/src/fixtures/nearly_reference_sim.json`: the recorded mainnet quote, with block height and hash.
 - `docs/v4/h1-nearly-quote.jpg`, `docs/v4/h1-nearly-sandbox-proof.jpg`: screens produced by the offline e2e.
-- Creator Portal → Explore → steps 2–8; Proofs page → "The memecoin proof is a different level of evidence".
+- Explore (`#/explore`) → Choose, Preview, Proof; Proof page (`#/proofs`) → section B, "NEARLY on Rhea DCL". Before H6:
+  Creator Portal → Explore → steps 2–8.
 
 ## 8. Limits (also shown in the UI)
 
@@ -152,7 +161,7 @@ the recorded quote always carries its block.
   tokens are refused.
 - FUEL does not reward DCL positions (`FUEL_NOT_ELIGIBLE`).
 - G8 is incomplete. The V3 contract accounts keep a developer full-access key (documented).
-- The deployed public site (`ce3dff1`) predates this journey.
+- The deployed public site (`4c88875`) shows the 8-step journey; the H6 interface is not deployed yet.
 
 ## 9. What a mainnet execution would still require (none of it is done or authorised)
 
@@ -170,7 +179,7 @@ the recorded quote always carries its block.
 | Item | State |
 |---|---|
 | G9 fixes `62dfc04`, `9033645`, `9b96f76`; G9.1 `3368d8a`; Vercel config `ce3dff1` | **published** on `origin/main` (checked with `git branch -r --contains`) |
-| `445ec68` (Vercel deployment record) and the H1–H4 commit(s) | **local only, not pushed** |
-| Public demo https://sol2near-demo.vercel.app | live, read-only, built from `ce3dff1`: **without** the NEARLY journey |
-| H1–H4 public build | built and tested locally (`dist-public`, `check:public` PASS); **not deployed** |
+| `445ec68` (Vercel deployment record), H1–H4 `b412948`, `3b4b0fc`, `4c88875` | **published** on `origin/main` (H5, 2026-11-14) |
+| Public demo https://sol2near-demo.vercel.app | live, read-only, rebuilt from `4c88875` (H5): **with** the 8-step NEARLY journey |
+| H6 interface (Choose → Preview → Proof), repository archive, README | **local commits, not pushed, not deployed** (see [H6_UI_UX_RELEASE.md](H6_UI_UX_RELEASE.md)) |
 | Clean clone of `b412948` | reproduces everything above (§6) |

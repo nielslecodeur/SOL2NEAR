@@ -844,7 +844,6 @@ test.describe("@offline @public G9.1 read-only demo build", () => {
     await expect(page.getByText("Explore how Solana capital can become a verifiable liquidity position on NEAR.")).toBeVisible();
     await expect(page.getByText("Read-only demonstration · No real funds required")).toBeVisible();
     await expect(page.getByLabel("Main").getByRole("link")).toHaveText(["Explore", "How it works", "Proof"]);
-    await page.screenshot({ path: "../../docs/h6/home-desktop.jpg", type: "jpeg", quality: 72, fullPage: true });
     await page.getByRole("link", { name: "Explore the demo" }).first().click();
     await expect(page).toHaveURL(/#\/explore\/choose$/);
     await expect(page.getByRole("navigation", { name: "Journey" }).getByRole("link", { name: /Choose/ })).toHaveAttribute("aria-current", "step");
@@ -907,7 +906,6 @@ test.describe("@offline @public G9.1 read-only demo build", () => {
     await expect(page.getByTestId("quote-error")).toContainText("Live quote failed", { timeout: 60_000 }); // every endpoint is blocked: the real error is shown
     await expect(page.getByTestId("quote-source")).toHaveText("Historical quote"); // and the historical quote keeps its label
     await expect(pv.getByRole("button", { name: "Execute on mainnet — not available" })).toBeDisabled();
-    await page.screenshot({ path: "../../docs/h6/explore-preview-desktop.jpg", type: "jpeg", quality: 72, fullPage: true });
     await nav.nth(0).click();
     await page.getByLabel("Contribution", { exact: true }).fill("250");
     await nav.nth(1).click();
@@ -943,7 +941,6 @@ test.describe("@offline @public G9.1 read-only demo build", () => {
     await page.goto(PUBLIC + "#/explore/choose");
     await page.getByText("Advanced details").click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), "choose").toBeLessThanOrEqual(0);
-    await page.screenshot({ path: "../../docs/h6/explore-choose-mobile.jpg", type: "jpeg", quality: 72, fullPage: true });
     await page.goto(PUBLIC + "#/explore/preview");
     await page.getByText("Advanced details").click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), "preview").toBeLessThanOrEqual(0);
@@ -952,9 +949,7 @@ test.describe("@offline @public G9.1 read-only demo build", () => {
     await page.locator('tr[data-step="F1"]').getByRole("button", { name: "proof" }).click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), "proof").toBeLessThanOrEqual(0);
     await page.goto(PUBLIC + "#/");
-    await page.screenshot({ path: "../../docs/h6/home-mobile.jpg", type: "jpeg", quality: 72, fullPage: true });
     await page.goto(PUBLIC + "#/proofs");
-    await page.screenshot({ path: "../../docs/h6/proof-mobile.jpg", type: "jpeg", quality: 72, fullPage: true });
   });
   test("H6 keyboard: skip link, main navigation and the Developers menu work without a mouse", async ({ page }) => {
     await publicOffline(page);
@@ -980,14 +975,11 @@ test.describe("@offline @public G9.1 read-only demo build", () => {
     for (const w of [1440, 768]) {
       await page.setViewportSize({ width: w, height: 900 });
       await page.goto(PUBLIC + "#/proofs");
-      if (w === 1440) await page.screenshot({ path: "../../docs/h6/proof-desktop.jpg", type: "jpeg", quality: 72, fullPage: true });
       await page.getByRole("button", { name: "Technical view" }).click();
       await expect(page.getByLabel("Sandbox steps").locator("tr[data-step]")).toHaveCount(58);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), String(w)).toBeLessThanOrEqual(0);
       await page.goto(PUBLIC + "#/explore/choose");
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), `explore ${w}`).toBeLessThanOrEqual(0);
-      if (w === 1440) await page.screenshot({ path: "../../docs/h6/explore-choose-desktop.jpg", type: "jpeg", quality: 72, fullPage: true });
-      if (w === 768) await page.screenshot({ path: "../../docs/h6/explore-choose-tablet.jpg", type: "jpeg", quality: 72, fullPage: true });
     }
   });
 });
