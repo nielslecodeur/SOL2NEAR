@@ -3,7 +3,9 @@
 // V4.1 local sandbox run (sandbox-tests/) executes the same Ref and Tidepool USDC wasm as testnet.
 // Writes sandbox-tests/res/<name>.wasm (git-ignored) and prints code_hash + SHA-256 for the report.
 import { createHash } from "node:crypto";
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+// sandbox-tests/res/ is git-ignored, so it does not exist in a fresh clone (found in the G9 public-clone check)
+mkdirSync(new URL("../../sandbox-tests/res/", import.meta.url), { recursive: true });
 const RPC = ["https://test.rpc.fastnear.com", "https://near-testnet.drpc.org"];
 const TARGETS = { ref_exchange: "ref-finance-101.testnet", tidepool_usdc: "usdc.tidepool-sandbox.testnet" };
 for (const [name, account] of Object.entries(TARGETS)) {

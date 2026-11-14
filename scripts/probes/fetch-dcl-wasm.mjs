@@ -4,7 +4,9 @@
 // No account, key or transaction is involved. Writes sandbox-tests/res/<name>.wasm (git-ignored) and prints
 // code_hash + SHA-256 for the report. Mainnet is used ONLY to copy code: no mainnet state or funds are touched.
 import { createHash } from "node:crypto";
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+// sandbox-tests/res/ is git-ignored, so it does not exist in a fresh clone (found in the G9 public-clone check)
+mkdirSync(new URL("../../sandbox-tests/res/", import.meta.url), { recursive: true });
 
 const RPC = {
   mainnet: ["https://free.rpc.fastnear.com", "https://near.drpc.org"],
