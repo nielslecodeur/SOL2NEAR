@@ -4,8 +4,8 @@ Date: 2026-11-14. Solo project. Mission: *turn Solana creator capital into verif
 
 **Verdict: `READY WITH LIMITATIONS`** (see §8). The NEARLY journey can be demonstrated and its local execution can be
 reproduced from a clean clone. No real funds are exposed. **No mainnet contribution exists.** The public site
-(https://sol2near-demo.vercel.app, deployed from `4c88875` on 2026-11-14) includes this journey in its 8-step form; the
-H6 three-step layout (§1, last paragraph) is committed locally and not deployed yet.
+(https://sol2near-demo.vercel.app) serves this journey in its H6 three-step layout (§1, last paragraph), deployed from
+`3cbf7d8`.
 
 ## 1. The journey that is actually demonstrated
 
@@ -26,7 +26,7 @@ concentrated-liquidity position. The journey has 8 stages, in the local app and 
 Every transactional button in this mode is a disabled "not available" button. The public build has no signing path at
 all (§5).
 
-**Since H6 (local commit, not deployed yet)** the 8 stages are grouped in three screens at `#/explore`: **Choose**
+**Since H6 (deployed from `3cbf7d8`)** the 8 stages are grouped in three screens at `#/explore`: **Choose**
 (stages 1–3), **Preview** (4–6; the quote detail, conversion and position sit under *Advanced details*) and **Proof**
 (7–8; a simple summary first, the 58 steps under *View technical evidence*). Quote labels are now **Historical quote**
 (mainnet block 224 535 331, 2026-11-14 15:51 UTC) and **Live indicative quote**; neither is an executable offer. A live
@@ -161,7 +161,7 @@ the recorded quote always carries its block.
   tokens are refused.
 - FUEL does not reward DCL positions (`FUEL_NOT_ELIGIBLE`).
 - G8 is incomplete. The V3 contract accounts keep a developer full-access key (documented).
-- The deployed public site (`4c88875`) shows the 8-step journey; the H6 interface is not deployed yet.
+- The deployed public site (`3cbf7d8`) shows the H6 three-step journey.
 
 ## 9. What a mainnet execution would still require (none of it is done or authorised)
 
@@ -180,6 +180,6 @@ the recorded quote always carries its block.
 |---|---|
 | G9 fixes `62dfc04`, `9033645`, `9b96f76`; G9.1 `3368d8a`; Vercel config `ce3dff1` | **published** on `origin/main` (checked with `git branch -r --contains`) |
 | `445ec68` (Vercel deployment record), H1–H4 `b412948`, `3b4b0fc`, `4c88875` | **published** on `origin/main` (H5, 2026-11-14) |
-| Public demo https://sol2near-demo.vercel.app | live, read-only, rebuilt from `4c88875` (H5): **with** the 8-step NEARLY journey |
-| H6 interface (Choose → Preview → Proof), repository archive, README | **local commits, not pushed, not deployed** (see [H6_UI_UX_RELEASE.md](H6_UI_UX_RELEASE.md)) |
+| H6 `8e7a03b`, `cb84218`, `c851dcb`, `3cbf7d8` | **published** on `origin/main` |
+| Public demo https://sol2near-demo.vercel.app | live, read-only, rebuilt from `3cbf7d8` (deployment `dpl_7kVmdGjuGjdbUazqJpcp5oTRFr6y`, 2026-11-14 ~18:30 UTC): the H6 interface |
 | Clean clone of `b412948` | reproduces everything above (§6) |

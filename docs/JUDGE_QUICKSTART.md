@@ -6,8 +6,7 @@ What it proves, and what it does not: [`HACKATHON_MEMECOIN_PROOF.md`](HACKATHON_
 ## 0. Look first (2 minutes, nothing to install)
 
 - Public read-only demo: https://sol2near-demo.vercel.app. Its bundle contains no wallet and no signing code. It was
-  deployed from `4c88875` and includes the NEARLY journey in its 8-step form (Creator Portal → *Explore · NEARLY
-  memecoin*). The three-step interface described in step 2 is in the repository and not deployed yet.
+  deployed from `3cbf7d8` (deployment `dpl_7kVmdGjuGjdbUazqJpcp5oTRFr6y`, 2026-11-14 ~18:30 UTC): the same three-step interface as step 2 below.
 - Proofs page (`#/proofs`): every testnet/devnet transaction hash with its explorer link.
 
 ## 1. Requirements

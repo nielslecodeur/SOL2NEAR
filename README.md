@@ -6,8 +6,7 @@ liquidity position on NEAR that anyone can verify: who holds it, what it earned,
 **Live demo → https://sol2near-demo.vercel.app** · read-only: the site has no wallet and no signing code, and cannot
 send a transaction. Test networks only; test tokens have no value.
 
-> The site currently serves commit `4c88875`, with the earlier 8-step NEARLY journey. The redesigned interface described
-> below (Choose → Preview → Proof) is in this repository and goes live at the next approved deployment.
+> The site serves commit `3cbf7d8` (H6), built from a clean clone with the public read-only build and its checks.
 
 ![SOL2NEAR home page](docs/h6/after-home-1440.jpg)
 

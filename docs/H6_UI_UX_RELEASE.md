@@ -1,7 +1,7 @@
 # H6 — UI/UX release, repository organisation, README
 
-Date: 2026-11-14. Solo project. **Local commits only: nothing pushed, nothing deployed.** The public site
-https://sol2near-demo.vercel.app still serves `4c88875` (H5) until a deployment is approved.
+Date: 2026-11-14. Solo project. **Published** with the lead's approval: pushed (`4c88875..3cbf7d8`) and deployed to
+https://sol2near-demo.vercel.app (§10).
 No contract, key, tokenomics or transaction was touched. No video, X post or submission was prepared.
 
 ## 1. The problem
@@ -134,6 +134,24 @@ field overflowed at 390 px, two live tests failed (§6).
 - Unchanged project limits: unaudited contracts, no mainnet Treasury or bridge, FullAccess keys on the testnet contract
   accounts, G8 not completed (`G8 READY FOR USER SIGNATURE`), no V3 exit demonstrated, sandbox = mainnet code but local
   state, no yield promised.
+
+## 10. Publication (approved by the lead)
+
+- Push `4c88875..3cbf7d8` to `origin/main`, no force; remote head confirmed with the GitHub API.
+- Vercel: the **existing** project `sol2near-demo` (no new project, environment variables and domain unchanged), from a
+  clean clone of `3cbf7d8`: install, typecheck, build, `build:public`, `check:public`, `check:release`, `check:docs`,
+  e2e offline 20/20, then Build Output API v3 and `vercel deploy --prebuilt --prod`. deployment `dpl_7kVmdGjuGjdbUazqJpcp5oTRFr6y`, 2026-11-14 ~18:30 UTC, state READY, aliased to the
+  production URL.
+- Served: the JS bundle `index-6ZQ41A-a.js` has SHA-256 `a4138231…90dd`, identical to the checked bundle; CSP with
+  `frame-ancestors 'none'`, X-Frame-Options DENY, nosniff, no-referrer, Permissions-Policy, HSTS; unknown path 404; no
+  signing marker in the bundle.
+- Real Chrome on the public URL, real network: 37/37 checks (home, navigation, CTA, historical quote, Execute disabled,
+  4 sandbox facts, 58 steps, 3 × "= mainnet code", Proof simple 4 / technical 16, 7 developer routes after reload, no
+  enabled transactional button, no horizontal scroll at 390 px on 6 routes). **Live indicative quote: 5/5**, each at one
+  block (224 552 336 → 224 552 385), ≈ 93 000 NEARLY + 14.3 wNEAR for 100 USDC, impact 0.10 %. No JavaScript error.
+- Observed: one live quote makes ≈ 70 mainnet view calls; the free `free.rpc.fastnear.com` tier answers HTTP 429 to
+  about one in five, the client then uses `near.drpc.org` and the quote completes. These 429s appear in the browser
+  console as failed resources. Requests still in flight when leaving a developer page are aborted by the browser.
 
 ## 9. Git state
 
