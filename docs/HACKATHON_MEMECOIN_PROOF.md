@@ -128,6 +128,7 @@ the recorded quote always carries its block.
 | `pnpm --filter @sol2near/web test` | **48** |
 | `pnpm --filter @sol2near/web e2e:offline` | **18/18**: every external request blocked; covers the public build, the NEARLY journey (recorded data, a real error for a failed live quote, 58 proof rows, 3 × "= mainnet code"), and 390 px on all 8 steps |
 | live e2e, Creator Portal group | **10/10**, including a **LIVE** NEARLY quote from mainnet views and every transactional button disabled |
+| full live e2e (31 tests, public endpoints, 1 retry) | **29 passed + 2 flaky** (failed once, passed on retry): the known V4.2A DCL card test and the NEARLY live quote, both after mainnet RPC rate limiting (HTTP 429) late in the run. No test failed twice |
 | `pnpm check:public` | PASS: no wallet selector, no tx builder, no Phantom lookup, no SPL builder, no eval; CSP; `vercel.json` headers |
 | `pnpm check:release` | all release checks passed (no key material, no personal path, fixtures tracked, no destructive script) |
 | **Clean clone** of commit `b412948` (fresh `git clone`, Windows + WSL) | `pnpm install --frozen-lockfile`, typecheck, near-client 64, crosschain 36, web 48, web build, `check:release`, `check:public`, **e2e offline 18/18**; `nearly-proof.sh`: fetch + build (TreasuryDCL SHA-256 `66889832…7a83`, identical) + sandbox `1 passed` + **PASS export identical**: third independent identical run |
