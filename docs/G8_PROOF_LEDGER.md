@@ -61,3 +61,7 @@ Read and re-verified on 2026-11-14 with **read-only** calls:
 | 4. Mock test | crosschain unit tests (mocked Tidepool / Solana), `@offline` e2e (replayed RPC snapshot), Phantom provider mock |
 | 5. Browser simulation | Creator Portal simulator, DCL estimator (view calls only) |
 | 6. Not deployed | TreasuryV4, TreasuryDCL, S2NMEME; any mainnet execution |
+
+## 5. Second preflight (2026-11-14 14:17–14:22 UTC)
+
+Re-read with `g8-audit.mjs`. Every value of §1 rows 1–5 is unchanged. Deposit #3 is still `BudgetAllocated` with no job, and the pool is unchanged. The freshly computed plan is identical to the one in `G8_FINAL_EXECUTION.md` §3. Rows 6–9 still have **no transaction**: nothing has been signed.

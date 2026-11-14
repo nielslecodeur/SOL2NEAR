@@ -158,3 +158,44 @@ A **missed window is final**: the FUEL rules are not bypassed and the calendar i
 - One transaction is waiting: `execute_lp(3)` above, signed by `lowarena9362.testnet`.
 - Then F1–F3 for FUEL, each separately approved, within the window of §5.
 - If F1 is missed, the final status will be `G8 LP VERIFIED — FUEL NOT ELIGIBLE`. If F1–F3 succeed, it will be `G8 COMPLETE — ONCHAIN VERIFIED`.
+
+## 8. Execution gate — second preflight (2026-11-14 14:17–14:22 UTC, read-only)
+
+Decision kept: deployed contracts unchanged. The dashboard's 20 % guard is **not** disabled, no new bridge, and option A (CLI) is kept as an exceptional testnet operation.
+
+| Check | Result (block 277 668 094) |
+|---|---|
+| Deposit #3 | `BudgetAllocated`, creator / only authorised signer `lowarena9362.testnet`, LP budget 79 195 320, `lp_shares` 0, `plan` null, `last_error` null |
+| Jobs | `get_in_flight` = null |
+| Treasury | code `8njzxUPU…7F3` (= SHA-256 `73b99075…520e`); USDC 91 394 800 = reserves 9 759 584 + community 2 439 896 + pending 79 195 320 |
+| Ref | Treasury shares 268 750 243 691 052 670 214 318 = `recorded_shares`; Treasury Ref deposits = `ref_expected_*` (old dust only) |
+| Pool 2951 | 80 699 997 USDC / 14 011 261 309 647 048 936 214 624 wNEAR, 30 bps, unchanged since G7 |
+| Fresh plan | `{"swap_amount_in":"32943229","min_swap_out":"4012435324977327877032790","min_amounts":["45789570","4012435324977327877032790"]}`, **identical** to §3. Ref `get_return` = 4 052 964 974 724 573 613 164 435 = plan. Impact 29.13 % |
+| G7 correlation | 3/3 still true |
+
+**Alternatives examined (none is simpler or non-destructive):**
+
+| Alternative | Supported? | Effect | Cost |
+|---|---|---|---|
+| Partial execution (smaller swap) | **no**: `execute_lp` always sends the **whole** LP budget to Ref (`launch_amm_deposit`); whatever `add_liquidity` does not use is booked as `dust_*` on Ref, and V3 has **no method to recover it** | lower impact, but tens of USDC stranded on Ref for good (e.g. a 10 USDC swap would strand ≈ 58 USDC) | permanent loss of the creator's budget: rejected |
+| Seed the pool first from `sol2near-dev.testnet` (its wallet: 29.9 USDC, 25.96 wNEAR) | yes (a Ref `add_liquidity` by the dev account; its shares stay withdrawable by the dev) | max proportional add 29.9 USDC + 5.19 wNEAR → impact **23.86 %**, still ≥ 20 % | one more transaction (separate approval) for a small gain. Getting below 20 % needs ≈ +80 USDC, which nobody holds without a new bridge (excluded). Not recommended |
+| Disable or relax the dashboard guard | possible in code | — | **excluded by your decision** |
+
+**Effective slippage tolerance:** 1 %.
+- `min_swap_out` = Ref quote − 1 %.
+- `min_amounts` = provided amounts − 1 %.
+
+So the call stops if the pool moves more than 1 % between now and execution. The plan has no deadline field in V3: recompute it right before signing.
+
+**Failure modes:** each leaves the funds inside the Treasury or on its Ref account, booked, with a documented resume path. None double-counts, because each stage is persisted and replayed callbacks are ignored (G2 unit tests).
+
+| Failure | Funds | Recovery |
+|---|---|---|
+| Ref deposit refused | stay in the Treasury, `BudgetAllocated` | re-sign |
+| Swap below `min_swap_out` | on Ref, status `InRef` | new plan, `execute_lp` resumes from the swap (new signature) |
+| `add_liquidity` below `min_amounts` | on Ref, status `Swapped` | resume from the add |
+| Lost callback | — | `reconcile` (permissionless) after its timeout |
+
+**After a success:** no V3 exit has ever been demonstrated (`withdraw_lp` exists but was never run on-chain). The LP stays held by the Treasury. This is G8 / V3 on the **USDC/wNEAR test pool**: it is not a proof of funding a memecoin (V4 adapters remain local, see `FINAL_RELEASE_AUDIT.md`).
+
+**FUEL:** season 108 ends 14:19:02 UTC. A later LP falls in the season running at confirmation time (30 min seasons, registration until season end + 5 min). No FUEL transaction will follow automatically: each needs its own approval, and a missed window means `FUEL NOT ELIGIBLE`.

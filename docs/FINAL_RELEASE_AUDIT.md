@@ -113,3 +113,20 @@ Commands: `pnpm --filter @sol2near/web e2e` (both projects), `e2e:offline`, `e2e
 | Memecoin adapters (V4.1 Classic, V4.2A DCL) | **prototype**: strong local evidence on real contract code, never deployed |
 | Frontend | guided and honest: each kind of evidence labelled; offline-deterministic + live smoke e2e |
 | Production readiness | **not production**: testnet only, no audit, no mainnet route |
+
+## 10. Release freeze re-check (2026-11-14 ~14:25 UTC)
+
+| Check | Result |
+|---|---|
+| Rust 34 / 31 / 47 / 3 / 41 | pass |
+| near-client 57 · crosschain 36 · web 48 · typecheck · build | pass |
+| e2e `offline` (deterministic, 0 retry) | 12/12 |
+| `pnpm check:release` | all passed, no uncommitted file |
+| Clean clone of `HEAD` | `pnpm install --frozen-lockfile` → typecheck → test:ts → build → check:release: all green |
+| Push | prepared, **not executed**: needs your approval, independent of the G8 transaction |
+
+**Scope reminder:**
+- **G8 / V3** concerns the deployed Treasury and the **USDC/wNEAR test pool #2951**.
+- **V4** targets NEAR memecoins: TreasuryV4 Classic and TreasuryDCL run only in a local sandbox, and Nearly pools are read on mainnet.
+
+A V3 proof is not a proof of funding a memecoin.
