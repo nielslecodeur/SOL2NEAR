@@ -24,18 +24,38 @@ SOL2NEAR is a **liquidity router**, not a bridge, a launchpad or an exchange:
 
 It is for creators who want to give their community verifiable liquidity, and for anyone who wants to check it.
 
-## Live demo
+## Try it — do X, see Y
 
-Three steps, about a minute, no wallet:
+In the browser (no wallet, nothing to install):
 
-| Step | What you see |
-|---|---|
-| **Choose** | The real NEARLY / wNEAR pool on Rhea DCL (NEAR mainnet, read-only), an amount in USDC and a price range |
-| **Preview** | What the contribution becomes: 90 % to liquidity, the estimated NEARLY + wNEAR position, price impact, the main risk. A **historical quote** pinned to mainnet block 224 535 331, or a **live indicative quote** with every view read at one block. Neither is an executable offer |
-| **Proof** | "Local sandbox execution verified": position created, ownership verified, fees accounted for, withdrawal tested — then the 58 technical steps on demand |
+| # | Do | See |
+|---|---|---|
+| 1 | Open https://sol2near-demo.vercel.app | "Fuel memecoin liquidity across chains." and the bar "Public read-only demo — … it cannot send any transaction" |
+| 2 | Click **Explore the demo** | Step 1 **Choose**: NEARLY / wNEAR · Rhea DCL v2.4.2, "Mainnet pool · read-only", data "Snapshot · block 224535331", amount 100 USDC |
+| 3 | Click **Next: Preview** | **Historical quote** · Mainnet block 224535331 · 2026-11-14 15:51 UTC · "Not an executable offer": 100 USDC → 90 USDC to liquidity → 91,662 NEARLY + 13.91 wNEAR, price impact 0.11 % |
+| 4 | Click **Get a live indicative quote** | **Live indicative quote** with the current mainnet block (all views at that block). If a public RPC fails, the real error is shown and the historical quote stays |
+| 5 | Click **Next: Proof**, then **View technical evidence** | "Local sandbox execution verified" with 4 checked facts, 58 steps, 3 / 3 contract code hashes = mainnet; the 58-row table. **proof** on row F1 shows `dcl_nft_token_owner: treasury-dcl.test.near` |
+| 6 | Open **Proof** → **Technical view** | 16 testnet / devnet transaction hashes, each linking to its explorer (nearblocks testnet, Solana explorer devnet) |
+| 7 | **Developers → Dashboard**, type `sol2near-dev.testnet` in *Creator account*, click **Load** | Live testnet reads: 20 USDC received, split 18 / 1.6 / 0.4, LP **BACKED ON REF**, FUEL `Claimed` |
+| 8 | **Developers → FUEL Reactor** | Reactor level, current season, supply buckets and season history read from `fuel.sol2near-dev.testnet` |
 
-**Proof** (`#/proofs`) lists the testnet transactions in a simple and a technical view. Developer tools (testnet
-console, Dashboard, FUEL Reactor, Pools, Positions) sit under **Developers**.
+On your machine (commands and expected output in [Quick start](#quick-start) and [Reproduce the proof](#reproduce-the-proof)):
+
+| # | Do | See |
+|---|---|---|
+| 9 | `node scripts/probes/verify-testnet.mjs` and `node scripts/probes/verify-g6-g7.mjs` | `all checks passed`; `all G6/G7 proofs re-verified` (read-only RPC, no keys; Tidepool checks print `FAIL … fetch failed` on a network that filters its domain) |
+| 10 | `cargo test -p sol2near-fuel demo_walkthrough -- --nocapture` | 6 numbered steps on a mocked NEAR VM: a position admitted with its Ref / Treasury proof, a non-backed one refused, season close → level up, claim paid, **second claim REJECTED** |
+| 11 | `bash scripts/proofs/nearly-proof.sh` | `test result: ok. 1 passed`, 3 × `PASS … code = mainnet`, `PASS export identical … (58 steps)` |
+
+## The memecoin mechanic: FUEL Reactor
+
+FUEL is a fixed-supply NEP-141 memecoin (1 000 000, no mint method) that can only be **earned by locking verified
+liquidity**: 1 FUEL per USDC actually in a Treasury LP position that Ref itself confirms (80 % to the creator, 20 % to a
+community reserve, capped per vault). The community plays **seasons**: if the season's newly locked, verified liquidity
+reaches its target, the Reactor levels up and rewards become claimable; if it misses, rewards return to the reserve, the
+Reactor levels down and a small prefunded slice of FUEL (≤ 10) is **burned**. The price chart plays no part: every rule
+reads on-chain LP state. On testnet: season 0 → Success, level 1; season 70 → Success, level 1 → 2; claims paid once,
+second claim refused (C4–C7, G6-CLOSE, G6-CLAIM). Rules: [docs/FUEL_REACTOR.md](docs/FUEL_REACTOR.md).
 
 ## How it works
 
@@ -47,8 +67,14 @@ Solana (USDC) ──► Cross-chain transfer ──► NEAR Treasury (90/8/2) �
 \* Tidepool is a community 1Click-compatible **sandbox, not the official NEAR Intents** service (NEAR Intents has no
 testnet). A production version would target the official 1Click API.
 
-The contracts check the proof themselves: the Treasury reads the exchange with cross-contract calls to confirm the
-liquidity it holds, and FUEL re-reads the Treasury and the exchange before rewarding a position. No oracle, no backend.
+**Why NEAR (what the code actually relies on):**
+- **The proof is checked by contracts, not by a server:** the Treasury reads Ref with asynchronous cross-contract calls
+  (`get_pool_shares`, `get_deposits`) to confirm the LP it holds, and FUEL re-reads the Treasury and Ref before admitting
+  a position. No oracle, no backend.
+- **A destination for cross-chain capital:** NEAR Intents' 1Click API lets a Solana user deliver tokens to a NEAR
+  account. SOL2NEAR uses Tidepool, a 1Click-compatible testnet sandbox, for that leg.
+- **NEAR memecoin markets live on Ref / Rhea:** Classic pools, and DCL (concentrated-liquidity) pools where Nearly launches
+  its tokens. TreasuryDCL holds a Rhea DCL position (a NEP-171 NFT) for the creator; today in a local sandbox.
 
 ## What is actually proven?
 

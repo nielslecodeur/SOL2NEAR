@@ -7,7 +7,8 @@ misses, rewards go back to the reserve, the Reactor levels down, and a small pre
 FUEL is burned for good. The price chart plays no part: every rule reads on-chain LP state.
 
 Contract: `contracts/fuel` (near-sdk 5.30.1 + near-contract-standards). Status: **implemented and
-unit-tested (31 tests), wasm built with cargo-near, NOT deployed** (see `docs/archive/CHECKPOINT_A2.md`).
+unit-tested (31 tests), deployed on NEAR testnet as `fuel.sol2near-dev.testnet`** (B4; full cycle C4–C7 and G6 in
+`docs/G8_PROOF_LEDGER.md`). At the time of `docs/archive/CHECKPOINT_A2.md` it was not deployed yet.
 
 ## 1. Supply: minted once, no mint method
 
