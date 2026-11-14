@@ -1,0 +1,165 @@
+test explore_real_dcl ... [A1] test.near dcl.test.near.new -> OK ret=- 
+[A2] test.near wrap.test.near.new -> OK ret=- 
+[A3] test.near usdc.test.near.new -> OK ret=- 
+[A4] factory.test.near rawmeme.test.near.new -> OK ret=- 
+[A5] factory.test.near taxmeme.test.near.new -> OK ret=- 
+fee_tiers {"100":1,"10000":200,"2000":40,"400":8}
+storage_bounds {"max":null,"min":"500000000000000000000000"}
+raw get_tax "VIEW_ERR \"wasm execution failed with error: MethodResolveError(MethodNotFound)\"), block_height: 63, block_hash: QPyT96yPvJoFcHSEbAXxg75MX91xhBdWN4WxEXgrKkX })) } }" / tax get_tax {"pending":"0","tax":{"admin":"factory.test.near","buy_bps":300,"exempt":[],"pairs":["dcl.test.near"],"sell_bps":400}}
+[B1] lp.test.near dcl.test.near.storage_deposit -> OK ret={"available":"0","total":"500000000000000000000000"} 
+      log EVENT_JSON:{"data":[{"amount":"500000000000000000000000","operator":"lp.test.near","user":"lp.test.near"}],"event":"init_user_storage","standard":"dcl.ref","version":"1.0.0"}
+[B1] alice.test.near dcl.test.near.storage_deposit -> OK ret={"available":"0","total":"500000000000000000000000"} 
+      log EVENT_JSON:{"data":[{"amount":"500000000000000000000000","operator":"alice.test.near","user":"alice.test.near"}],"event":"init_user_storage","standard":"dcl.ref","version":"1.0.0"}
+[B1] bob.test.near dcl.test.near.storage_deposit -> OK ret={"available":"0","total":"500000000000000000000000"} 
+      log EVENT_JSON:{"data":[{"amount":"500000000000000000000000","operator":"bob.test.near","user":"bob.test.near"}],"event":"init_user_storage","standard":"dcl.ref","version":"1.0.0"}
+[B1] trader.test.near dcl.test.near.storage_deposit -> OK ret={"available":"0","total":"500000000000000000000000"} 
+      log EVENT_JSON:{"data":[{"amount":"500000000000000000000000","operator":"trader.test.near","user":"trader.test.near"}],"event":"init_user_storage","standard":"dcl.ref","version":"1.0.0"}
+[B2] lp.test.near wrap.test.near.near_deposit -> OK ret=- 
+[B2] trader.test.near wrap.test.near.near_deposit -> OK ret=- 
+user storage detail {"cur_liquidity_slots":0,"cur_order_slots":0,"locked_near":"500000000000000000000000","max_slots":40,"slot_price":"10000000000000000000000","sponsor_id":"alice.test.near","storage_for_asset":"100000000000000000000000"}
+[B3] lp.test.near dcl.test.near.register_tokens -> OK ret=- 
+[B3] alice.test.near dcl.test.near.register_tokens -> OK ret=- 
+[B3] bob.test.near dcl.test.near.register_tokens -> OK ret=- 
+[B3] trader.test.near dcl.test.near.register_tokens -> OK ret=- 
+registered alice ["wrap.test.near","usdc.test.near","rawmeme.test.near","taxmeme.test.near"]
+alice storage after register {"cur_liquidity_slots":0,"cur_order_slots":0,"locked_near":"500000000000000000000000","max_slots":40,"slot_price":"10000000000000000000000","sponsor_id":"alice.test.near","storage_for_asset":"100000000000000000000000"}
+alice storage_balance_of {"available":"0","total":"500000000000000000000000"}
+whitelisted []
+[C1] lp.test.near dcl.test.near.create_pool -> FAILED ret=- "Smart contract panicked: panicked at contracts/dcl/src/api/dcl_api.rs:97:1:\nFailed to deserialize input from JSON.: Error("missing field `token_a`", line: 1, column: 2)")) }) } })
+[C2] lp.test.near dcl.test.near.create_pool -> OK ret="rawmeme.test.near|wrap.test.near|10000" 
+      log EVENT_JSON:{"data":[{"account_id":"lp.test.near","init_point":0,"pool_id":"rawmeme.test.near|wrap.test.near|10000"}],"event":"create_pool","standard":"dcl.ref","version":"1.0.0"}
+[C3] lp.test.near dcl.test.near.create_pool -> OK ret="usdc.test.near|wrap.test.near|2000" 
+      log EVENT_JSON:{"data":[{"account_id":"lp.test.near","init_point":403960,"pool_id":"usdc.test.near|wrap.test.near|2000"}],"event":"create_pool","standard":"dcl.ref","version":"1.0.0"}
+[C4] lp.test.near dcl.test.near.create_pool -> OK ret="taxmeme.test.near|wrap.test.near|10000" 
+      log EVENT_JSON:{"data":[{"account_id":"lp.test.near","init_point":0,"pool_id":"taxmeme.test.near|wrap.test.near|10000"}],"event":"create_pool","standard":"dcl.ref","version":"1.0.0"}
+[D1] lp.test.near rawmeme.test.near.ft_transfer_call -> OK ret="100000000000000000000000000" 
+[D1] lp.test.near taxmeme.test.near.ft_transfer_call -> OK ret="100000000000000000000000000" 
+[D1] lp.test.near wrap.test.near.ft_transfer_call -> OK ret="1000000000000000000000000000" 
+[D1] lp.test.near usdc.test.near.ft_transfer_call -> OK ret="50000000000" 
+lp assets {"rawmeme.test.near":"100000000000000000000000000","taxmeme.test.near":"96000000000000000000000000","usdc.test.near":"50000000000","wrap.test.near":"1000000000000000000000000000"}
+[D2] lp.test.near dcl.test.near.add_liquidity -> OK ret="rawmeme.test.near|wrap.test.near|10000#1" 
+      log EVENT_JSON:{"data":[{"added_amount":"2891289709755586834435","cur_amount":"2891289709755586834435","left_point":-40000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#1","owner_id":"lp.test.near","paid_token_x":"4999999
+add_liquidity returns Some(String("rawmeme.test.near|wrap.test.near|10000#1"))
+[D3] lp.test.near dcl.test.near.add_liquidity -> OK ret="usdc.test.near|wrap.test.near|2000#2" 
+      log EVENT_JSON:{"data":[{"added_amount":"36361147611918","cur_amount":"36361147611918","left_point":380000,"lpt_id":"usdc.test.near|wrap.test.near|2000#2","owner_id":"lp.test.near","paid_token_x":"860888357","paid_token_y":"
+[D4] lp.test.near dcl.test.near.add_liquidity -> OK ret="taxmeme.test.near|wrap.test.near|10000#3" 
+      log EVENT_JSON:{"data":[{"added_amount":"2891289709755586834435","cur_amount":"2891289709755586834435","left_point":-40000,"lpt_id":"taxmeme.test.near|wrap.test.near|10000#3","owner_id":"lp.test.near","paid_token_x":"4999999
+lp assets after {"rawmeme.test.near":"50000000000000000000000000","taxmeme.test.near":"46000000000000000000000000","usdc.test.near":"30000000000","wrap.test.near":"100000000000000000000000000"}
+lp liquidities [{"amount":"2891289709755586834435","left_point":-40000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#1","mft_id":"","owner_id":"lp.test.near","pool_id":"rawmeme.test.near|wrap.test.near|10000","right_point":40000,"unclaimed_fee_x":"0","unclaimed_fee_y":"0","v_liquidity":"0"},{"amount":"36361147611918","left_point":380000,"lpt_id":"usdc.test.near|wrap.test.near|2000#2","mft_id":"","owner_id":"lp.test.near","pool_id":"usdc.test.near|wrap.test.near|2000","right_point":428000,"unclaimed_fee_x":"0","unclaimed_fee_y":"0","v_liquidity":"0"},{"amount":"2891289709755586834435","left_point":-40000,"lpt_id":"taxmeme.test.near|wrap.test.near|10000#3","mft_id":"","owner_id":"lp.test.near","pool_id":"taxmeme.test.near|wrap.test.near|10000","right_point":40000,"unclaimed_fee_x":"0","unclaimed_fee_y":"0","v_liquidity":"0"}]
+tax vault after seed (sell tax on deposit) get_tax {"pending":"4000000000000000000000166","tax":{"admin":"factory.test.near","buy_bps":300,"exempt":[],"pairs":["dcl.test.near"],"sell_bps":400}}
+quote usdc->wnear {"amount":"3455636645720884312414485","tag":null}
+quote usdc->wnear->raw {"amount":"3229840246118519920361419","tag":null}
+[E1] alice.test.near usdc.test.near.ft_transfer_call -> OK ret="0" 
+alice assets after swaps-only HotZap {}
+[E2] alice.test.near usdc.test.near.ft_transfer_call -> OK ret="20000000" 
+[E3] alice.test.near usdc.test.near.ft_transfer_call -> OK ret="10000000" 
+      log EVENT_JSON:{"data":[{"amount_in":"10000000","amount_out":"3455636645720884312414485","pool_id":"usdc.test.near|wrap.test.near|2000","protocol_fee":"10000","referral_fee":"0","referral_id":null,"swapper":"alice.test.near"
+      log EVENT_JSON:{"data":[{"amount_in":"3455636645720884312414485","amount_out":"3229840246118519920361419","pool_id":"rawmeme.test.near|wrap.test.near|10000","protocol_fee":"17278183228604421562072","referral_fee":"0","referr
+alice raw wallet "3229840246118519920361419" assets {"usdc.test.near":"20000000"}
+[E4] alice.test.near usdc.test.near.ft_transfer_call -> OK ret="0" 
+      log EVENT_JSON:{"data":[{"amount_in":"5000000","amount_out":"1707058104496833394813580","pool_id":"usdc.test.near|wrap.test.near|2000","protocol_fee":"5000","referral_fee":"0","referral_id":null,"swapper":"alice.test.near","
+      log EVENT_JSON:{"data":[{"amount_in":"5000000","amount_out":"1693438600775991269011288","pool_id":"usdc.test.near|wrap.test.near|2000","protocol_fee":"5000","referral_fee":"0","referral_id":null,"swapper":"alice.test.near","
+      log EVENT_JSON:{"data":[{"amount_in":"1693438600775991269011288","amount_out":"1454570052808532348094041","pool_id":"rawmeme.test.near|wrap.test.near|10000","protocol_fee":"8467193003879956345056","referral_fee":"0","referra
+alice liquidities []
+alice assets {"usdc.test.near":"20000000"}
+[E5] alice.test.near usdc.test.near.ft_transfer_call -> OK ret="10000000" 
+      log EVENT_JSON:{"data":[{"amount_in":"5000000","amount_out":"1707058104496833394813580","pool_id":"usdc.test.near|wrap.test.near|2000","protocol_fee":"5000","referral_fee":"0","referral_id":null,"swapper":"alice.test.near","
+      log EVENT_JSON:{"data":[{"amount_in":"5000000","amount_out":"1693438600775991269011288","pool_id":"usdc.test.near|wrap.test.near|2000","protocol_fee":"5000","referral_fee":"0","referral_id":null,"swapper":"alice.test.near","
+      log EVENT_JSON:{"data":[{"amount_in":"1693438600775991269011288","amount_out":"1454570052808532348094041","pool_id":"rawmeme.test.near|wrap.test.near|10000","protocol_fee":"8467193003879956345056","referral_fee":"0","referra
+      log EVENT_JSON:{"data":[{"added_amount":"106640354820403471216","cur_amount":"106640354820403471216","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#4","owner_id":"alice.test.near","paid_token_x":"117533
+      log EVENT_JSON:{"data":[{"account_id":"alice.test.near","remain_assets":{"rawmeme.test.near":"279237466244754355826075","wrap.test.near":"170705810449683339490531"}}],"event":"hot_zap","standard":"dcl.ref","version":"1.0.0"}
+alice liquidities after HotZap90 [{"amount":"106640354820403471216","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#4","mft_id":"","owner_id":"alice.test.near","pool_id":"rawmeme.test.near|wrap.test.near|10000","right_point":20000,"unclaimed_fee_x":"0","unclaimed_fee_y":"0","v_liquidity":"0"}]
+alice assets after HotZap90 {"rawmeme.test.near":"279237466244754355826075","usdc.test.near":"20000000","wrap.test.near":"170705810449683339490531"}
+[E6] alice.test.near wrap.test.near.near_deposit -> OK ret=- 
+[E7] alice.test.near wrap.test.near.ft_transfer_call -> OK ret="5000000000000000000000000" 
+[E8] alice.test.near rawmeme.test.near.ft_transfer_call -> OK ret="3229840246118519920361419" 
+predict_add {"liquidity_amount":"318385873595859217349","need_x":"3509077712363274276185929","need_y":"4586939607571661593690458"}
+[F1] alice.test.near dcl.test.near.add_liquidity -> OK ret="rawmeme.test.near|wrap.test.near|10000#5" 
+      log EVENT_JSON:{"data":[{"added_amount":"318385873595859217349","cur_amount":"318385873595859217349","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#5","owner_id":"alice.test.near","paid_token_x":"350907
+lpt rawmeme.test.near|wrap.test.near|10000#5
+get_liquidity {"amount":"318385873595859217349","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#5","mft_id":"","owner_id":"alice.test.near","pool_id":"rawmeme.test.near|wrap.test.near|10000","right_point":20000,"unclaimed_fee_x":"0","unclaimed_fee_y":"0","v_liquidity":"0"}
+get_liquidity_view {"amount":"318385873595859217349","fee_x":"0","fee_y":"0","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#5","mft_id":"","owner_id":"alice.test.near","pool_id":"rawmeme.test.near|wrap.test.near|10000","right_point":20000,"token_x":"3509077712363274276185928","token_y":"4586939607571661593690456","v_liquidity":"0"}
+nft_token {"approved_account_ids":{},"metadata":null,"owner_id":"alice.test.near","token_id":"rawmeme.test.near|wrap.test.near|10000#5"}
+nft_metadata {"base_uri":null,"icon":null,"name":"REF DCL LIQUIDITY NFT","reference":null,"reference_hash":null,"spec":"nft-1.0.0","symbol":"RDL"}
+nft_supply_for_owner "2"
+predict_remove ["3509077712363274276185928","4586939607571661593690456"]
+alice assets after add {"usdc.test.near":"20000000"}
+[F2] alice.test.near dcl.test.near.add_liquidity -> FAILED ret=- "Smart contract panicked: E200: invalid endpoint")) }) } })
+[F3] alice.test.near dcl.test.near.add_liquidity -> FAILED ret=- "Smart contract panicked: E202: illegal point")) }) } })
+[F4] alice.test.near usdc.test.near.ft_transfer_call -> OK ret="10000000" 
+      log EVENT_JSON:{"data":[{"amount_in":"10000000","amount_out":"3346666003316705625497634","pool_id":"usdc.test.near|wrap.test.near|2000","protocol_fee":"10000","referral_fee":"0","referral_id":null,"swapper":"alice.test.near"
+      log EVENT_JSON:{"data":[{"amount_in":"3346666003316705625497634","amount_out":"2675203256418295315450293","pool_id":"rawmeme.test.near|wrap.test.near|10000","protocol_fee":"16733330016583528127488","referral_fee":"0","referr
+[F5] alice.test.near rawmeme.test.near.ft_transfer_call -> OK ret="1000000000000000000000" 
+[F6] alice.test.near dcl.test.near.add_liquidity -> OK ret="rawmeme.test.near|wrap.test.near|10000#6" 
+      log EVENT_JSON:{"data":[{"added_amount":"345394995901904665","cur_amount":"345394995901904665","left_point":20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#6","owner_id":"alice.test.near","paid_token_x":"9999999999999
+[F7] alice.test.near dcl.test.near.add_liquidity -> FAILED ret=- "Smart contract panicked: E204: slippage error")) }) } })
+[F8] bob.test.near dcl.test.near.remove_liquidity -> FAILED ret=- "Smart contract panicked: E215: not liquidity owner")) }) } })
+[G0a] trader.test.near wrap.test.near.ft_transfer_call -> OK ret="5000000000000000000000000" 
+      log EVENT_JSON:{"data":[{"amount_in":"5000000000000000000000000","amount_out":"3586253430205424351684103","pool_id":"rawmeme.test.near|wrap.test.near|10000","protocol_fee":"25000000000000000000000","referral_fee":"0","referr
+[G0b] trader.test.near rawmeme.test.near.ft_transfer_call -> OK ret="3586253430205424351684103" 
+      log EVENT_JSON:{"data":[{"amount_in":"3586253430205424351684103","amount_out":"4903517392678743901899639","pool_id":"rawmeme.test.near|wrap.test.near|10000","protocol_fee":"17931267151027121758421","referral_fee":"0","referr
+[G1a] trader.test.near wrap.test.near.ft_transfer_call -> OK ret="5000000000000000000000000" 
+      log EVENT_JSON:{"data":[{"amount_in":"5000000000000000000000000","amount_out":"3581976816221328023882421","pool_id":"rawmeme.test.near|wrap.test.near|10000","protocol_fee":"25000000000000000000000","referral_fee":"0","referr
+[G1b] trader.test.near rawmeme.test.near.ft_transfer_call -> OK ret="3581976816221328023882421" 
+      log EVENT_JSON:{"data":[{"amount_in":"3581976816221328023882421","amount_out":"4903515684263894228510446","pool_id":"rawmeme.test.near|wrap.test.near|10000","protocol_fee":"17909884081106640119412","referral_fee":"0","referr
+[G2a] trader.test.near wrap.test.near.ft_transfer_call -> OK ret="5000000000000000000000000" 
+      log EVENT_JSON:{"data":[{"amount_in":"5000000000000000000000000","amount_out":"3577707637218892367280014","pool_id":"rawmeme.test.near|wrap.test.near|10000","protocol_fee":"25000000000000000000000","referral_fee":"0","referr
+[G2b] trader.test.near rawmeme.test.near.ft_transfer_call -> OK ret="3577707637218892367280014" 
+      log EVENT_JSON:{"data":[{"amount_in":"3577707637218892367280014","amount_out":"4903513886406610075991598","pool_id":"rawmeme.test.near|wrap.test.near|10000","protocol_fee":"17888538186094461836400","referral_fee":"0","referr
+alice liquidity (fees) {"amount":"318385873595859217349","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#5","mft_id":"","owner_id":"alice.test.near","pool_id":"rawmeme.test.near|wrap.test.near|10000","right_point":20000,"unclaimed_fee_x":"5158366821011346877287","unclaimed_fee_y":"8806940279425733297754","v_liquidity":"0"}
+alice OOR liquidity (fees) {"amount":"345394995901904665","left_point":20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#6","mft_id":"","owner_id":"alice.test.near","pool_id":"rawmeme.test.near|wrap.test.near|10000","right_point":30000,"unclaimed_fee_x":"0","unclaimed_fee_y":"0","v_liquidity":"0"}
+[H1] alice.test.near dcl.test.near.remove_liquidity -> OK ret=["5158366821011346877287","8806940279425733297754"] 
+      log EVENT_JSON:{"data":[{"claim_fee_token_x":"5158366821011346877287","claim_fee_token_y":"8806940279425733297754","cur_amount":"318385873595859217349","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#5",
+alice assets before {"usdc.test.near":"20000000"} after claim {"rawmeme.test.near":"5158366821011346877287","usdc.test.near":"20000000","wrap.test.near":"8806940279425733297754"}
+alice liquidity after claim {"amount":"318385873595859217349","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#5","mft_id":"","owner_id":"alice.test.near","pool_id":"rawmeme.test.near|wrap.test.near|10000","right_point":20000,"unclaimed_fee_x":"0","unclaimed_fee_y":"0","v_liquidity":"0"}
+[H2] alice.test.near dcl.test.near.remove_liquidity -> OK ret=["0","0"] 
+      log EVENT_JSON:{"data":[{"claim_fee_token_x":"0","claim_fee_token_y":"0","cur_amount":"318385873595859217349","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#5","owner_id":"alice.test.near","pool_id":"ra
+alice assets after 2nd claim {"rawmeme.test.near":"5158366821011346877287","usdc.test.near":"20000000","wrap.test.near":"8806940279425733297754"}
+[H3] alice.test.near dcl.test.near.remove_liquidity -> OK ret=["0","0"] 
+      log EVENT_JSON:{"data":[{"claim_fee_token_x":"0","claim_fee_token_y":"0","cur_amount":"345394995901904665","left_point":20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#6","owner_id":"alice.test.near","pool_id":"rawmem
+[I0] alice.test.near dcl.test.near.nft_transfer -> FAILED ret=- "Smart contract panicked: Requires attached deposit of exactly 1 yoctoNEAR")) }) } })
+[I1] alice.test.near dcl.test.near.nft_transfer -> OK ret=- 
+      log EVENT_JSON:{"standard":"nep171","version":"1.0.0","event":"nft_transfer","data":[{"old_owner_id":"alice.test.near","new_owner_id":"bob.test.near","token_ids":["rawmeme.test.near|wrap.test.near|10000#5"]}]}
+after nft_transfer get_liquidity {"amount":"318385873595859217349","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#5","mft_id":"","owner_id":"bob.test.near","pool_id":"rawmeme.test.near|wrap.test.near|10000","right_point":20000,"unclaimed_fee_x":"0","unclaimed_fee_y":"0","v_liquidity":"0"}
+nft_token {"approved_account_ids":{},"metadata":null,"owner_id":"bob.test.near","token_id":"rawmeme.test.near|wrap.test.near|10000#5"}
+[I2] alice.test.near dcl.test.near.remove_liquidity -> FAILED ret=- "Smart contract panicked: E215: not liquidity owner")) }) } })
+[I3] bob.test.near dcl.test.near.remove_liquidity -> OK ret=["1620904871547038042407227","2459288303584775491635077"] 
+      log EVENT_JSON:{"data":[{"claim_fee_token_x":"0","claim_fee_token_y":"0","cur_amount":"159192936797929608675","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#5","owner_id":"bob.test.near","pool_id":"rawm
+bob after partial: liq {"amount":"159192936797929608675","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#5","mft_id":"","owner_id":"bob.test.near","pool_id":"rawmeme.test.near|wrap.test.near|10000","right_point":20000,"unclaimed_fee_x":"0","unclaimed_fee_y":"0","v_liquidity":"0"} assets {"rawmeme.test.near":"1620904871547038042407227","wrap.test.near":"2459288303584775491635077"}
+[I4] bob.test.near dcl.test.near.remove_liquidity -> OK ret=["1620904871547038042417409","2459288303584775491650525"] 
+      log EVENT_JSON:{"data":[{"claim_fee_token_x":"0","claim_fee_token_y":"0","cur_amount":"0","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#5","owner_id":"bob.test.near","pool_id":"rawmeme.test.near|wrap.t
+bob after full: liq null assets {"rawmeme.test.near":"3241809743094076084824636","wrap.test.near":"4918576607169550983285602"}
+[I5] bob.test.near dcl.test.near.withdraw_asset -> OK ret=true 
+[I6] bob.test.near dcl.test.near.withdraw_asset -> OK ret=true 
+bob wallet raw "3241809743094076084824636" wnear "4918576607169550983285602" assets {}
+[J0] lp.test.near taxmeme.test.near.ft_transfer -> OK ret=- 
+alice tax wallet "10000000000000000000000"
+[J1] alice.test.near taxmeme.test.near.ft_transfer_call -> OK ret="10000000000000000000000" 
+alice DCL tax asset (sent 10 000) "9600000000000000000000"
+[J2] alice.test.near dcl.test.near.withdraw_asset -> OK ret=true 
+alice tax wallet after withdraw "9312000000000000000000" ; get_tax {"pending":"4000688000000000000000166","tax":{"admin":"factory.test.near","buy_bps":300,"exempt":[],"pairs":["dcl.test.near"],"sell_bps":400}}
+[K1] lp.test.near taxmeme.test.near.ft_transfer -> OK ret=- 
+[K2] alice.test.near taxmeme.test.near.ft_transfer_call -> OK ret="10000000000000000000000" 
+[K3] alice.test.near wrap.test.near.ft_transfer_call -> OK ret="2000000000000000000000000" 
+alice assets before tax add {"rawmeme.test.near":"5158366821011346877287","taxmeme.test.near":"9600000000000000000000","usdc.test.near":"20000000","wrap.test.near":"2008806940279425733297754"}
+[K4] alice.test.near dcl.test.near.add_liquidity -> OK ret="taxmeme.test.near|wrap.test.near|10000#7" 
+      log EVENT_JSON:{"data":[{"added_amount":"759374029957362959","cur_amount":"759374029957362959","left_point":-20000,"lpt_id":"taxmeme.test.near|wrap.test.near|10000#7","owner_id":"alice.test.near","paid_token_x":"959999999999
+[K50] trader.test.near wrap.test.near.ft_transfer_call -> OK ret="5000000000000000000000000" 
+      log EVENT_JSON:{"data":[{"amount_in":"5000000000000000000000000","amount_out":"4559575724920264097515367","pool_id":"taxmeme.test.near|wrap.test.near|10000","protocol_fee":"25000000000000000000000","referral_fee":"0","referr
+[K60] trader.test.near taxmeme.test.near.ft_transfer_call -> OK ret="4422788453172656174589906" 
+      log EVENT_JSON:{"data":[{"amount_in":"4245876915045749927606310","amount_out":"4591617884103924747934351","pool_id":"taxmeme.test.near|wrap.test.near|10000","protocol_fee":"21229384575228749638032","referral_fee":"0","referr
+[K51] trader.test.near wrap.test.near.ft_transfer_call -> OK ret="5000000000000000000000000" 
+      log EVENT_JSON:{"data":[{"amount_in":"5000000000000000000000000","amount_out":"4505785571450881047182112","pool_id":"taxmeme.test.near|wrap.test.near|10000","protocol_fee":"25000000000000000000000","referral_fee":"0","referr
+[K61] trader.test.near taxmeme.test.near.ft_transfer_call -> OK ret="4370612004307354615766649" 
+      log EVENT_JSON:{"data":[{"amount_in":"4195787524135060431135984","amount_out":"4591456491906694595848218","pool_id":"taxmeme.test.near|wrap.test.near|10000","protocol_fee":"20978937620675302155680","referral_fee":"0","referr
+tax lpt {"amount":"759374029957362959","left_point":-20000,"lpt_id":"taxmeme.test.near|wrap.test.near|10000#7","mft_id":"","owner_id":"alice.test.near","pool_id":"taxmeme.test.near|wrap.test.near|10000","right_point":20000,"unclaimed_fee_x":"11082766161661464682","unclaimed_fee_y":"13128650447442980956","v_liquidity":"0"}
+predict_remove tax ["9424675446306936761041","9802900440566316860300"]
+[K7] alice.test.near dcl.test.near.remove_liquidity -> OK ret=["9424675446306936761041","9802900440566316860300"] 
+      log EVENT_JSON:{"data":[{"claim_fee_token_x":"11082766161661464682","claim_fee_token_y":"13128650447442980956","cur_amount":"0","left_point":-20000,"lpt_id":"taxmeme.test.near|wrap.test.near|10000#7","owner_id":"alice.test.n
+alice assets after tax remove {"rawmeme.test.near":"5158366821011346877287","taxmeme.test.near":"9424675446306936761041","usdc.test.near":"20000000","wrap.test.near":"18609840719992050158054"} ; lpt after full remove null
+[K8] alice.test.near dcl.test.near.withdraw_asset -> OK ret=true 
+alice tax wallet before "9312000000000000007671" after "18453935182917728665881" (asked "9424675446306936761041")
+contract storage report {"locking_near":"11819820000000000000000000","storage":"1181982"}
+alice storage detail {"cur_liquidity_slots":2,"cur_order_slots":0,"locked_near":"500000000000000000000000","max_slots":40,"slot_price":"10000000000000000000000","sponsor_id":"alice.test.near","storage_for_asset":"100000000000000000000000"}
+ok
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 58.36s

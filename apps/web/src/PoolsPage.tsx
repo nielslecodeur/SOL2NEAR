@@ -5,6 +5,7 @@ import { POOL_REGISTRY_VERSION, selectPool, type Assessment, type LivePool, type
 import { formatUnits, parseUnits, usdc } from "./format.ts";
 import { DEFAULT_SLIPPAGE_BPS } from "./near/actions.ts";
 import { V4Pilot } from "./v4/V4.tsx";
+import { V42Dcl } from "./v4/Dcl.tsx";
 import { loadSelection, poolReaders, saveSelection, type Catalog, type Preflight, type PoolRow } from "./pools/live.ts";
 
 const readers = poolReaders();
@@ -70,6 +71,8 @@ export function PoolsPage({ wallet = null }: { wallet?: string | null }) {
       {sel && cat?.treasury && <SelectedPool row={sel} onClear={() => { setSelected(null); saveSelection(null); }} treasury={cat.treasury} />}
 
       <V4Pilot wallet={wallet} />
+
+      <V42Dcl />
 
       <section className="poolgrid">
         {cat?.rows.map((r) => <PoolCard key={r.d.key} row={r} selected={r.d.key === selected} onSelect={() => choose(r.d.key)} />)}

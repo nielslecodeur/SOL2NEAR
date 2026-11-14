@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["contracts/treasury", "contracts/fuel", "contracts/treasury-v4", "contracts/sandbox-meme"]
+members = ["contracts/treasury", "contracts/fuel", "contracts/treasury-v4", "contracts/sandbox-meme", "contracts/treasury-dcl"]
 # Local near-workspaces run (Linux/WSL only): its own lockfile, never part of the contract builds.
 exclude = ["sandbox-tests"]
 

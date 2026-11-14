@@ -35,6 +35,7 @@ The rules (split, lock, token ids, pool, FUEL supply and season parameters) are 
 | Proof of Liquidity / FUEL admission on-chain | ✅ full cycle: admission → season close → single claim | C4–C7 (see below) |
 | Cross-chain package (Tidepool client + Solana deposit tx) | ✅ used for the real G7 bridge from the dashboard (U1–U4 verified on real Tidepool data; U5, the quote signature, is not verifiable). Also unit-tested with mocks (quote echo checks, Solana confirmation, NEAR receipt check, reload-safe) | `pnpm --filter @sol2near/crosschain test` → 36 passed · `docs/G7_CROSSCHAIN_LIVE.md` · `docs/crosschain/CROSSCHAIN_HANDOFF.md` |
 | **V4.1 Classic memecoin pilot** (TreasuryV4 + S2NMEME sandbox test token): one allowlisted Ref Classic pool, on-chain guards (decimals, price impact, slippage, deadline), LP custody, exit and leftover recovery | ⚠️ **local only, NOT deployed**: 47 unit tests (mocked VM) + a full journey in a **local NEAR sandbox** against the real Ref and Tidepool USDC wasm (not testnet). Dashboard: pilot journey (pool, estimator, review, tracker) and Position Manager (`#/positions`), read only; **signing disabled** until a validated deployment. Positions are `FUEL_NOT_ELIGIBLE` | `docs/V4_1_EXECUTION.md`, `docs/V4_1B_EXECUTION.md`, `docs/v4/sandbox-run.log` |
+| **V4.2A Rhea DCL / Nearly adapter** (TreasuryDCL): an additional concentrated-liquidity position (NEP-171 NFT) bought from USDC in one DCL HotZap, held for the creator, its own fees claimed exactly, exit by NFT transfer after a lock. Nearly tax tokens refused on-chain | ⚠️ **local only, NOT deployed**: 41 unit tests + a full journey in a local sandbox against the **real Rhea DCL v2.4.2 wasm (mainnet code) and real Nearly token wasm**. Real Nearly pools (mainnet) are classified read-only in the dashboard: NEARLY / NEARKAT feasible for a local test, DRAGON blocked by its tax; nothing executable (SOL2NEAR is testnet-only). `FUEL_NOT_ELIGIBLE` | `docs/V4_2A_DCL_FEASIBILITY.md`, `docs/V4_2A_EXECUTION.md`, `docs/v4/v42-dcl-sandbox-run.log` |
 
 A feature is only marked ✅ once a transaction hash or a reproducible command output backs it. **Unit tests use a mocked NEAR VM: they prove contract rules, not the live Ref / Tidepool integration.** Missing pieces are tracked in `docs/CHECKPOINT_A2.md`.
 
@@ -45,10 +46,10 @@ Prerequisites: Rust stable (tested with 1.98) with the `wasm32-unknown-unknown` 
 | # | Command | Expected result | How to verify |
 |---|---|---|---|
 | 1 | `git clone https://github.com/nielslecodeur/SOL2NEAR && cd SOL2NEAR` | repo checked out | `LICENSE` (MIT) present |
-| 2 | `cargo test --workspace` (on Windows, set the CMake env from `docs/ARCHITECTURE.md` §7 first) | `34 passed` (treasury), `31 passed` (fuel), `47 passed` (treasury-v4, V4.1 pilot, not deployed), `3 passed` (sandbox-meme) | test names map to the rules in `docs/FUEL_REACTOR.md` §2–4 |
+| 2 | `cargo test --workspace` (on Windows, set the CMake env from `docs/ARCHITECTURE.md` §7 first) | `34 passed` (treasury), `31 passed` (fuel), `47 passed` (treasury-v4, V4.1 pilot, not deployed), `3 passed` (sandbox-meme), `41 passed` (treasury-dcl, V4.2A, local only) | test names map to the rules in `docs/FUEL_REACTOR.md` §2–4 |
 | 3 | `cargo test -p sol2near-fuel demo_walkthrough -- --nocapture` | 6 numbered steps: position admitted with its Ref/Treasury proof, a non-backed one refused, season progress, `close_season` → Success/level 1, claim paid, **second claim REJECTED** | output says "MOCKED NEAR VM (not testnet)" |
 | 4 | `bash scripts/build-wasm.sh` (Linux/WSL, cargo-near) | `Contract successfully built!` twice | sizes and SHA-256 printed. The FUEL ABI has no mint method |
-| 5 | `pnpm install && pnpm typecheck && pnpm test:ts && pnpm --filter @sol2near/web test` | all `fail 0`: near-client 39, crosschain 36, web 48. Browser: `pnpm --filter @sol2near/web e2e` (local Google Chrome via Playwright) → 29 passed | the near-client test reproduces a live Ref `get_return` exactly; crosschain tests are **mocked** (Tidepool + Solana RPC) |
+| 5 | `pnpm install && pnpm typecheck && pnpm test:ts && pnpm --filter @sol2near/web test` | all `fail 0`: near-client 49, crosschain 36, web 48. Browser: `pnpm --filter @sol2near/web e2e` (local Google Chrome via Playwright) → 33 passed | the near-client test reproduces a live Ref `get_return` exactly; crosschain tests are **mocked** (Tidepool + Solana RPC) |
 | 6 | `pnpm --filter @sol2near/web dev`, open the URL, type `sol2near-dev.testnet` in *Creator account*, click **Load** | live testnet data: 20 USDC received, split 18 / 1.6 / 0.4, 0.1656 LP shares **BACKED ON REF**, deposit #0 `LP CONFIRMED`, FUEL `Claimed`; the FUEL Reactor tab shows season 0 Success. The cross-chain card shows Tidepool's live health | `SIMULATED / DEMO DATA` mode shows every screen with a striped SIMULATED banner |
 | 7 | `node scripts/probes/verify-testnet.mjs` (read-only, no keys) | `PASS` for Ref `state=Running`, pool 2951, LP shares held by the dev account **and the Treasury**, FUEL supply 1 000 000, season 0 Success, position 0 claimed once; `PASS` for Tidepool health, tokens and a **dry** quote when the sandbox is reachable | Tidepool is a community service with no SLA: on a network that filters its domain the 3 Tidepool checks print `FAIL … fetch failed`; on 2026-11-13 from an unfiltered network the probe printed `all checks passed` (Tidepool, Ref, Treasury LP, FUEL) |
 
@@ -88,6 +89,7 @@ Pool 2951 is shallow (≈ 80 USDC + 14 wNEAR of test liquidity), so the zap pric
 
 ```
 apps/web/              read-only dashboard: Dashboard, Vault detail, FUEL Reactor (lead)
+contracts/treasury-dcl/ TreasuryDCL (V4.2A, local only): Rhea DCL adapter, NOT deployed
 contracts/treasury/    Treasury: USDC intake, 90/8/2, Ref LP pipeline, Proof of Liquidity (lead)
 contracts/fuel/        FUEL: fixed-supply NEP-141 + Reactor seasons gated by Ref-verified LP (lead)
 packages/near-client/  LP plan from live Ref views (lead)
@@ -108,13 +110,14 @@ SOL2NEAR takes **0 %** during the hackathon.
 
 - **Prior work:** none. The repository was created on 2026-11-11, inside the hackathon window, and all code was written during the hackathon.
 - **Libraries:** `near-sdk` 5.30.1 and `near-contract-standards` 5.30.1 (the NEP-141/145 implementation used by FUEL), React 18.3.1 and Vite 5.4.11 (web), NEAR Wallet Selector 10.1.4 (`@near-wallet-selector/core`, `modal-ui`, `my-near-wallet`, `meteor-wallet`) and `@near-js/transactions` 2.5.1 (NEAR wallet), `@solana/web3.js` 1.98.4 and `@solana/spl-token` 0.4.14 (cross-chain). Dev and build tools: cargo-near 0.22.0 (runs wasm-opt), near-cli-rs 0.31.1, TypeScript 5.6.3, @vitejs/plugin-react 4.3.4, @types/node 22.10.2, pnpm 10, Node's built-in test runner.
-- **External services:** Tidepool (community testnet sandbox, `www.usetidepool.tech`), Ref/Rhea exchange testnet `ref-finance-101.testnet`, NEAR testnet RPC.
+- **External services:** Tidepool (community testnet sandbox, `www.usetidepool.tech`), Ref/Rhea exchange testnet `ref-finance-101.testnet`, NEAR testnet RPC. Read-only mainnet view calls (public RPC) of Ref/Rhea pools, Rhea DCL `dclv2.ref-labs.near` and Nearly (`nearlytrade.near`, token code from github.com/sam3dsol/Nearlytrade), used only to classify pools and, in V4.2A, to run their deployed code in a local sandbox. No mainnet transaction.
 - **Templates / boilerplate:** none.
 - **AI assistance:** code and documentation were written with **Claude Code (Anthropic)** under the direction of the author (solo project), then reviewed and tested by the author. This includes the cross-chain package.
 
 ## Key docs
 
 - `docs/HACKATHON_CHECKLIST.md`: official rules mapped to this project, with the final pre-submission check
+- `docs/V4_2A_DCL_FEASIBILITY.md`, `docs/V4_2A_EXECUTION.md`: V4.2A Rhea DCL / Nearly audit (interfaces measured on the real wasm, taxes, ownership, 3 real pools), TreasuryDCL local adapter and its sandbox run
 - `docs/V4_1B_EXECUTION.md`: V4.1B dashboard integration, TreasuryV4 interface audit, Position Manager, public validation plan
 - `docs/V4_1_ARCHITECTURE.md`, `docs/V4_1_EXECUTION.md`: V4.1 Classic memecoin pilot (TreasuryV4, sandbox token), local validation and the deployment plan awaiting approval
 - `docs/V4_0_EXECUTION.md`: V4.0 Pool Explorer (dashboard `#/pools`, read-only). Verified Ref/RHEA memecoin pools with live checks; only the pilot pool 2951 is fundable by the deployed Treasury, everything else is observe only, with the reasons

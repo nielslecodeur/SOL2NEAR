@@ -513,3 +513,77 @@ test.describe("@mock V4.1B with an intercepted RPC (no contract exists on testne
     await expect(page.getByText(/Live read failed/)).toBeVisible({ timeout: 30_000 });
   });
 });
+
+// ---- V4.2A: Rhea DCL / Nearly pools (mainnet READ ONLY) + TreasuryDCL position PREVIEW (local sandbox views) ----
+const dcl = (page: Page, key: string) => page.locator(`article[data-dcl="${key}"]`);
+test.describe("@live V4.2A DCL section (real mainnet views, nothing executable)", () => {
+  test("3 real Nearly pools classified live: NEARLY / NEARKAT feasible for a local test, DRAGON blocked by its tax; V4.0 untouched", async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto("/#/pools");
+    await expect(page.locator("article.pool")).toHaveCount(6, { timeout: 30_000 }); // V4.0 catalogue unchanged
+    await expect(page.locator("article.dclpool")).toHaveCount(0); // nothing read from mainnet until asked
+    await page.getByRole("button", { name: "Read the 3 Nearly pools (mainnet, read-only)" }).click();
+    await expect(page.locator("article.dclpool")).toHaveCount(3, { timeout: 60_000 });
+    await expect(dcl(page, "dcl:nearly")).toContainText("FEASIBLE FOR LOCAL DCL TEST", { timeout: 45_000 });
+    await expect(dcl(page, "dcl:nearkat")).toContainText("FEASIBLE FOR LOCAL DCL TEST");
+    await expect(dcl(page, "dcl:dragon")).toContainText("BLOCKED TAX");
+    await expect(dcl(page, "dcl:dragon")).toContainText(/tax v2: buy 100 \/ sell 100 bps/);
+    for (const k of ["dcl:nearly", "dcl:nearkat", "dcl:dragon"]) {
+      await expect(dcl(page, k)).toContainText("Not executable.");
+      await expect(dcl(page, k)).toContainText("lock");
+    }
+    await expect(dcl(page, "dcl:nearly")).toContainText("other positions exist beside the launch position");
+    const est = page.getByLabel("DCL estimator");
+    await est.getByRole("button", { name: "Simulate (read-only)" }).click();
+    await expect(est.getByLabel("DCL estimate")).toContainText("Split 90/8/2: LP budget 90 USDC", { timeout: 60_000 });
+    await expect(est.getByLabel("DCL estimate")).toContainText("Not executable");
+    await expect(est.getByLabel("DCL estimate")).toContainText("FUEL_NOT_ELIGIBLE");
+    await page.getByLabel("V4.2A DCL Nearly pools").screenshot({ path: "../../docs/v4/v42a-dcl-pools.jpg", type: "jpeg", quality: 70 });
+    expect(await page.evaluate(() => (window as any).__signCalls ?? 0)).toBe(0);
+    expect(errors).toEqual([]);
+  });
+});
+test.describe("@preview V4.2A TreasuryDCL position on REAL views from the LOCAL sandbox (real DCL wasm)", () => {
+  test("confirmed → fees → out of range → withdrawn; FUEL not eligible; no action button", async ({ page }) => {
+    await page.route(/free\.rpc\.fastnear\.com|near\.drpc\.org/, (route) => route.abort("failed")); // the preview needs no network
+    await page.goto("/#/pools");
+    const p = page.getByLabel("DCL position preview");
+    await expect(p).toContainText("PREVIEW — TreasuryDCL views from a LOCAL SANDBOX");
+    await expect(p).toContainText("POSITION_LOCKED");
+    await expect(p).toContainText("price inside the range");
+    await expect(p).toContainText("rawmeme.test.near|wrap.test.near|10000#4");
+    await expect(p).toContainText("✓ reconciles with the budget");
+    await p.getByLabel("Stage").selectOption("fees_claimed");
+    await expect(p).toContainText(/claimed 4,489\.5\d+ RAWMEME/);
+    await p.getByLabel("Stage").selectOption("out_of_range");
+    await expect(p).toContainText("price above the range: the position is entirely wNEAR");
+    await p.getByLabel("Stage").selectOption("position_withdrawn");
+    await expect(p).toContainText("WITHDRAWN");
+    await expect(p).toContainText("FUEL_NOT_ELIGIBLE");
+    await expect(p.getByRole("button")).toHaveCount(0);
+    await p.getByLabel("Stage").selectOption("out_of_range");
+    await p.screenshot({ path: "../../docs/v4/v42a-dcl-position.jpg", type: "jpeg", quality: 70 });
+  });
+  test("mainnet RPC down: the DCL cards are OBSERVE ONLY (unreadable), nothing executable, V4.0 still renders", async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.route(/free\.rpc\.fastnear\.com|near\.drpc\.org/, (route) => route.abort("failed")); // MOCK mainnet outage
+    await page.goto("/#/pools");
+    await page.getByRole("button", { name: "Read the 3 Nearly pools (mainnet, read-only)" }).click();
+    await expect(page.locator("article.dclpool")).toHaveCount(3, { timeout: 30_000 });
+    for (const k of ["dcl:nearly", "dcl:nearkat", "dcl:dragon"]) {
+      await expect(dcl(page, k)).toContainText("OBSERVE ONLY");
+      await expect(dcl(page, k)).toContainText("nothing is concluded from a failed read");
+    }
+    await expect(page.getByLabel("DCL estimator")).toHaveCount(0);
+    await expect(page.locator("article.pool")).toHaveCount(6);
+    expect(errors.filter((e) => e.startsWith("pageerror"))).toEqual([]);
+  });
+  test("mobile 390px: the DCL section has no horizontal page scroll", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/#/pools");
+    await page.getByRole("button", { name: "Read the 3 Nearly pools (mainnet, read-only)" }).click();
+    await expect(page.locator("article.dclpool")).toHaveCount(3, { timeout: 60_000 });
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+});

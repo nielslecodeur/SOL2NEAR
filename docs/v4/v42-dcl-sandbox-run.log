@@ -1,0 +1,83 @@
+test v42_treasury_dcl_end_to_end_in_local_sandbox ... LOCAL SANDBOX (neard), root test.near — nothing here is testnet or mainnet
+[A1] DCL new (wasm of dclv2.ref-labs.near v2.4.2): OK · 3 Tgas · events []
+[A2] wNEAR new (wasm of wrap.near): OK · 1 Tgas · events []
+[A3] USDC new (wasm of usdc.tidepool-sandbox.testnet): OK · 1 Tgas · events []
+[A4] RAWMEME new (Nearly raw v1 code, LOCAL TEST TOKEN): OK · 1 Tgas · events []
+[A5] TAXMEME new (Nearly tax v6 code, buy 3 % / sell 4 %, LOCAL TEST TOKEN): OK · 2 Tgas · events []
+[B1] create_pool usdc.test.near|wrap.test.near|2000: OK · 4 Tgas · events []
+[B1] create_pool rawmeme.test.near|wrap.test.near|10000: OK · 4 Tgas · events []
+[B1] create_pool taxmeme.test.near|wrap.test.near|10000: OK · 4 Tgas · events []
+[B2] seed add_liquidity usdc.test.near|wrap.test.near|2000: OK · 24 Tgas · events []
+[B2] seed add_liquidity rawmeme.test.near|wrap.test.near|10000: OK · 24 Tgas · events []
+[B2] seed add_liquidity taxmeme.test.near|wrap.test.near|10000: OK · 25 Tgas · events []
+pool RAWMEME/wNEAR {"current_point":0,"fee":10000,"liquidity":"2891289709755586834435","liquidity_x":"0","max_liquidity_per_point":"42529979617665099795447395004595452","point_delta":200,"pool_id":"rawmeme.test.near|wrap.test.near|10000","state":"Running","tax":null,"token_x":"rawmeme.test.near","token_y":"wrap.test.near","total_fee_x_charged":"0","total_fee_y_charged":"0","total_liquidity":"2891289709755586834435","total_order_x":"0","total_order_y":"0","total_x":"49999999999999999999994465","total_y":"50003282622350243485911059","volume_x_in":"0","volume_x_out":"0","volume_y_in":"0","volume_y_out":"0","whitelist":null}
+[init] treasury-tax.new: OK · 1 Tgas · events []
+[C0] setup of a Treasury targeting the TAXED token pool: OK · 50 Tgas · events ["setup_failed"]
+[C0] taxed-token Treasury ready = false, setup_error = "validation: token_x token transfer tax buy=300 sell=400 bps: BLOCKED_TAX"
+[init] treasury-bad.new: OK · 1 Tgas · events []
+[C1] setup with WRONG token_x decimals (24): OK · 49 Tgas · events ["setup_failed"]
+[C1] wrong-decimals Treasury ready = false, setup_error = "validation: decimals x=18 differ from config 24"
+[init] treasury-dcl.new: OK · 1 Tgas · events []
+[C2] setup (DCL storage + register_tokens, target + 3 route pools, decimals, get_tax): OK · 50 Tgas · events ["setup_done"]
+[C2] Treasury DCL storage {"cur_liquidity_slots":0,"cur_order_slots":0,"locked_near":"500000000000000000000000","max_slots":40,"slot_price":"10000000000000000000000","sponsor_id":"treasury-dcl.test.near","storage_for_asset":"100000000000000000000000"} registered ["usdc.test.near","rawmeme.test.near","wrap.test.near"]
+[D0] RAWMEME sent to the Treasury → used 0 (refunded) · events ["deposit_refused"]
+[D1] alice deposits 20 USDC: OK · 6 Tgas · events ["deposit_allocated"]
+      plan: point 0 range [-20000, 20200] usdc 8079648/8920352 → predicted out 2641784302668536591653364 / 3045343772441025231412583, need 2641784302668536591645896 / 3044928792142292620967437
+[E1] bob executes alice's deposit: refused as expected (ERR_NOT_CREATOR)
+[E2] range not on the 200-point grid: refused as expected (ERR_RANGE_NOT_ON_POINT_DELTA)
+[E3] plan whose range is entirely above the price: OK · 66 Tgas · events ["preflight_started", "job_failed"]
+[E3] range out of the current price: refused on-chain as expected — guard: price out of range: current point 0 not in (2000, 8000)
+[E4] plan with both min outs at 50 % of the simulated outputs: OK · 69 Tgas · events ["preflight_started", "job_failed"]
+[E4] slippage guard: refused on-chain as expected — guard: min_x_out 1314287690577596954347548 looser than 100 bps of quote 2641784302668536591653364
+[E4b] plan whose amounts do not fit the range ratio: OK · 69 Tgas · events ["preflight_started", "job_failed"]
+[E4b] DCL simulation refusal: refused on-chain as expected — guard: DCL predict_hotzap refused this plan (its own range / min_amount / slippage checks): nothing sent
+[E5] books vs real: USDC wallet 20000000 = owed+community+pending 20000000; X wallet 0 = owed_x 0; wNEAR wallet 0 = owed_y 0; DCL acct X 0 = 0, Y 0 = 0, USDC 0 = 0
+      plan: point 0 range [-20000, 20200] usdc 8079648/8920352 → predicted out 2641784302668536591653364 / 3045343772441025231412583, need 2641784302668536591645896 / 3044928792142292620967437
+[F1] execute_dcl_lp: guards → HotZap (USDC→wNEAR→RAWMEME, USDC→wNEAR, add_liquidity) → lookup → confirm: OK · 139 Tgas · events ["preflight_started", "zap_sent", "zap_confirmed", "position_found", "position_confirmed"]
+[F1] position_confirmed {"creator":"alice.test.near","deposit_id":"0","dex":"dcl.test.near","fuel":"FUEL_NOT_ELIGIBLE","left_point":-20000,"leftover_usdc":"0","leftover_x":"13208921513342682967999","leftover_y":"15639624259444073552636","liquidity":"222745662302570594080","lpt_id":"rawmeme.test.near|wrap.test.near|10000#4","pool_id":"rawmeme.test.near|wrap.test.near|10000","position_x":"2628575381155193908685364","position_y":"3029704148181581157859945","right_point":20200,"unlock_at":"1794660024611702156","usdc_used":"17000000"}
+[F1] DCL get_liquidity {"amount":"222745662302570594080","left_point":-20000,"lpt_id":"rawmeme.test.near|wrap.test.near|10000#4","mft_id":"","owner_id":"treasury-dcl.test.near","pool_id":"rawmeme.test.near|wrap.test.near|10000","right_point":20200,"unclaimed_fee_x":"0","unclaimed_fee_y":"0","v_liquidity":"0"}
+[F1] DCL nft_token owner "treasury-dcl.test.near"
+[F1] USDC used "17000000" + back to reserve "1000000" = 18 USDC budget; position x "2628575381155193908685364" y "3029704148181581157859945"; leftovers in DCL x "13208921513342682967999" y "15639624259444073552636" usdc "0"
+[F2] books vs real: USDC wallet 3000000 = owed+community+pending 3000000; X wallet 0 = owed_x 0; wNEAR wallet 0 = owed_y 0; DCL acct X 13208921513342682967999 = 13208921513342682967999, Y 15639624259444073552636 = 15639624259444073552636, USDC 0 = 0
+[F3] alice deposits 400 USDC: OK · 6 Tgas · events ["deposit_allocated"]
+      plan: point 936 range [-19200, 21000] usdc 83062500/216937500 → predicted out 16995868146753903392557420 / 55610101628637378173143024, need 16992469590458498275694285 / 55610101628637378173131175
+[F4] execute_dcl_lp of a 300 USDC plan: OK · 78 Tgas · events ["preflight_started", "job_failed"]
+[F4] price-impact guard: refused on-chain as expected — guard: impact_x 3300 bps > 1000 bps
+[F5] abort deposit 1 (budget back to the USDC reserve): OK · 2 Tgas · events ["lp_aborted"]
+[F6] withdraw_token USDC (reserves + unused + aborted budget): OK · 6 Tgas · events ["token_withdrawn"]
+[F6] alice USDC +394600000 = Treasury balance 394600000
+[F7] books vs real: USDC wallet 8400000 = owed+community+pending 8400000; X wallet 0 = owed_x 0; wNEAR wallet 0 = owed_y 0; DCL acct X 13208921513342682967999 = 13208921513342682967999, Y 15639624259444073552636 = 15639624259444073552636, USDC 0 = 0
+[G1] after trades: unclaimed fees x "4489556198158189741415" y "5364718982511543640639"
+[G2] bob claims alice's fees: refused as expected (ERR_NOT_CREATOR)
+[G3] claim_fees (DCL remove_liquidity amount 0): OK · 13 Tgas · events ["fees_claimed"]
+[G3] fees_claimed {"deposit_id":"0","fee_x":"4489556198158189741415","fee_y":"5364718982511543640639","lpt_id":"rawmeme.test.near|wrap.test.near|10000#4","total_x":"4489556198158189741415","total_y":"5364718982511543640639"}
+[G4] second claim_fees: OK · 12 Tgas · events ["fees_claimed"]
+[G5] books vs real: USDC wallet 8400000 = owed+community+pending 8400000; X wallet 0 = owed_x 0; wNEAR wallet 0 = owed_y 0; DCL acct X 17698477711500872709414 = 17698477711500872709414, Y 21004343241955617193275 = 21004343241955617193275, USDC 0 = 0
+[K1] alice deposits 20 USDC (deposit 2): OK · 6 Tgas · events ["deposit_allocated"]
+      plan: point 978 range [-1200, 3000] usdc 5812539/11187461 → predicted out 1709825915528129732403024 / 3723897154578570630171969, need 1709547369685866786360002 / 3723897154578570630171119
+[K2] execute_dcl_lp with a narrow range (±2 000 points): OK · 134 Tgas · events ["preflight_started", "zap_sent", "zap_confirmed", "position_found", "position_confirmed"]
+[K3] point now 21776 vs range [-1200, 3000] → position holds x "0" y "5842174485153689106406322"
+[K4] claim_fees right after leaving the range: OK · 11 Tgas · events ["fees_claimed"]
+[K5] trades while out of range (point 22455): narrow position unclaimed "0" / "0" · wide position unclaimed "0" / "38144748394627774714270"
+[K6] books vs real: USDC wallet 11400000 = owed+community+pending 11400000; X wallet 0 = owed_x 0; wNEAR wallet 0 = owed_y 0; DCL acct X 26524760402193152684120 = 26524760402193152684120, Y 50417965130101416381497 = 50417965130101416381497, USDC 0 = 0
+[H1] withdraw_position during the lock: refused as expected (ERR_POSITION_LOCKED)
+[H2] bob withdraws alice's position: refused as expected (ERR_NOT_CREATOR)
+[H3] sandbox time is past unlock_at 1794660024611702156
+[H3] withdraw_position: nft_transfer to alice, owner checked: OK · 14 Tgas · events ["position_withdrawn"]
+[H3] DCL nft_token owner = "alice.test.near"
+[H4] second withdraw_position: refused as expected (ERR_NO_CONFIRMED_POSITION)
+[H5] claim_fees after the position left the Treasury: refused as expected (ERR_NO_CONFIRMED_POSITION)
+[H6] alice remove_liquidity 50 % on the DCL: OK · 13 Tgas · events []
+[H7] alice remove_liquidity the rest: OK · 13 Tgas · events []
+[H7] position after full removal: null; alice wallet RAWMEME "0" wNEAR(+NEAR unwrapped)
+[J1] withdraw_dex_balance rawmeme.test.near (leftovers + fees): OK · 18 Tgas · events ["dex_balance_recovered"]
+[J2] withdraw_token rawmeme.test.near: OK · 6 Tgas · events ["token_withdrawn"]
+[J2] alice rawmeme.test.near wallet +17698477711500872709414 = booked 17698477711500872709414
+[J1] withdraw_dex_balance wrap.test.near (leftovers + fees): OK · 18 Tgas · events ["dex_balance_recovered"]
+[J2] withdraw_token wrap.test.near: OK · 6 Tgas · events ["token_withdrawn"]
+[J2] alice wrap.test.near wallet +21004343241955617193275 = booked 21004343241955617193275
+[J3] withdraw_dex_balance again: refused as expected (ERR_NOTHING_TO_WITHDRAW)
+[R] books vs real: USDC wallet 11400000 = owed+community+pending 11400000; X wallet 0 = owed_x 0; wNEAR wallet 0 = owed_y 0; DCL acct X 8826282690692279974706 = 8826282690692279974706, Y 29413621888145799188222 = 29413621888145799188222, USDC 0 = 0
+[R] deposit 0: claimed fees x "4489556198158189741415" y "5364718982511543640639", recovered x "17698477711500872709414" y "21004343241955617193275", status "PositionWithdrawn"
+fixture written: packages/near-client/src/fixtures/v42_dcl_sandbox_views.json
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 64.50s

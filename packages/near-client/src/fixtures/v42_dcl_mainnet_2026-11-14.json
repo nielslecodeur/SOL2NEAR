@@ -1,0 +1,413 @@
+{
+  "read_at": "2026-11-14T12:19:10.247Z",
+  "note": "READ-ONLY public RPC views. Mainnet values are observations, not SOL2NEAR positions.",
+  "contracts": {
+    "mainnet:dclv2.ref-labs.near": {
+      "code_hash": "3G34Nhjmir5JPYPtijaA9iCNnHDPR7h3wfC9H77woEGo",
+      "global_contract_hash": null,
+      "storage_usage": 28260605,
+      "access_keys": 0,
+      "full_access_keys": 0,
+      "metadata": {
+        "version": "2.4.2",
+        "owner_id": "ref-finance.sputnik-dao.near",
+        "farming_contract_id": "boostfarm.ref-labs.near",
+        "next_owner_id": null,
+        "next_owner_accept_deadline": null,
+        "wnear_id": "wrap.near",
+        "state": "Running",
+        "operators": [
+          "doublerose.near",
+          "bim.near"
+        ],
+        "protocol_fee_rate": 2000,
+        "pool_count": "6657",
+        "user_count": "8153"
+      },
+      "fee_tiers": {
+        "100": 1,
+        "400": 8,
+        "1000": 20,
+        "2000": 40,
+        "10000": 200,
+        "20000": 200,
+        "30000": 200,
+        "40000": 200
+      },
+      "storage_balance_bounds": {
+        "min": "500000000000000000000000",
+        "max": null
+      }
+    },
+    "mainnet:nearlytrade.near": {
+      "code_hash": "9mwfrbtBbDr3y2t9rHY944qAQTU2PsB5smqsAHZJo4G5",
+      "global_contract_hash": null,
+      "storage_usage": 20065917,
+      "access_keys": 2,
+      "full_access_keys": 0,
+      "owner": "nearlytrade.sputnik-dao.near",
+      "tax_bounds": [
+        400,
+        true,
+        4000
+      ],
+      "num_launches": 3788,
+      "source": {
+        "version": "0.2.0",
+        "link": "https://github.com/sam3dsol/Nearlytrade/tree/e82bfa013ea380f9dbbcb9d58e9f0af798185eab",
+        "standards": [
+          {
+            "standard": "nep330",
+            "version": "1.3.0"
+          }
+        ],
+        "build_info": {
+          "build_environment": "sourcescan/cargo-near:0.22.0-rust-1.97.1@sha256:7467038bdddc86484b73b416eeadce926ff59013e128e53dec5a19e1cb4b2234",
+          "build_command": [
+            "cargo",
+            "near",
+            "build",
+            "non-reproducible-wasm",
+            "--locked"
+          ],
+          "contract_path": "contracts/factory",
+          "source_code_snapshot": "git+https://github.com/sam3dsol/Nearlytrade?rev=e82bfa013ea380f9dbbcb9d58e9f0af798185eab",
+          "output_wasm_path": "/home/near/code/target/near/nearpad_factory/nearpad_factory.wasm"
+        }
+      }
+    },
+    "mainnet:wrap.near": {
+      "code_hash": "DL2f5xmZ44cQRP6vBMt94rvseH5d5KKnAGis2WkTAsh1",
+      "global_contract_hash": null,
+      "storage_usage": 169059137,
+      "access_keys": 0,
+      "full_access_keys": 0
+    },
+    "mainnet:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1": {
+      "code_hash": "DVJx7F3dHEHJYwpYPwXHu8K9Uo7h4kXFcALucY5oNX8q",
+      "global_contract_hash": null,
+      "storage_usage": 66686274,
+      "access_keys": 1,
+      "full_access_keys": 1
+    },
+    "testnet:dclv2.ref-dev.testnet": {
+      "code_hash": "CCzPD7sTeE6Tndsk8kfrhqX7cUztHx7X4tNk4B4gEinA",
+      "global_contract_hash": null,
+      "storage_usage": 13837807,
+      "access_keys": 1,
+      "full_access_keys": 1,
+      "metadata": {
+        "version": "2.3.14",
+        "owner_id": "ref-dev.testnet",
+        "farming_contract_id": "boostfarm.ref-finance.testnet",
+        "next_owner_id": null,
+        "next_owner_accept_deadline": null,
+        "wnear_id": "wrap.testnet",
+        "state": "Running",
+        "operators": [
+          "juaner.testnet"
+        ],
+        "protocol_fee_rate": 2000,
+        "pool_count": "11708",
+        "user_count": "628"
+      }
+    }
+  },
+  "pools": [
+    {
+      "pool_id": "nearly-993927.nearlytrade.near|wrap.near|10000",
+      "dex": "dclv2.ref-labs.near",
+      "network": "mainnet",
+      "token_x": "nearly-993927.nearlytrade.near",
+      "token_y": "wrap.near",
+      "decimals": {
+        "x": 18,
+        "y": 24
+      },
+      "symbol": "NEARLY",
+      "fee": 10000,
+      "point_delta": 200,
+      "current_point": 50286,
+      "price_wnear_per_token": 0.00015268066551573135,
+      "liquidity_active": "56254381955948946355842",
+      "total_liquidity": "262621362111147704956668",
+      "liquidity_x": "7892964120686353427783",
+      "total_x": "96410277463687682824054136",
+      "total_y": "12834890206464897775521397850",
+      "total_fee_x_charged": "700497449820988983818353",
+      "total_fee_y_charged": "167810607733955059089781439",
+      "volume_x_in": "3449828774478024951742967019",
+      "volume_y_in": "1759707722835580432635305951502",
+      "pool_tax": null,
+      "state": "Running",
+      "whitelist": null,
+      "token_code": {
+        "code": "raw v1 (no tax)",
+        "global": "5qScjXG9uRG82Yrh36XZNZgVUYiqPtuC9ep5DvV42eGQ",
+        "keys": 0
+      },
+      "token_get_tax": "absent (wasm execution failed with error: MethodResolveError(MethodN)",
+      "token_rules": null,
+      "launch": {
+        "id": 3,
+        "creator": "nearlytrade.near",
+        "symbol": "NEARLY"
+      },
+      "locker": "lock.nearlytrade.near",
+      "locker_position": {
+        "source": "list_liquidities scan",
+        "rows": [
+          {
+            "lpt_id": "nearly-993927.nearlytrade.near|wrap.near|10000#13969",
+            "owner_id": "lock.nearlytrade.near",
+            "pool_id": "nearly-993927.nearlytrade.near|wrap.near|10000",
+            "left_point": 200,
+            "right_point": 500000,
+            "amount": "50498695734733140569374",
+            "mft_id": "",
+            "v_liquidity": "0",
+            "unclaimed_fee_x": "0",
+            "unclaimed_fee_y": "1602143533123906906765"
+          }
+        ]
+      },
+      "quotes": {
+        "10_usdc": {
+          "to_token": "19448076411357305195117",
+          "to_wnear": "3000087074978810249109006"
+        },
+        "100_usdc": {
+          "to_token": "194101796646571676190671",
+          "to_wnear": "29999972321504351019261439"
+        },
+        "1000_usdc": {
+          "to_token": "1903298495802009077045817",
+          "to_wnear": "299809539909324405433751989"
+        },
+        "small_0_1_usdc_to_token": "194529293816924599394"
+      }
+    },
+    {
+      "pool_id": "nearkat-630f25.nearlytrade.near|wrap.near|10000",
+      "dex": "dclv2.ref-labs.near",
+      "network": "mainnet",
+      "token_x": "nearkat-630f25.nearlytrade.near",
+      "token_y": "wrap.near",
+      "decimals": {
+        "x": 18,
+        "y": 24
+      },
+      "symbol": "NEARKAT",
+      "fee": 10000,
+      "point_delta": 200,
+      "current_point": 15163,
+      "price_wnear_per_token": 0.0000045549938933062915,
+      "liquidity_active": "50498695734733140569374",
+      "total_liquidity": "50498695734733140569374",
+      "liquidity_x": "21128295004363190697393",
+      "total_x": "481082304460109614547284028",
+      "total_y": "1220148466515256898774524364",
+      "total_fee_x_charged": "7837124351584199566298690",
+      "total_fee_y_charged": "84636678726296033283993119",
+      "volume_x_in": "3919749495448461183149443783",
+      "volume_y_in": "42325642039914953217411255161",
+      "pool_tax": null,
+      "state": "Running",
+      "whitelist": null,
+      "token_code": {
+        "code": "raw v1 (no tax)",
+        "global": "5qScjXG9uRG82Yrh36XZNZgVUYiqPtuC9ep5DvV42eGQ",
+        "keys": 0
+      },
+      "token_get_tax": "absent (wasm execution failed with error: MethodResolveError(MethodN)",
+      "token_rules": null,
+      "launch": {
+        "id": 14,
+        "creator": "8d4736b0fa6c66969e5498fa4337261d45cd4461f841c03891a9533d958c7e40",
+        "symbol": "NEARKAT"
+      },
+      "locker": "lock.nearlytrade.near",
+      "locker_position": {
+        "source": "list_liquidities scan",
+        "rows": [
+          {
+            "lpt_id": "nearkat-630f25.nearlytrade.near|wrap.near|10000#14010",
+            "owner_id": "lock.nearlytrade.near",
+            "pool_id": "nearkat-630f25.nearlytrade.near|wrap.near|10000",
+            "left_point": 200,
+            "right_point": 500000,
+            "amount": "50498695734733140569374",
+            "mft_id": "",
+            "v_liquidity": "0",
+            "unclaimed_fee_x": "0",
+            "unclaimed_fee_y": "0"
+          }
+        ]
+      },
+      "quotes": {
+        "10_usdc": {
+          "to_token": "651148213511306633494738",
+          "to_wnear": "3000087074978810249109006"
+        },
+        "100_usdc": {
+          "to_token": "6431643312169760154685115",
+          "to_wnear": "29990974508324488244215914"
+        },
+        "1000_usdc": {
+          "to_token": "57259928508238300420357719",
+          "to_wnear": "299719648041088090272514889"
+        },
+        "small_0_1_usdc_to_token": "6518549587752533434692"
+      }
+    },
+    {
+      "pool_id": "dragon-3.nearlytrade.near|wrap.near|10000",
+      "dex": "dclv2.ref-labs.near",
+      "network": "mainnet",
+      "token_x": "dragon-3.nearlytrade.near",
+      "token_y": "wrap.near",
+      "decimals": {
+        "x": 18,
+        "y": 24
+      },
+      "symbol": "DRAGON",
+      "fee": 10000,
+      "point_delta": 200,
+      "current_point": 14189,
+      "price_wnear_per_token": 0.000004132278954421115,
+      "liquidity_active": "50498695734733140569374",
+      "total_liquidity": "50498695734733140569374",
+      "liquidity_x": "30318292420226998616508",
+      "total_x": "503628349400669827988866724",
+      "total_y": "1128145034998958729302044599",
+      "total_fee_x_charged": "6728828866045207002108863",
+      "total_fee_y_charged": "94708310057178426340026499",
+      "volume_x_in": "3388202828382212924969862093",
+      "volume_y_in": "47563126446405908038134064803",
+      "pool_tax": null,
+      "state": "Running",
+      "whitelist": null,
+      "token_code": {
+        "code": "tax v2",
+        "global": "YXJL2KYynDA52JPBpAP5qDZhJqCTfB6dR5Ee4jdEgDK",
+        "keys": 0
+      },
+      "token_get_tax": {
+        "tax": {
+          "buy_bps": 100,
+          "sell_bps": 100,
+          "pairs": [
+            "dclv2.ref-labs.near"
+          ],
+          "admin": "nearlytrade.near",
+          "exempt": [
+            "lock2.nearlytrade.near",
+            "feeswap.near"
+          ]
+        },
+        "pending": "0"
+      },
+      "token_rules": null,
+      "launch": {
+        "id": 1502,
+        "creator": "littlefrog7181.near",
+        "symbol": "DRAGON"
+      },
+      "locker": "lock2.nearlytrade.near",
+      "locker_position": {
+        "source": "list_liquidities scan",
+        "rows": [
+          {
+            "lpt_id": "dragon-3.nearlytrade.near|wrap.near|10000#16181",
+            "owner_id": "lock2.nearlytrade.near",
+            "pool_id": "dragon-3.nearlytrade.near|wrap.near|10000",
+            "left_point": 200,
+            "right_point": 500000,
+            "amount": "50498695734733140569374",
+            "mft_id": "",
+            "v_liquidity": "0",
+            "unclaimed_fee_x": "849470698713455853390",
+            "unclaimed_fee_y": "0"
+          }
+        ]
+      },
+      "quotes": {
+        "10_usdc": {
+          "to_token": "717363361653553169411291",
+          "to_wnear": "2998587481349400250590538"
+        },
+        "100_usdc": {
+          "to_token": "7081169486544226001813413",
+          "to_wnear": "29983961922203887224594085"
+        },
+        "1000_usdc": {
+          "to_token": "62726081023126388411557070",
+          "to_wnear": "299645525837815900360952643"
+        },
+        "small_0_1_usdc_to_token": "7183933222512322000673"
+      }
+    }
+  ],
+  "routes": {
+    "usdc_wnear_dcl_pools": [
+      {
+        "pool_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1|wrap.near|2000",
+        "fee": 2000,
+        "liquidity": "2105096223410",
+        "total_x": "2763745706",
+        "total_y": "85406671977738465406246600491",
+        "state": "Running"
+      },
+      {
+        "pool_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1|wrap.near|10000",
+        "fee": 10000,
+        "liquidity": "0",
+        "total_x": "342436",
+        "total_y": "3946243541543354744812",
+        "state": "Running"
+      },
+      {
+        "pool_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1|wrap.near|400",
+        "fee": 400,
+        "liquidity": "0",
+        "total_x": "11480279",
+        "total_y": "10028324421560145809377750",
+        "state": "Running"
+      },
+      {
+        "pool_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1|wrap.near|100",
+        "fee": 100,
+        "liquidity": "38372082178965412",
+        "total_x": "162246391130",
+        "total_y": "112747260128994835707090219717",
+        "state": "Running"
+      },
+      {
+        "pool_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1|wrap.near|20000",
+        "fee": 20000,
+        "liquidity": "0",
+        "total_x": "1",
+        "total_y": "2",
+        "state": "Running"
+      },
+      {
+        "pool_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1|wrap.near|40000",
+        "fee": 40000,
+        "liquidity": "390584659574",
+        "total_x": "6545",
+        "total_y": "370107469654670237295311",
+        "state": "Running"
+      }
+    ],
+    "usdc_pool_used": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1|wrap.near|100"
+  },
+  "testnet": {
+    "dcl": "dclv2.ref-dev.testnet",
+    "pools": 11708,
+    "pools_with_tidepool_token": [],
+    "nearly_like_pools": 26,
+    "meme_cooking_pools_with_liquidity": 0
+  },
+  "dcl_pool_count": 6657,
+  "nearly_wnear_pool_count": 3076
+}

@@ -1,0 +1,834 @@
+{
+  "accounting": {
+    "community_total": "8800000",
+    "dex_booked_usdc": "0",
+    "dex_booked_x": "8826282690692279974706",
+    "dex_booked_y": "29413621888145799188222",
+    "live_positions": "1",
+    "next_deposit_id": "3",
+    "owed_usdc": "2600000",
+    "owed_x": "0",
+    "owed_y": "0",
+    "pending_budget_total": "0",
+    "total_received": "440000000",
+    "zap_outstanding": "0"
+  },
+  "config": {
+    "config": {
+      "guards": {
+        "max_plan_ttl_ns": "600000000000",
+        "max_price_impact_bps": 1000,
+        "max_range_width": 200000,
+        "max_slippage_bps": 100,
+        "min_range_width": 4000
+      },
+      "lock_duration_ns": "30000000000",
+      "min_deposit": "1000000",
+      "network": "sandbox",
+      "pool": {
+        "dex": "dcl.test.near",
+        "fee": 10000,
+        "point_delta": 200,
+        "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+        "route_x": [
+          "usdc.test.near|wrap.test.near|2000",
+          "rawmeme.test.near|wrap.test.near|10000"
+        ],
+        "route_y": [
+          "usdc.test.near|wrap.test.near|2000"
+        ],
+        "token_x": "rawmeme.test.near",
+        "token_y": "wrap.test.near",
+        "usdc_decimals": 6,
+        "usdc_token": "usdc.test.near",
+        "x_decimals": 18,
+        "y_decimals": 24
+      }
+    },
+    "fuel": "FUEL_NOT_ELIGIBLE",
+    "ready": true,
+    "setup_deposit": "607500000000000000000000",
+    "setup_error": null
+  },
+  "deposit_allocated": {
+    "creator_id": "alice.test.near",
+    "deposit": {
+      "amount": "20000000",
+      "community": "400000",
+      "confirmed_block": null,
+      "created_at": "1794659989501612641",
+      "creator": "alice.test.near",
+      "dex": "dcl.test.near",
+      "dex_usdc": "0",
+      "dex_x": "0",
+      "dex_y": "0",
+      "fees_claimed_x": "0",
+      "fees_claimed_y": "0",
+      "id": "0",
+      "last_error": null,
+      "left_point": null,
+      "liquidity": "0",
+      "lp_budget": "18000000",
+      "lpt_id": null,
+      "marks": [
+        {
+          "at": "1794659989501612641",
+          "block": "281",
+          "stage": "deposit_allocated"
+        }
+      ],
+      "plan": null,
+      "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+      "position_x": "0",
+      "position_y": "0",
+      "recovered_usdc": "0",
+      "recovered_x": "0",
+      "recovered_y": "0",
+      "reserve": "1600000",
+      "right_point": null,
+      "status": "BudgetAllocated",
+      "token_x": "rawmeme.test.near",
+      "token_y": "wrap.test.near",
+      "unlock_at": null,
+      "updated_at": "1794659989501612641",
+      "usdc_unused_to_reserve": "0",
+      "usdc_used": "0"
+    },
+    "dex_contract_id": "dcl.test.near",
+    "fees_claimable": false,
+    "fuel_reason": "the deployed FUEL reads only treasury.sol2near-dev.testnet / Ref Classic pool 2951; no DCL position proof exists in FUEL",
+    "fuel_status": "FUEL_NOT_ELIGIBLE",
+    "locked": false,
+    "position_id": null,
+    "treasury_id": "treasury-dcl.test.near",
+    "withdrawable": false
+  },
+  "fees_claimed": {
+    "creator_id": "alice.test.near",
+    "deposit": {
+      "amount": "20000000",
+      "community": "400000",
+      "confirmed_block": "322",
+      "created_at": "1794659989501612641",
+      "creator": "alice.test.near",
+      "dex": "dcl.test.near",
+      "dex_usdc": "0",
+      "dex_x": "17698477711500872709414",
+      "dex_y": "21004343241955617193275",
+      "fees_claimed_x": "4489556198158189741415",
+      "fees_claimed_y": "5364718982511543640639",
+      "id": "0",
+      "last_error": null,
+      "left_point": -20000,
+      "liquidity": "222745662302570594080",
+      "lp_budget": "18000000",
+      "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+      "marks": [
+        {
+          "at": "1794659989501612641",
+          "block": "281",
+          "stage": "deposit_allocated"
+        },
+        {
+          "at": "1794659991115656355",
+          "block": "294",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659991376478736",
+          "block": "296",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659991740935703",
+          "block": "299",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659992002436935",
+          "block": "301",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659992366141873",
+          "block": "304",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659992629531008",
+          "block": "306",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659993367258496",
+          "block": "312",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659993627425860",
+          "block": "314",
+          "stage": "zap_sent"
+        },
+        {
+          "at": "1794659994112878755",
+          "block": "318",
+          "stage": "zap_confirmed"
+        },
+        {
+          "at": "1794659994360281109",
+          "block": "320",
+          "stage": "position_found"
+        },
+        {
+          "at": "1794659994611702156",
+          "block": "322",
+          "stage": "position_confirmed"
+        },
+        {
+          "at": "1794660002331220261",
+          "block": "384",
+          "stage": "fee_claim_started"
+        },
+        {
+          "at": "1794660002580651151",
+          "block": "386",
+          "stage": "fees_claimed"
+        },
+        {
+          "at": "1794660002955730054",
+          "block": "389",
+          "stage": "fee_claim_started"
+        },
+        {
+          "at": "1794660003207044365",
+          "block": "391",
+          "stage": "fees_claimed"
+        }
+      ],
+      "plan": {
+        "amount_x": "2628575381155193908695097",
+        "amount_y": "3030117053578820105255520",
+        "deadline_ns": "1794660292629531008",
+        "left_point": -20000,
+        "min_amount_x": "2576003873532090030521196",
+        "min_amount_y": "2969514712507243703150410",
+        "min_x_out": "2628575381155193908695097",
+        "min_y_out": "3030117053578820105255520",
+        "right_point": 20200,
+        "usdc_to_x": "8079648",
+        "usdc_to_y": "8920352"
+      },
+      "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+      "position_x": "2628575381155193908685364",
+      "position_y": "3029704148181581157859945",
+      "recovered_usdc": "0",
+      "recovered_x": "0",
+      "recovered_y": "0",
+      "reserve": "1600000",
+      "right_point": 20200,
+      "status": "PositionConfirmed",
+      "token_x": "rawmeme.test.near",
+      "token_y": "wrap.test.near",
+      "unlock_at": "1794660024611702156",
+      "updated_at": "1794660003207044365",
+      "usdc_unused_to_reserve": "1000000",
+      "usdc_used": "17000000"
+    },
+    "dex_contract_id": "dcl.test.near",
+    "fees_claimable": true,
+    "fuel_reason": "the deployed FUEL reads only treasury.sol2near-dev.testnet / Ref Classic pool 2951; no DCL position proof exists in FUEL",
+    "fuel_status": "FUEL_NOT_ELIGIBLE",
+    "locked": true,
+    "position_id": "rawmeme.test.near|wrap.test.near|10000#4",
+    "treasury_id": "treasury-dcl.test.near",
+    "withdrawable": false
+  },
+  "fees_unclaimed": {
+    "creator_id": "alice.test.near",
+    "deposit": {
+      "amount": "20000000",
+      "community": "400000",
+      "confirmed_block": "322",
+      "created_at": "1794659989501612641",
+      "creator": "alice.test.near",
+      "dex": "dcl.test.near",
+      "dex_usdc": "0",
+      "dex_x": "13208921513342682967999",
+      "dex_y": "15639624259444073552636",
+      "fees_claimed_x": "0",
+      "fees_claimed_y": "0",
+      "id": "0",
+      "last_error": null,
+      "left_point": -20000,
+      "liquidity": "222745662302570594080",
+      "lp_budget": "18000000",
+      "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+      "marks": [
+        {
+          "at": "1794659989501612641",
+          "block": "281",
+          "stage": "deposit_allocated"
+        },
+        {
+          "at": "1794659991115656355",
+          "block": "294",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659991376478736",
+          "block": "296",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659991740935703",
+          "block": "299",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659992002436935",
+          "block": "301",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659992366141873",
+          "block": "304",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659992629531008",
+          "block": "306",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659993367258496",
+          "block": "312",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659993627425860",
+          "block": "314",
+          "stage": "zap_sent"
+        },
+        {
+          "at": "1794659994112878755",
+          "block": "318",
+          "stage": "zap_confirmed"
+        },
+        {
+          "at": "1794659994360281109",
+          "block": "320",
+          "stage": "position_found"
+        },
+        {
+          "at": "1794659994611702156",
+          "block": "322",
+          "stage": "position_confirmed"
+        }
+      ],
+      "plan": {
+        "amount_x": "2628575381155193908695097",
+        "amount_y": "3030117053578820105255520",
+        "deadline_ns": "1794660292629531008",
+        "left_point": -20000,
+        "min_amount_x": "2576003873532090030521196",
+        "min_amount_y": "2969514712507243703150410",
+        "min_x_out": "2628575381155193908695097",
+        "min_y_out": "3030117053578820105255520",
+        "right_point": 20200,
+        "usdc_to_x": "8079648",
+        "usdc_to_y": "8920352"
+      },
+      "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+      "position_x": "2628575381155193908685364",
+      "position_y": "3029704148181581157859945",
+      "recovered_usdc": "0",
+      "recovered_x": "0",
+      "recovered_y": "0",
+      "reserve": "1600000",
+      "right_point": 20200,
+      "status": "PositionConfirmed",
+      "token_x": "rawmeme.test.near",
+      "token_y": "wrap.test.near",
+      "unlock_at": "1794660024611702156",
+      "updated_at": "1794659994611702156",
+      "usdc_unused_to_reserve": "1000000",
+      "usdc_used": "17000000"
+    },
+    "dex_contract_id": "dcl.test.near",
+    "fees_claimable": true,
+    "fuel_reason": "the deployed FUEL reads only treasury.sol2near-dev.testnet / Ref Classic pool 2951; no DCL position proof exists in FUEL",
+    "fuel_status": "FUEL_NOT_ELIGIBLE",
+    "locked": true,
+    "position_id": "rawmeme.test.near|wrap.test.near|10000#4",
+    "treasury_id": "treasury-dcl.test.near",
+    "withdrawable": false
+  },
+  "fees_unclaimed_dcl": {
+    "amount": "222745662302570594080",
+    "left_point": -20000,
+    "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+    "mft_id": "",
+    "owner_id": "treasury-dcl.test.near",
+    "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+    "right_point": 20200,
+    "unclaimed_fee_x": "4489556198158189741415",
+    "unclaimed_fee_y": "5364718982511543640639",
+    "v_liquidity": "0"
+  },
+  "out_of_range": {
+    "creator_id": "alice.test.near",
+    "deposit": {
+      "amount": "20000000",
+      "community": "400000",
+      "confirmed_block": "412",
+      "created_at": "1794660003702948902",
+      "creator": "alice.test.near",
+      "dex": "dcl.test.near",
+      "dex_usdc": "0",
+      "dex_x": "8826282690692279974706",
+      "dex_y": "29413621888145799188222",
+      "fees_claimed_x": "0",
+      "fees_claimed_y": "10794136115252946036766",
+      "id": "2",
+      "last_error": null,
+      "left_point": -1200,
+      "liquidity": "1327382758484484059905",
+      "lp_budget": "18000000",
+      "lpt_id": "rawmeme.test.near|wrap.test.near|10000#5",
+      "marks": [
+        {
+          "at": "1794660003702948902",
+          "block": "395",
+          "stage": "deposit_allocated"
+        },
+        {
+          "at": "1794660004572021935",
+          "block": "402",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794660004837124905",
+          "block": "404",
+          "stage": "zap_sent"
+        },
+        {
+          "at": "1794660005331139911",
+          "block": "408",
+          "stage": "zap_confirmed"
+        },
+        {
+          "at": "1794660005582085089",
+          "block": "410",
+          "stage": "position_found"
+        },
+        {
+          "at": "1794660005831702627",
+          "block": "412",
+          "stage": "position_confirmed"
+        },
+        {
+          "at": "1794660006951938452",
+          "block": "421",
+          "stage": "fee_claim_started"
+        },
+        {
+          "at": "1794660007200798447",
+          "block": "423",
+          "stage": "fees_claimed"
+        }
+      ],
+      "plan": {
+        "amount_x": "1701276785950489083741008",
+        "amount_y": "3705277668805677777021109",
+        "deadline_ns": "1794660303827161376",
+        "left_point": -1200,
+        "min_amount_x": "1667251250231479302066188",
+        "min_amount_y": "3631172115429564221480687",
+        "min_x_out": "1701276785950489083741008",
+        "min_y_out": "3705277668805677777021109",
+        "right_point": 3000,
+        "usdc_to_x": "5812539",
+        "usdc_to_y": "11187461"
+      },
+      "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+      "position_x": "1700999632837437452428317",
+      "position_y": "3705277668805677777020511",
+      "recovered_usdc": "0",
+      "recovered_x": "0",
+      "recovered_y": "0",
+      "reserve": "1600000",
+      "right_point": 3000,
+      "status": "PositionConfirmed",
+      "token_x": "rawmeme.test.near",
+      "token_y": "wrap.test.near",
+      "unlock_at": "1794660035831702627",
+      "updated_at": "1794660007200798447",
+      "usdc_unused_to_reserve": "1000000",
+      "usdc_used": "17000000"
+    },
+    "dex_contract_id": "dcl.test.near",
+    "fees_claimable": true,
+    "fuel_reason": "the deployed FUEL reads only treasury.sol2near-dev.testnet / Ref Classic pool 2951; no DCL position proof exists in FUEL",
+    "fuel_status": "FUEL_NOT_ELIGIBLE",
+    "locked": true,
+    "position_id": "rawmeme.test.near|wrap.test.near|10000#5",
+    "treasury_id": "treasury-dcl.test.near",
+    "withdrawable": false
+  },
+  "out_of_range_dcl": {
+    "liquidity_view": {
+      "amount": "1327382758484484059905",
+      "fee_x": "0",
+      "fee_y": "0",
+      "left_point": -1200,
+      "lpt_id": "rawmeme.test.near|wrap.test.near|10000#5",
+      "mft_id": "",
+      "owner_id": "treasury-dcl.test.near",
+      "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+      "right_point": 3000,
+      "token_x": "0",
+      "token_y": "5842174485153689106406322",
+      "v_liquidity": "0"
+    },
+    "pool": {
+      "current_point": 22455,
+      "fee": 10000,
+      "liquidity": "2891289709755586834435",
+      "liquidity_x": "64805662793733072722",
+      "max_liquidity_per_point": "42529979617665099795447395004595452",
+      "point_delta": 200,
+      "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+      "state": "Running",
+      "tax": null,
+      "token_x": "rawmeme.test.near",
+      "token_y": "wrap.test.near",
+      "total_fee_x_charged": "62765023845522498200337",
+      "total_fee_y_charged": "728787185670968395216062",
+      "total_liquidity": "4441418130542641488420",
+      "total_order_x": "0",
+      "total_order_y": "0",
+      "total_x": "11110922611246880686295346",
+      "total_y": "187767678309115963901434743",
+      "volume_x_in": "12553004769104499640067260",
+      "volume_x_out": "55767167615652092125138647",
+      "volume_y_in": "145757437134193679043212219",
+      "volume_y_out": "14711864409317453072891590",
+      "whitelist": null
+    }
+  },
+  "points": {
+    "deposit_allocated": 0,
+    "fees_claimed": 978,
+    "fees_unclaimed": 978,
+    "out_of_range": 22455,
+    "position_confirmed": 936,
+    "position_withdrawn": 22455
+  },
+  "pool_raw": {
+    "current_point": 22455,
+    "fee": 10000,
+    "liquidity": "2891289709755586834435",
+    "liquidity_x": "64805662793733072722",
+    "max_liquidity_per_point": "42529979617665099795447395004595452",
+    "point_delta": 200,
+    "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+    "state": "Running",
+    "tax": null,
+    "token_x": "rawmeme.test.near",
+    "token_y": "wrap.test.near",
+    "total_fee_x_charged": "62765023845522498200337",
+    "total_fee_y_charged": "728787185670968395216062",
+    "total_liquidity": "4218672468240070894340",
+    "total_order_x": "0",
+    "total_order_y": "0",
+    "total_x": "11110922611246880686295346",
+    "total_y": "177137425006289424268518395",
+    "volume_x_in": "12553004769104499640067260",
+    "volume_x_out": "55767167615652092125138647",
+    "volume_y_in": "145757437134193679043212219",
+    "volume_y_out": "14711864409317453072891590",
+    "whitelist": null
+  },
+  "position_confirmed": {
+    "creator_id": "alice.test.near",
+    "deposit": {
+      "amount": "20000000",
+      "community": "400000",
+      "confirmed_block": "322",
+      "created_at": "1794659989501612641",
+      "creator": "alice.test.near",
+      "dex": "dcl.test.near",
+      "dex_usdc": "0",
+      "dex_x": "13208921513342682967999",
+      "dex_y": "15639624259444073552636",
+      "fees_claimed_x": "0",
+      "fees_claimed_y": "0",
+      "id": "0",
+      "last_error": null,
+      "left_point": -20000,
+      "liquidity": "222745662302570594080",
+      "lp_budget": "18000000",
+      "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+      "marks": [
+        {
+          "at": "1794659989501612641",
+          "block": "281",
+          "stage": "deposit_allocated"
+        },
+        {
+          "at": "1794659991115656355",
+          "block": "294",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659991376478736",
+          "block": "296",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659991740935703",
+          "block": "299",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659992002436935",
+          "block": "301",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659992366141873",
+          "block": "304",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659992629531008",
+          "block": "306",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659993367258496",
+          "block": "312",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659993627425860",
+          "block": "314",
+          "stage": "zap_sent"
+        },
+        {
+          "at": "1794659994112878755",
+          "block": "318",
+          "stage": "zap_confirmed"
+        },
+        {
+          "at": "1794659994360281109",
+          "block": "320",
+          "stage": "position_found"
+        },
+        {
+          "at": "1794659994611702156",
+          "block": "322",
+          "stage": "position_confirmed"
+        }
+      ],
+      "plan": {
+        "amount_x": "2628575381155193908695097",
+        "amount_y": "3030117053578820105255520",
+        "deadline_ns": "1794660292629531008",
+        "left_point": -20000,
+        "min_amount_x": "2576003873532090030521196",
+        "min_amount_y": "2969514712507243703150410",
+        "min_x_out": "2628575381155193908695097",
+        "min_y_out": "3030117053578820105255520",
+        "right_point": 20200,
+        "usdc_to_x": "8079648",
+        "usdc_to_y": "8920352"
+      },
+      "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+      "position_x": "2628575381155193908685364",
+      "position_y": "3029704148181581157859945",
+      "recovered_usdc": "0",
+      "recovered_x": "0",
+      "recovered_y": "0",
+      "reserve": "1600000",
+      "right_point": 20200,
+      "status": "PositionConfirmed",
+      "token_x": "rawmeme.test.near",
+      "token_y": "wrap.test.near",
+      "unlock_at": "1794660024611702156",
+      "updated_at": "1794659994611702156",
+      "usdc_unused_to_reserve": "1000000",
+      "usdc_used": "17000000"
+    },
+    "dex_contract_id": "dcl.test.near",
+    "fees_claimable": true,
+    "fuel_reason": "the deployed FUEL reads only treasury.sol2near-dev.testnet / Ref Classic pool 2951; no DCL position proof exists in FUEL",
+    "fuel_status": "FUEL_NOT_ELIGIBLE",
+    "locked": true,
+    "position_id": "rawmeme.test.near|wrap.test.near|10000#4",
+    "treasury_id": "treasury-dcl.test.near",
+    "withdrawable": false
+  },
+  "position_confirmed_dcl": {
+    "amount": "222745662302570594080",
+    "left_point": -20000,
+    "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+    "mft_id": "",
+    "owner_id": "treasury-dcl.test.near",
+    "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+    "right_point": 20200,
+    "unclaimed_fee_x": "0",
+    "unclaimed_fee_y": "0",
+    "v_liquidity": "0"
+  },
+  "position_withdrawn": {
+    "creator_id": "alice.test.near",
+    "deposit": {
+      "amount": "20000000",
+      "community": "400000",
+      "confirmed_block": "322",
+      "created_at": "1794659989501612641",
+      "creator": "alice.test.near",
+      "dex": "dcl.test.near",
+      "dex_usdc": "0",
+      "dex_x": "17698477711500872709414",
+      "dex_y": "21004343241955617193275",
+      "fees_claimed_x": "4489556198158189741415",
+      "fees_claimed_y": "5364718982511543640639",
+      "id": "0",
+      "last_error": null,
+      "left_point": -20000,
+      "liquidity": "222745662302570594080",
+      "lp_budget": "18000000",
+      "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+      "marks": [
+        {
+          "at": "1794659989501612641",
+          "block": "281",
+          "stage": "deposit_allocated"
+        },
+        {
+          "at": "1794659991115656355",
+          "block": "294",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659991376478736",
+          "block": "296",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659991740935703",
+          "block": "299",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659992002436935",
+          "block": "301",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659992366141873",
+          "block": "304",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659992629531008",
+          "block": "306",
+          "stage": "job_failed"
+        },
+        {
+          "at": "1794659993367258496",
+          "block": "312",
+          "stage": "preflight_started"
+        },
+        {
+          "at": "1794659993627425860",
+          "block": "314",
+          "stage": "zap_sent"
+        },
+        {
+          "at": "1794659994112878755",
+          "block": "318",
+          "stage": "zap_confirmed"
+        },
+        {
+          "at": "1794659994360281109",
+          "block": "320",
+          "stage": "position_found"
+        },
+        {
+          "at": "1794659994611702156",
+          "block": "322",
+          "stage": "position_confirmed"
+        },
+        {
+          "at": "1794660002331220261",
+          "block": "384",
+          "stage": "fee_claim_started"
+        },
+        {
+          "at": "1794660002580651151",
+          "block": "386",
+          "stage": "fees_claimed"
+        },
+        {
+          "at": "1794660002955730054",
+          "block": "389",
+          "stage": "fee_claim_started"
+        },
+        {
+          "at": "1794660003207044365",
+          "block": "391",
+          "stage": "fees_claimed"
+        },
+        {
+          "at": "1794660025825202685",
+          "block": "504",
+          "stage": "position_transfer_started"
+        },
+        {
+          "at": "1794660026198159157",
+          "block": "507",
+          "stage": "position_withdrawn"
+        }
+      ],
+      "plan": {
+        "amount_x": "2628575381155193908695097",
+        "amount_y": "3030117053578820105255520",
+        "deadline_ns": "1794660292629531008",
+        "left_point": -20000,
+        "min_amount_x": "2576003873532090030521196",
+        "min_amount_y": "2969514712507243703150410",
+        "min_x_out": "2628575381155193908695097",
+        "min_y_out": "3030117053578820105255520",
+        "right_point": 20200,
+        "usdc_to_x": "8079648",
+        "usdc_to_y": "8920352"
+      },
+      "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+      "position_x": "2628575381155193908685364",
+      "position_y": "3029704148181581157859945",
+      "recovered_usdc": "0",
+      "recovered_x": "0",
+      "recovered_y": "0",
+      "reserve": "1600000",
+      "right_point": 20200,
+      "status": "PositionWithdrawn",
+      "token_x": "rawmeme.test.near",
+      "token_y": "wrap.test.near",
+      "unlock_at": "1794660024611702156",
+      "updated_at": "1794660026198159157",
+      "usdc_unused_to_reserve": "1000000",
+      "usdc_used": "17000000"
+    },
+    "dex_contract_id": "dcl.test.near",
+    "fees_claimable": false,
+    "fuel_reason": "the deployed FUEL reads only treasury.sol2near-dev.testnet / Ref Classic pool 2951; no DCL position proof exists in FUEL",
+    "fuel_status": "FUEL_NOT_ELIGIBLE",
+    "locked": false,
+    "position_id": "rawmeme.test.near|wrap.test.near|10000#4",
+    "treasury_id": "treasury-dcl.test.near",
+    "withdrawable": false
+  }
+}

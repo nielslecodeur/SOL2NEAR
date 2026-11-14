@@ -2170,6 +2170,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "sol2near-treasury-dcl"
+version = "0.1.0"
+dependencies = [
+ "near-sdk",
+]
+
+[[package]]
 name = "sol2near-treasury-v4"
 version = "0.1.0"
 dependencies = [

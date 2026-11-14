@@ -115,3 +115,7 @@ h2 { margin: 6px 0; overflow-wrap: anywhere; }
 .pools > * { min-width: 0; }
 .pilot, .pool { grid-template-columns: minmax(0, 1fr); }
 .pilot > *, .pool > * { min-width: 0; }
+/* V4.2A DCL cards: same layout as .pool, separate class so the V4.0 catalogue keeps its own count */
+.dclpool { display: grid; gap: 8px; align-content: start; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.dclpool > * { min-width: 0; }
+.dclpool.sel { border-color: var(--near); }
