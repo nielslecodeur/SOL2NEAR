@@ -1,6 +1,6 @@
 # Testnet bootstrap — gate G2 (manual, NOT executed yet)
 
-> **Authoritative transaction list, amounts and approval batches: `docs/G2_READINESS.md` §6.**
+> **Authoritative transaction list, amounts and approval batches: `docs/archive/G2_READINESS.md` §6.**
 > Amounts there supersede the examples below. Seed the pool with 50 USDC + 13.44 wNEAR, not 10 + 2.688.
 
 > **TESTNET ONLY. Each command signs a transaction: run only after explicit approval from the lead.**

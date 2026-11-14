@@ -102,7 +102,7 @@ counts for season 0. The close is possible from genesis + 36 min, and the claim 
 Treasury lock (10 min after `execute_lp`). If B and C are approved together, the whole cycle fits
 in ≈ 45 min.
 
-### Batch C reminder (separate approval; details in `docs/G2_READINESS.md` §6)
+### Batch C reminder (separate approval; details in `docs/archive/G2_READINESS.md` §6)
 C1 deposit 20 USDC → T (`{"action":"deposit"}`) · C2 `execute_lp` with the plan from
 `node scripts/plan-lp.ts 2951 18000000 100`, computed just before (current preview: swap
 8 323 187 USDC atomic, ≈ 9.68 USDC to LP) · C3 `verify_liquidity` · C4 `register_position(0)` ·

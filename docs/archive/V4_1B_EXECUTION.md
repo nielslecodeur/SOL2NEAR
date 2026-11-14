@@ -1,6 +1,6 @@
 # V4.1B — TreasuryV4 frontend, Position Manager, transaction safety
 
-Date: 2026-11-14. Solo project. Builds on [`V4_1_ARCHITECTURE.md`](V4_1_ARCHITECTURE.md) and [`V4_1_EXECUTION.md`](V4_1_EXECUTION.md).
+Date: 2026-11-14. Solo project. Builds on [`V4_1_ARCHITECTURE.md`](../V4_1_ARCHITECTURE.md) and [`V4_1_EXECUTION.md`](../V4_1_EXECUTION.md).
 
 **Verdict: `READY FOR V4.1 TESTNET DEPLOYMENT`**, with the scope stated in §9.
 

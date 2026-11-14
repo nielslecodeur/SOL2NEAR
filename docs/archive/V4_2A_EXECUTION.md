@@ -1,6 +1,6 @@
 # V4.2A — Execution report: local DCL adapter (TreasuryDCL)
 
-Date: 2026-11-14. Solo project. Feasibility, audit and decisions: [`V4_2A_DCL_FEASIBILITY.md`](V4_2A_DCL_FEASIBILITY.md).
+Date: 2026-11-14. Solo project. Feasibility, audit and decisions: [`V4_2A_DCL_FEASIBILITY.md`](../V4_2A_DCL_FEASIBILITY.md).
 
 **Verdict: `READY WITH LIMITATIONS`.**
 

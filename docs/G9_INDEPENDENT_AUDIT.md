@@ -126,7 +126,7 @@ No simulation or mainnet read is presented as an execution in the README after t
 | Correction | Why it was blocking | Files |
 |---|---|---|
 | The wasm fetch scripts now create `sandbox-tests/res/` | README step 9 failed with `ENOENT` in any fresh clone (the folder is git-ignored). Found by running the sandbox from the public clone; it passes after the fix (both runs 1/1, S1 included) | `scripts/probes/fetch-sandbox-wasm.mjs`, `scripts/probes/fetch-dcl-wasm.mjs` |
-| The admin-key claim corrected | it overstated immutability: the contract accounts keep full-access keys | `README.md` (intro + risks), `apps/web/src/portal/CreatorPortal.tsx` (hero text), `docs/FINAL_RELEASE_AUDIT.md` (diagram) |
+| The admin-key claim corrected | it overstated immutability: the contract accounts keep full-access keys | `README.md` (intro + risks), `apps/web/src/portal/CreatorPortal.tsx` (hero text), `docs/archive/FINAL_RELEASE_AUDIT.md` (diagram) |
 | V3 budget lock-in stated | a reviewer could not tell that a deposited LP budget cannot be refunded | `README.md` (risks) |
 | "Why NEAR" section | a missing explanation of the project's core choice | `README.md` |
 | G9 docs | deliverables | this file, `G9_PUBLIC_REVIEW_CHECKLIST.md` |

@@ -1,6 +1,6 @@
 # G8 — Final execution: deposit #3 (the bridged funds)
 
-Date: 2026-11-14. Solo project. Proofs: [`G8_PROOF_LEDGER.md`](G8_PROOF_LEDGER.md). Release: [`FINAL_RELEASE_AUDIT.md`](FINAL_RELEASE_AUDIT.md).
+Date: 2026-11-14. Solo project. Proofs: [`G8_PROOF_LEDGER.md`](G8_PROOF_LEDGER.md). Release: [`FINAL_RELEASE_AUDIT.md`](archive/FINAL_RELEASE_AUDIT.md).
 
 **Verdict: `G8 READY FOR USER SIGNATURE`.**
 

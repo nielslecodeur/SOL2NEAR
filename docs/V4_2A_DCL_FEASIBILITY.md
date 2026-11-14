@@ -1,6 +1,6 @@
 # V4.2A — Rhea DCL / Nearly: feasibility of funding real memecoin liquidity
 
-Date: 2026-11-14. Solo project. Builds on V4.0 (`V4_0_EXECUTION.md`), V4.1 (`V4_1_ARCHITECTURE.md`) and V4.1B (`V4_1B_EXECUTION.md`). Results and evidence of the code: [`V4_2A_EXECUTION.md`](V4_2A_EXECUTION.md).
+Date: 2026-11-14. Solo project. Builds on V4.0 (`V4_0_EXECUTION.md`), V4.1 (`V4_1_ARCHITECTURE.md`) and V4.1B (`V4_1B_EXECUTION.md`). Results and evidence of the code: [`V4_2A_EXECUTION.md`](archive/V4_2A_EXECUTION.md).
 
 **Verdict: `READY WITH LIMITATIONS`** (details in §11).
 

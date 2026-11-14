@@ -366,7 +366,7 @@ Lorsque le module de l'équipier est terminé :
 
 | Checkpoint | Lead | Équipier | Livrable |
 |---|---|---|---|
-| A1 / B1 | Treasury Rust, comptabilité, Rhea, tests | Tidepool/Solana, API TypeScript, tests | `CHECKPOINT.md` et `CROSSCHAIN_HANDOFF.md` |
+| A1 / B1 | Treasury Rust, comptabilité, Rhea, tests | Tidepool/Solana, API TypeScript, tests | `docs/archive/CHECKPOINT_A1.md` et `CROSSCHAIN_HANDOFF.md` |
 | 2 | FUEL, frontend, intégration du module, E2E | Support en cas de bug cross-chain | Application et preuves de flux |
 | 3 | Sécurité, finition, docs, démo et soumission | Support final / corrections du module | Repo public, README, démonstration |
 

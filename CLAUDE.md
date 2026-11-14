@@ -13,11 +13,12 @@ Solo project since 2026-11-13: the lead owns everything, including `packages/cro
 ## Required reading
 - **`docs/HACKATHON_CHECKLIST.md`** — official rules (https://nearhackathon.com/HACKATHON.md) mapped to our workflow, including the **final rules check before submission**. Re-read the live rules before submitting.
 - `docs/SOL2NEAR_V3_Specification_Projet_Complete.md` — product and economics.
-- `docs/SOL2NEAR_V3_Workflow_Equipe_Prompt_B1.md` — team workflow, branches, handoff.
+- `docs/archive/SOL2NEAR_V3_Workflow_Equipe_Prompt_B1.md` — team workflow, branches, handoff.
 - `docs/FEASIBILITY.md` — verified facts vs hypotheses (H1–H11), blockers.
 - `docs/ARCHITECTURE.md` — Treasury state machine and invariants.
-- `CHECKPOINT.md` — current status and missing pieces.
-- **`docs/G2_READINESS.md`** — verified Ref audit, budget, exact transaction batches awaiting approval.
+- `docs/README.md` — map of the documentation (product, architecture, contracts, tests, proofs, archive).
+- `docs/archive/CHECKPOINT_A1.md` — historical status of checkpoint A1 (archived).
+- `docs/archive/G2_READINESS.md` — verified Ref audit and the G2 transaction batches (executed: `docs/G2_EXECUTION.md`).
 
 ## Commands
 ```powershell
@@ -34,4 +35,4 @@ pnpm typecheck; pnpm test:ts;   # near-client + crosschain (mocked)
 pnpm --filter @sol2near/crosschain live:dry   # read-only Tidepool check
  pnpm --filter @sol2near/web test; pnpm --filter @sol2near/web build
 ```
-FUEL rules: `docs/FUEL_REACTOR.md`. Current status: `docs/CHECKPOINT_A2.md`.
+FUEL rules: `docs/FUEL_REACTOR.md`. Current status: `README.md`; history in `docs/archive/`.

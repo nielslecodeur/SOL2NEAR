@@ -10,7 +10,7 @@ Results and evidence: [`V4_1_EXECUTION.md`](V4_1_EXECUTION.md).
 
 ## 1. Pool choice: why a sandbox pilot
 
-V4.0 found the facts below (`docs/V4_0_EXECUTION.md`). They were re-read for V4.1:
+V4.0 found the facts below (`docs/archive/V4_0_EXECUTION.md`). They were re-read for V4.1:
 
 | Candidate | Blocking facts (on-chain) | Can V4.1 resolve them without inventing liquidity? |
 |---|---|---|

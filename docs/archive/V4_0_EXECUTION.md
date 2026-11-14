@@ -1,6 +1,6 @@
 # V4.0 — Pool discovery, verification and selection (read-only)
 
-Date: 2026-11-13/14. Solo project. Spec: [`docs/SOL2NEAR_V4_Memecoin_Liquidity_Router.md`](SOL2NEAR_V4_Memecoin_Liquidity_Router.md) §7 "V4.0".
+Date: 2026-11-13/14. Solo project. Spec: [`docs/SOL2NEAR_V4_Memecoin_Liquidity_Router.md`](../SOL2NEAR_V4_Memecoin_Liquidity_Router.md) §7 "V4.0".
 
 **Nothing in V4.0 signs, deploys or sends a transaction.** All the evidence below comes from public NEAR RPC `view` calls:
 - on testnet, and on mainnet for reference pools only;

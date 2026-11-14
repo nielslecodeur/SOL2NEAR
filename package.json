@@ -13,6 +13,7 @@
     "build:shared": "pnpm --filter @sol2near/shared build",
     "check:release": "node scripts/check-release.mjs",
     "check:public": "node scripts/check-public-bundle.mjs",
+    "check:docs": "node scripts/check-doc-links.mjs",
     "proof:nearly": "bash scripts/proofs/nearly-proof.sh",
     "proof:nearly:check": "node scripts/proofs/export-nearly-proof.mjs --check"
   },

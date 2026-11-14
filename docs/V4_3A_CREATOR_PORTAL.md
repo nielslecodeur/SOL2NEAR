@@ -1,6 +1,6 @@
 # V4.3A — Creator Portal: journey, frictions, rules
 
-Date: 2026-11-14. Solo project. Execution report: [`V4_3A_EXECUTION.md`](V4_3A_EXECUTION.md). Release audit: [`RELEASE_READINESS.md`](RELEASE_READINESS.md).
+Date: 2026-11-14. Solo project. Execution report: [`V4_3A_EXECUTION.md`](archive/V4_3A_EXECUTION.md). Release audit: [`RELEASE_READINESS.md`](archive/RELEASE_READINESS.md).
 
 The Creator Portal is the landing page of the dashboard (`#/`). It turns the modules built in G2–V4.2A into one guided journey:
 

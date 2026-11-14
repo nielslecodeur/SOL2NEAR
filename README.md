@@ -161,18 +161,18 @@ SOL2NEAR takes **0 %** during the hackathon.
 
 - `docs/HACKATHON_CHECKLIST.md`: official rules mapped to this project, with the final pre-submission check
 - `docs/JUDGE_QUICKSTART.md`, `docs/HACKATHON_MEMECOIN_PROOF.md`: how to reproduce, and what the NEARLY memecoin demo proves (two separate levels of evidence)
-- `docs/G9_1_PUBLIC_DEMO_READINESS.md`: the public read-only build, its checks and its deployment record
-- `docs/G8_FINAL_EXECUTION.md`, `docs/G8_PROOF_LEDGER.md`, `docs/FINAL_RELEASE_AUDIT.md`: G8 state of deposit #3, the prepared LP transaction, the full proof ledger, final release audit
-- `docs/RELEASE_READINESS.md`, `docs/V4_3A_CREATOR_PORTAL.md`, `docs/V4_3A_EXECUTION.md`: V4.3A Creator Portal, unified positions, release readiness and reproducibility audit
-- `docs/V4_2A_DCL_FEASIBILITY.md`, `docs/V4_2A_EXECUTION.md`: V4.2A Rhea DCL / Nearly audit (interfaces measured on the real wasm, taxes, ownership, 3 real pools), TreasuryDCL local adapter and its sandbox run
-- `docs/V4_1B_EXECUTION.md`: V4.1B dashboard integration, TreasuryV4 interface audit, Position Manager, public validation plan
+- `docs/archive/G9_1_PUBLIC_DEMO_READINESS.md`: the public read-only build, its checks and its deployment record
+- `docs/G8_FINAL_EXECUTION.md`, `docs/G8_PROOF_LEDGER.md`, `docs/archive/FINAL_RELEASE_AUDIT.md`: G8 state of deposit #3, the prepared LP transaction, the full proof ledger, final release audit
+- `docs/archive/RELEASE_READINESS.md`, `docs/V4_3A_CREATOR_PORTAL.md`, `docs/archive/V4_3A_EXECUTION.md`: V4.3A Creator Portal, unified positions, release readiness and reproducibility audit
+- `docs/V4_2A_DCL_FEASIBILITY.md`, `docs/archive/V4_2A_EXECUTION.md`: V4.2A Rhea DCL / Nearly audit (interfaces measured on the real wasm, taxes, ownership, 3 real pools), TreasuryDCL local adapter and its sandbox run
+- `docs/archive/V4_1B_EXECUTION.md`: V4.1B dashboard integration, TreasuryV4 interface audit, Position Manager, public validation plan
 - `docs/V4_1_ARCHITECTURE.md`, `docs/V4_1_EXECUTION.md`: V4.1 Classic memecoin pilot (TreasuryV4, sandbox token), local validation and the deployment plan awaiting approval
-- `docs/V4_0_EXECUTION.md`: V4.0 Pool Explorer (dashboard `#/pools`, read-only). Verified Ref/RHEA memecoin pools with live checks; only the pilot pool 2951 is fundable by the deployed Treasury, everything else is observe only, with the reasons
+- `docs/archive/V4_0_EXECUTION.md`: V4.0 Pool Explorer (dashboard `#/pools`, read-only). Verified Ref/RHEA memecoin pools with live checks; only the pilot pool 2951 is fundable by the deployed Treasury, everything else is observe only, with the reasons
 - `docs/SOL2NEAR_V3_Specification_Projet_Complete.md`: product, economics, scope
-- `docs/SOL2NEAR_V3_Workflow_Equipe_Prompt_B1.md`: team workflow
+- `docs/archive/SOL2NEAR_V3_Workflow_Equipe_Prompt_B1.md`: team workflow
 - `docs/FEASIBILITY.md`: verified facts, hypotheses, blockers, plan B
 - `docs/ARCHITECTURE.md`: Treasury design
-- `CHECKPOINT.md`: current checkpoint report
+- `docs/archive/CHECKPOINT_A1.md`: current checkpoint report
 
 ## License
 

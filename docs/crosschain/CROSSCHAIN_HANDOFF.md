@@ -39,7 +39,7 @@ is not bypassed. Details: [`FEASIBILITY.md` §4](FEASIBILITY.md).
 ## 4. Not done
 
 - No live Tidepool call from this package, and no real Solana → NEAR transfer.
-- Step 4 (the Treasury deposit) is now done in the dashboard with a NEAR wallet (G4, `docs/G4_NEAR_WALLET.md`). After a verified bridge, *Use this amount* pre-fills it, and a separate NEAR signature is required. The CLI command remains a fallback.
+- Step 4 (the Treasury deposit) is now done in the dashboard with a NEAR wallet (G4, `docs/archive/G4_NEAR_WALLET.md`). After a verified bridge, *Use this amount* pre-fills it, and a separate NEAR signature is required. The CLI command remains a fallback.
 - Quote signature verification (U5).
 
 ## 5. Token ids and decimals
@@ -123,7 +123,7 @@ node scripts/probes/verify-testnet.mjs         # NEAR side, read-only
 | P1 | Tidepool is custodial, has a single maker and no SLA, and is flagged by a corporate firewall | test tokens only, never real funds |
 | P1 | Quote signature not verified (U5) | echo checks + NEAR balance check; production would use the official 1Click SDK |
 | P2 | The NEAR balance check counts any incoming USDC in the window | it can only over-count a real receipt, never invent a missing one; the NEAR tx link is shown |
-| P2 | Step 4 from the dashboard is built but not yet executed on-chain | `docs/G4_NEAR_WALLET.md` §5 |
+| P2 | Step 4 from the dashboard is built but not yet executed on-chain | `docs/archive/G4_NEAR_WALLET.md` §5 |
 
 ## 11. Recommendations
 

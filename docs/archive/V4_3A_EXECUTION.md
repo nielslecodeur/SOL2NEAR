@@ -1,6 +1,6 @@
 # V4.3A — Execution report: Creator Portal, unified positions, async safety
 
-Date: 2026-11-14. Solo project. Product doc: [`V4_3A_CREATOR_PORTAL.md`](V4_3A_CREATOR_PORTAL.md). Release audit: [`RELEASE_READINESS.md`](RELEASE_READINESS.md).
+Date: 2026-11-14. Solo project. Product doc: [`V4_3A_CREATOR_PORTAL.md`](../V4_3A_CREATOR_PORTAL.md). Release audit: [`RELEASE_READINESS.md`](RELEASE_READINESS.md).
 
 **Verdict: `READY WITH LIMITATIONS`** (see `RELEASE_READINESS.md` §6).
 

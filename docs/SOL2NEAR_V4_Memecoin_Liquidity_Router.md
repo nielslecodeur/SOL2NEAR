@@ -461,7 +461,7 @@ Interdire toute transition directe fondée uniquement sur une réponse frontend.
 ```text
 Tu es architecte NEAR/Rust, expert RHEA Classic/DCL, LP custody et UX cross-chain.
 Travaille SOLO sur SOL2NEAR. Lis CLAUDE.md, README.md, docs/G2_EXECUTION.md,
-docs/G4_NEAR_WALLET.md, docs/G5_BROWSER_VALIDATION.md,
+docs/archive/G4_NEAR_WALLET.md, docs/archive/G5_BROWSER_VALIDATION.md,
 docs/crosschain/CROSSCHAIN_HANDOFF.md, docs/HACKATHON_CHECKLIST.md,
 puis docs/SOL2NEAR_V4_Memecoin_Liquidity_Router.md.
 Mission : V4.0 — auditer sans transaction la faisabilité de sélectionner un pool

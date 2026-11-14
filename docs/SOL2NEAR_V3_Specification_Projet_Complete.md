@@ -552,7 +552,7 @@ sol2near/
 │   └── crosschain/
 │       └── CROSSCHAIN_HANDOFF.md
 ├── tests/
-├── CHECKPOINT.md
+├── docs/archive/CHECKPOINT_A1.md
 └── README.md
 ```
 
