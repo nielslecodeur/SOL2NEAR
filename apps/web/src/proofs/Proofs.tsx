@@ -27,6 +27,8 @@ const TXS: { id: string; what: string; hash: string; url: string }[] = [
 ];
 
 const DOCS: [string, string][] = [
+  ["NEARLY memecoin proof: what is demonstrated, on which evidence (H1–H4)", "docs/HACKATHON_MEMECOIN_PROOF.md"],
+  ["Judge quickstart: reproduce without key, funds or public transaction", "docs/JUDGE_QUICKSTART.md"],
   ["Proof ledger (G6–G8)", "docs/G8_PROOF_LEDGER.md"],
   ["G8 status: deposit #3, prepared LP, not executed", "docs/G8_FINAL_EXECUTION.md"],
   ["Independent audit simulation (G9)", "docs/G9_INDEPENDENT_AUDIT.md"],
@@ -56,6 +58,14 @@ export function ProofsPage() {
             ))}
           </tbody>
         </table>
+      </section>
+      <section className="card" aria-label="Memecoin proof levels">
+        <h3>The memecoin proof is a different level of evidence</h3>
+        <ul className="checks">
+          <li><b>A · Testnet / devnet, real transactions</b> (table above): Solana devnet → Tidepool → NEAR testnet → Treasury V3 90/8/2 → Ref pool #2951 (USDC/wNEAR, not a memecoin) → FUEL.</li>
+          <li><b>B · NEARLY on Rhea DCL, LOCAL SANDBOX</b>: TreasuryDCL created, held, claimed and handed back a DCL position in a fresh local chain running the <b>byte-identical</b> mainnet code of Rhea DCL v2.4.2 and of the NEARLY token. Local state, test tokens, no public transaction. See <a href="#/">Creator Portal → Explore → 7 · Sandbox proof</a>; reproduce with <code>bash scripts/proofs/nearly-proof.sh</code>.</li>
+          <li className="ko">A and B were never one transaction: no SOL2NEAR contract exists on mainnet and no NEARLY position has been funded.</li>
+        </ul>
       </section>
       <section className="card">
         <h3>Evidence kind of every feature</h3>

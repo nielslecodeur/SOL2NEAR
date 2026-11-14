@@ -1,0 +1,87 @@
+{
+  "label": "MAINNET REFERENCE SIMULATION (view calls only)",
+  "not": [
+    "no transaction",
+    "no SOL2NEAR contract on mainnet",
+    "SOL2NEAR moves testnet USDC only",
+    "not a quote you can execute"
+  ],
+  "network": "near-mainnet",
+  "block_height": 224535331,
+  "block_hash": "BfVqggL5vtx7h4DAJjwK7MXXksTLSGESik2k5mS9kHKE",
+  "block_time_utc": "2026-11-14T15:51:20.017Z",
+  "rpc": [
+    "https://free.rpc.fastnear.com",
+    "https://near.drpc.org"
+  ],
+  "dex": "dclv2.ref-labs.near",
+  "pool_id": "nearly-993927.nearlytrade.near|wrap.near|10000",
+  "token_x": "nearly-993927.nearlytrade.near",
+  "token_y": "wrap.near",
+  "usdc": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+  "route_x": [
+    "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1|wrap.near|100",
+    "nearly-993927.nearlytrade.near|wrap.near|10000"
+  ],
+  "route_y": [
+    "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1|wrap.near|100"
+  ],
+  "pool": {
+    "current_point": 50236,
+    "price_wnear_per_nearly": 0.00015191920549686145,
+    "liquidity_active": "56254381955948946355842",
+    "total_liquidity": "262621362111147704956668",
+    "fee": 10000,
+    "point_delta": 200,
+    "state": "Running",
+    "total_x": "96651834692886000348284386",
+    "total_y": "12800921557045584756993683266"
+  },
+  "input": {
+    "usdc_atomic": "100000000",
+    "half_width_points": 20000,
+    "slippage_bps": 100
+  },
+  "range": {
+    "left_point": 30200,
+    "right_point": 70400,
+    "price_left": 0.000020488197938973417,
+    "price_right": 0.0011409859356666273
+  },
+  "split_90_8_2": {
+    "lp_budget": "90000000",
+    "reserve": "8000000",
+    "community": "2000000"
+  },
+  "plan": {
+    "usdc_to_x": "45253125",
+    "usdc_to_y": "44746875",
+    "min_x_out": "91249412141727581937333",
+    "min_y_out": "13858763635631805707312329",
+    "left_point": 30200,
+    "right_point": 70400,
+    "amount_x": "91249412141727581937333",
+    "amount_y": "13858763635631805707312329",
+    "min_amount_x": "89424423898893030298587",
+    "min_amount_y": "13581588362919169593166083",
+    "deadline_ns": "0"
+  },
+  "share_to_nearly": 0.5028125000000001,
+  "iterations": 10,
+  "prediction": {
+    "out_x": "91707951901233750690787",
+    "out_y": "13928405663951563524937015",
+    "need_x": "91662097925283133815340",
+    "need_y": "13919204859984080949397889",
+    "liquidity": "89085133138038577895"
+  },
+  "estimate": {
+    "into_position_x": "91662097925283133815340",
+    "into_position_y": "13919204859984080949397889",
+    "leftover_x": "45853975950616875447",
+    "leftover_y": "9200803967482575539126",
+    "leftover_share_bps": 5
+  },
+  "nearly_leg_price_impact_bps": 11,
+  "method": "packages/near-client buildDclPlan (bisection on the USDC split with Rhea predict_hotzap; min outs = predicted − ½ slippage) + estimateDcl (90/8/2 split)"
+}

@@ -46,7 +46,7 @@ async function retry<T>(f: () => Promise<T>): Promise<T> {
   }
 }
 
-async function readLive(c: DclCandidate): Promise<DclLive> {
+export async function readLive(c: DclCandidate): Promise<DclLive> {
   const ref = 100_000_000n;
   const route = [c.usdcPool, c.poolId];
   const q = (amount: bigint) => mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route, input_token: MAINNET_USDC, output_token: c.tokenX, input_amount: String(amount) }).then((r) => BigInt(r.amount)); // a failed read throws (→ OBSERVE_ONLY "unreadable"); only a real DCL answer of 0 means "no route"
@@ -157,30 +157,8 @@ function DclEstimator({ row, live }: { row: Row; live: DclLive }) {
     setBusy(true); setErr(null);
     try {
       const usdcIn = BigInt(atomic);
-      const spend = (usdcIn * 9000n) / 10_000n;
-      const route = { x: [c.usdcPool, c.poolId], y: [c.usdcPool] };
-      const quote = async (toX: bigint, toY: bigint): Promise<[bigint, bigint]> => {
-        const [a, b] = await Promise.all([
-          mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route.x, input_token: MAINNET_USDC, output_token: c.tokenX, input_amount: String(toX) }),
-          mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route.y, input_token: MAINNET_USDC, output_token: c.tokenY, input_amount: String(toY) }),
-        ]);
-        return [BigInt(a.amount), BigInt(b.amount)];
-      };
-      const predict = async (toX: bigint, toY: bigint, capX: bigint, capY: bigint) => {
-        const v = await mainnet.view(c.dex, "predict_hotzap", {
-          token_in: MAINNET_USDC, amount_in: String(toX + toY),
-          swap_infos: [
-            { pool_ids: route.x, input_token: MAINNET_USDC, output_token: c.tokenX, amount_in: String(toX), min_output_amount: "0" },
-            { pool_ids: route.y, input_token: MAINNET_USDC, output_token: c.tokenY, amount_in: String(toY), min_output_amount: "0" },
-          ],
-          add_liquidity_infos: [{ pool_id: c.poolId, left_point: left, right_point: right, amount_x: String(capX), amount_y: String(capY), min_amount_x: "0", min_amount_y: "0" }],
-        });
-        const p = parsePredictHotzap(v, c.tokenX, c.tokenY);
-        if (!p) throw new Error("predict_hotzap: unexpected result");
-        return p;
-      };
-      const r = await buildDclPlan({ spend, left, right, slippageBps: SLIPPAGE_BPS, deadlineNs: 0n, quote, predict });
-      setRes({ est: estimateDcl(usdcIn, spend, r.prediction), pr: r.prediction, plan: { left, right, shareX: r.shareX } });
+      const r = await simulateDcl(c, usdcIn, left, right);
+      setRes({ est: r.est, pr: r.pr, plan: { left, right, shareX: r.shareX } });
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   }
   const status = rangeStatus(live.pool.current_point, left, right, c.symbol, "wNEAR");
@@ -217,6 +195,38 @@ function DclEstimator({ row, live }: { row: Row; live: DclLive }) {
       )}
     </section>
   );
+}
+
+/** Mainnet REFERENCE simulation (view calls only): Rhea's own quote + predict_hotzap through buildDclPlan, 90/8/2 split. */
+export async function simulateDcl(c: DclCandidate, usdcIn: bigint, left: number, right: number) {
+  const spend = (usdcIn * 9000n) / 10_000n;
+  const route = { x: [c.usdcPool, c.poolId], y: [c.usdcPool] };
+  const quote = async (toX: bigint, toY: bigint): Promise<[bigint, bigint]> => {
+    // sequential: a burst of parallel views is rate-limited by the public providers
+    const a = await retry(() => mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route.x, input_token: MAINNET_USDC, output_token: c.tokenX, input_amount: String(toX) }));
+    const b = await retry(() => mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route.y, input_token: MAINNET_USDC, output_token: c.tokenY, input_amount: String(toY) }));
+    return [BigInt(a.amount), BigInt(b.amount)];
+  };
+  const predict = async (toX: bigint, toY: bigint, capX: bigint, capY: bigint) => {
+    const v = await retry(() => mainnet.view(c.dex, "predict_hotzap", {
+      token_in: MAINNET_USDC, amount_in: String(toX + toY),
+      swap_infos: [
+        { pool_ids: route.x, input_token: MAINNET_USDC, output_token: c.tokenX, amount_in: String(toX), min_output_amount: "0" },
+        { pool_ids: route.y, input_token: MAINNET_USDC, output_token: c.tokenY, amount_in: String(toY), min_output_amount: "0" },
+      ],
+      add_liquidity_infos: [{ pool_id: c.poolId, left_point: left, right_point: right, amount_x: String(capX), amount_y: String(capY), min_amount_x: "0", min_amount_y: "0" }],
+    }));
+    const p = parsePredictHotzap(v, c.tokenX, c.tokenY);
+    if (!p) throw new Error("predict_hotzap: unexpected result");
+    return p;
+  };
+  const r = await buildDclPlan({ spend, left, right, slippageBps: SLIPPAGE_BPS, deadlineNs: 0n, quote, predict });
+  // price impact of the memecoin leg: Rhea's quote of the full leg vs 1/1000 of it scaled (pool fees cancel out)
+  const toX = BigInt(r.plan.usdc_to_x);
+  const [qBig] = await quote(toX, 1n);
+  const [qSmall] = await quote(toX / 1000n || 1n, 1n);
+  const impactBps = qSmall === 0n ? null : Number(10_000n - (qBig * 10_000n) / (qSmall * 1000n));
+  return { est: estimateDcl(usdcIn, spend, r.prediction), pr: r.prediction, shareX: r.shareX, plan: r.plan, impactBps };
 }
 
 const STAGES = [

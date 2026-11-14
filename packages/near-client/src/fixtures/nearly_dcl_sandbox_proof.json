@@ -1,0 +1,1880 @@
+{
+  "label": "LOCAL SANDBOX",
+  "title": "NEARLY DCL position — LOCAL SANDBOX proof (real Rhea DCL v2.4.2 code, NEARLY's token code, local state, test tokens with no value)",
+  "not": [
+    "not mainnet",
+    "not testnet",
+    "no public transaction",
+    "not a NEARLY mainnet position",
+    "fees are test fees, not a forecast"
+  ],
+  "reproduce": "bash scripts/proofs/nearly-proof.sh   (Linux / WSL: fetch code read-only, build TreasuryDCL, run the sandbox, export --check)",
+  "scenario": "sandbox-tests/tests/v42_dcl.rs",
+  "accounts_note": "rawmeme.test.near = the LOCAL token deployed from NEARLY's code (named RAWMEME in the scenario); wrap.test.near = wNEAR code; usdc.test.near = USDC stand-in; dcl.test.near = Rhea DCL code; treasury-dcl.test.near = SOL2NEAR TreasuryDCL; alice = creator; bob = attacker; lp / trader = local market makers",
+  "provenance": {
+    "mainnet_reference_read_at": "2026-11-14T12:19:10.247Z",
+    "dcl": {
+      "file": "sandbox-tests/res/dcl_mainnet.wasm",
+      "bytes": 1166649,
+      "sha256": "219169c5daf8ea3a0cb2a51ef64d700211e69ded2abb62b4a869d0c561bea038",
+      "code_hash_base58": "3G34Nhjmir5JPYPtijaA9iCNnHDPR7h3wfC9H77woEGo",
+      "source": "view_code of dclv2.ref-labs.near (mainnet, Rhea DCL v2.4.2)",
+      "expected_mainnet_code_hash": "3G34Nhjmir5JPYPtijaA9iCNnHDPR7h3wfC9H77woEGo",
+      "identical_to_mainnet": true
+    },
+    "nearly_token": {
+      "file": "sandbox-tests/res/nearly_token_raw_v1.wasm",
+      "bytes": 15743,
+      "sha256": "47d7973b0a3bf97a5008f03c7caf15d02fc05ac0c34c1878bdf7ebabf6857fc9",
+      "code_hash_base58": "5qScjXG9uRG82Yrh36XZNZgVUYiqPtuC9ep5DvV42eGQ",
+      "source": "view_global_contract_code: the global code that nearly-993927.nearlytrade.near runs (Nearly raw v1)",
+      "expected_mainnet_code_hash": "5qScjXG9uRG82Yrh36XZNZgVUYiqPtuC9ep5DvV42eGQ",
+      "identical_to_mainnet": true
+    },
+    "wrap": {
+      "file": "sandbox-tests/res/wrap_near.wasm",
+      "bytes": 185625,
+      "sha256": "b72c26d390b23f4517d091a8aab06b0369d465356ec5fb337d5fda076da38ac0",
+      "code_hash_base58": "DL2f5xmZ44cQRP6vBMt94rvseH5d5KKnAGis2WkTAsh1",
+      "source": "view_code of wrap.near (mainnet)",
+      "expected_mainnet_code_hash": "DL2f5xmZ44cQRP6vBMt94rvseH5d5KKnAGis2WkTAsh1",
+      "identical_to_mainnet": true
+    },
+    "usdc": {
+      "file": "sandbox-tests/res/tidepool_usdc.wasm",
+      "bytes": 163556,
+      "sha256": "bc699a786a70f5a4825eecf4c57a64590d58e33a4f9412a7766808ea89fa9aae",
+      "code_hash_base58": "DgV3WsKJsGtCjNWxYzFvi599szo7oojkKXWCoGBBAHwj",
+      "source": "view_code of usdc.tidepool-sandbox.testnet (testnet): a LOCAL stand-in for USDC"
+    },
+    "tax_token": {
+      "file": "sandbox-tests/res/nearly_token_tax_v6.wasm",
+      "bytes": 22258,
+      "sha256": "6bfc00b72948064a5c18c8081a1107a7f9e2b3f2068b5060d2f3711ec195a482",
+      "code_hash_base58": "8GXVnFTxx1d6tYnoqNiQ5YzzQpj1uyxG7u28LeCGmsER",
+      "source": "Nearly tax v6 global code (used only to prove the BLOCKED_TAX refusal)"
+    },
+    "treasury_dcl": {
+      "file": "target/near/treasury-dcl/sol2near_treasury_dcl.wasm",
+      "bytes": 349590,
+      "sha256": "66889832d7c0a7462949f03ea68f28caaad0011d3cbc851896d710452b887a83",
+      "code_hash_base58": "7uFPdAv98J2kXcq26gqsh4suprYjh3D9vp2WY1EkMdqc",
+      "source": "contracts/treasury-dcl built by scripts/build-wasm.sh (cargo-near 0.22.0, non-reproducible-wasm)",
+      "note": "built locally: another machine or toolchain can produce different bytes with the same behaviour; --check reports it and compares the behaviour"
+    },
+    "near_workspaces": "0.24.0",
+    "state": "fresh local neard sandbox from genesis (no forked mainnet or testnet state); every pool, balance and position is created by the scenario"
+  },
+  "summary": {
+    "token_identity": "the sandbox token runs byte-identical code to mainnet NEARLY (nearly-993927.nearlytrade.near); its state, supply and price are LOCAL",
+    "dcl_identity": "byte-identical to dclv2.ref-labs.near (mainnet) at the fixture read",
+    "position": {
+      "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+      "owner_on_dcl": "treasury-dcl.test.near",
+      "nft_owner": "treasury-dcl.test.near",
+      "liquidity": "222745662302570594080",
+      "range": [
+        -20000,
+        20200
+      ],
+      "usdc_used": "17000000",
+      "position_x": "2628575381155193908685364",
+      "position_y": "3029704148181581157859945",
+      "leftover_x": "13208921513342682967999",
+      "leftover_y": "15639624259444073552636"
+    },
+    "split_90_8_2": {
+      "amount": "20000000",
+      "lp_budget": "18000000",
+      "reserve": "1600000",
+      "community": "400000"
+    },
+    "test_fees_claimed": {
+      "fee_x": "4489556198158189741415",
+      "fee_y": "5364718982511543640639",
+      "note": "from LOCAL test trades; not a forecast, not an APY"
+    },
+    "final_owner_after_exit": "alice.test.near",
+    "recovered": {
+      "x": "17698477711500872709414",
+      "y": "21004343241955617193275",
+      "status": "PositionWithdrawn"
+    },
+    "books_equal_real_balances_checks": [
+      "E5",
+      "F2",
+      "F7",
+      "G5",
+      "K6",
+      "R"
+    ],
+    "refusals": [
+      {
+        "step": "E1",
+        "why": "ERR_NOT_CREATOR"
+      },
+      {
+        "step": "E2",
+        "why": "ERR_RANGE_NOT_ON_POINT_DELTA"
+      },
+      {
+        "step": "E3",
+        "why": "guard: price out of range: current point 0 not in (2000, 8000)"
+      },
+      {
+        "step": "E4",
+        "why": "guard: min_x_out 1314287690577596954347548 looser than 100 bps of quote 2641784302668536591653364"
+      },
+      {
+        "step": "E4b",
+        "why": "guard: DCL predict_hotzap refused this plan (its own range / min_amount / slippage checks): nothing sent"
+      },
+      {
+        "step": "F4",
+        "why": "guard: impact_x 3300 bps > 1000 bps"
+      },
+      {
+        "step": "G2",
+        "why": "ERR_NOT_CREATOR"
+      },
+      {
+        "step": "H1",
+        "why": "ERR_POSITION_LOCKED"
+      },
+      {
+        "step": "H2",
+        "why": "ERR_NOT_CREATOR"
+      },
+      {
+        "step": "H4",
+        "why": "ERR_NO_CONFIRMED_POSITION"
+      },
+      {
+        "step": "H5",
+        "why": "ERR_NO_CONFIRMED_POSITION"
+      },
+      {
+        "step": "J3",
+        "why": "ERR_NOTHING_TO_WITHDRAW"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "step": "A1",
+      "what": "DCL new (wasm of dclv2.ref-labs.near v2.4.2)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 3,
+      "calls": []
+    },
+    {
+      "step": "A2",
+      "what": "wNEAR new (wasm of wrap.near)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 1,
+      "calls": []
+    },
+    {
+      "step": "A3",
+      "what": "USDC new (wasm of usdc.tidepool-sandbox.testnet)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 1,
+      "calls": []
+    },
+    {
+      "step": "A4",
+      "what": "RAWMEME new (Nearly raw v1 code, LOCAL TEST TOKEN)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 1,
+      "calls": []
+    },
+    {
+      "step": "A5",
+      "what": "TAXMEME new (Nearly tax v6 code, buy 3 % / sell 4 %, LOCAL TEST TOKEN)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 2,
+      "calls": []
+    },
+    {
+      "step": "A0",
+      "what": "deploy the real code in a fresh local sandbox (genesis state, no fork)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "test.near",
+          "method": "deploy",
+          "args": {
+            "dcl.test.near": "res/dcl_mainnet.wasm (dclv2.ref-labs.near, Rhea DCL v2.4.2)",
+            "rawmeme.test.near": "res/nearly_token_raw_v1.wasm (Nearly raw v1 global code = the code of nearly-993927.nearlytrade.near)",
+            "taxmeme.test.near": "res/nearly_token_tax_v6.wasm (Nearly tax v6 global code)",
+            "usdc.test.near": "res/tidepool_usdc.wasm (usdc.tidepool-sandbox.testnet)",
+            "wrap.test.near": "res/wrap_near.wasm (wrap.near)"
+          },
+          "result": {
+            "dcl_metadata": {
+              "farming_contract_id": "test.near",
+              "next_owner_accept_deadline": null,
+              "next_owner_id": null,
+              "operators": [],
+              "owner_id": "test.near",
+              "pool_count": "0",
+              "protocol_fee_rate": 5000,
+              "state": "Running",
+              "user_count": "2",
+              "version": "2.4.2",
+              "wnear_id": "wrap.test.near"
+            },
+            "token_x_metadata": {
+              "decimals": 18,
+              "name": "RAWMEME (LOCAL TEST, NO VALUE)",
+              "spec": "ft-1.0.0",
+              "symbol": "RAWMEME"
+            }
+          },
+          "proof": "SHA-256 of each file in the export's provenance section"
+        }
+      ]
+    },
+    {
+      "step": "B1",
+      "what": "create_pool usdc.test.near|wrap.test.near|2000",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 4,
+      "calls": []
+    },
+    {
+      "step": "B1",
+      "what": "create_pool rawmeme.test.near|wrap.test.near|10000",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 4,
+      "calls": []
+    },
+    {
+      "step": "B1",
+      "what": "create_pool taxmeme.test.near|wrap.test.near|10000",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 4,
+      "calls": []
+    },
+    {
+      "step": "B2",
+      "what": "seed add_liquidity usdc.test.near|wrap.test.near|2000",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 24,
+      "calls": []
+    },
+    {
+      "step": "B2",
+      "what": "seed add_liquidity rawmeme.test.near|wrap.test.near|10000",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 24,
+      "calls": []
+    },
+    {
+      "step": "B2",
+      "what": "seed add_liquidity taxmeme.test.near|wrap.test.near|10000",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 25,
+      "calls": [
+        {
+          "contract": "dcl.test.near",
+          "method": "get_pool",
+          "args": {
+            "pool_id": "rawmeme.test.near|wrap.test.near|10000"
+          },
+          "result": {
+            "current_point": 0,
+            "fee": 10000,
+            "liquidity": "2891289709755586834435",
+            "liquidity_x": "0",
+            "max_liquidity_per_point": "42529979617665099795447395004595452",
+            "point_delta": 200,
+            "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+            "state": "Running",
+            "tax": null,
+            "token_x": "rawmeme.test.near",
+            "token_y": "wrap.test.near",
+            "total_fee_x_charged": "0",
+            "total_fee_y_charged": "0",
+            "total_liquidity": "2891289709755586834435",
+            "total_order_x": "0",
+            "total_order_y": "0",
+            "total_x": "49999999999999999999994465",
+            "total_y": "50003282622350243485911059",
+            "volume_x_in": "0",
+            "volume_x_out": "0",
+            "volume_y_in": "0",
+            "volume_y_out": "0",
+            "whitelist": null
+          },
+          "proof": "pool of the NEARLY-code token / wNEAR, fee 10000 (1 %), point_delta 200 = the NEARLY mainnet pool type; LOCAL price and liquidity, seeded by lp"
+        }
+      ]
+    },
+    {
+      "step": "init",
+      "what": "treasury-tax.new",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 1,
+      "calls": []
+    },
+    {
+      "step": "C0",
+      "what": "setup of a Treasury targeting the TAXED token pool",
+      "outcome": "success",
+      "events": [
+        "setup_failed"
+      ],
+      "gas_tgas": 50,
+      "calls": [
+        {
+          "contract": "treasury-tax.test.near",
+          "method": "setup",
+          "args": {},
+          "result": {
+            "ready": false,
+            "setup_error": "validation: token_x token transfer tax buy=300 sell=400 bps: BLOCKED_TAX"
+          },
+          "proof": "get_config after setup: a taxed token pool is refused"
+        }
+      ]
+    },
+    {
+      "step": "init",
+      "what": "treasury-bad.new",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 1,
+      "calls": []
+    },
+    {
+      "step": "C1",
+      "what": "setup with WRONG token_x decimals (24)",
+      "outcome": "success",
+      "events": [
+        "setup_failed"
+      ],
+      "gas_tgas": 49,
+      "calls": []
+    },
+    {
+      "step": "init",
+      "what": "treasury-dcl.new",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 1,
+      "calls": []
+    },
+    {
+      "step": "C2",
+      "what": "setup (DCL storage + register_tokens, target + 3 route pools, decimals, get_tax)",
+      "outcome": "success",
+      "events": [
+        "setup_done"
+      ],
+      "gas_tgas": 50,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "setup",
+          "args": {},
+          "result": {
+            "config": {
+              "guards": {
+                "max_plan_ttl_ns": "600000000000",
+                "max_price_impact_bps": 1000,
+                "max_range_width": 200000,
+                "max_slippage_bps": 100,
+                "min_range_width": 4000
+              },
+              "lock_duration_ns": "30000000000",
+              "min_deposit": "1000000",
+              "network": "sandbox",
+              "pool": {
+                "dex": "dcl.test.near",
+                "fee": 10000,
+                "point_delta": 200,
+                "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+                "route_x": [
+                  "usdc.test.near|wrap.test.near|2000",
+                  "rawmeme.test.near|wrap.test.near|10000"
+                ],
+                "route_y": [
+                  "usdc.test.near|wrap.test.near|2000"
+                ],
+                "token_x": "rawmeme.test.near",
+                "token_y": "wrap.test.near",
+                "usdc_decimals": 6,
+                "usdc_token": "usdc.test.near",
+                "x_decimals": 18,
+                "y_decimals": 24
+              }
+            },
+            "fuel": "FUEL_NOT_ELIGIBLE",
+            "ready": true,
+            "setup_deposit": "607500000000000000000000",
+            "setup_error": null
+          },
+          "proof": {
+            "dcl_get_user_registered_tokens": [
+              "usdc.test.near",
+              "rawmeme.test.near",
+              "wrap.test.near"
+            ],
+            "dcl_get_user_storage_detail": {
+              "cur_liquidity_slots": 0,
+              "cur_order_slots": 0,
+              "locked_near": "500000000000000000000000",
+              "max_slots": 40,
+              "slot_price": "10000000000000000000000",
+              "sponsor_id": "treasury-dcl.test.near",
+              "storage_for_asset": "100000000000000000000000"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": "D0",
+      "what": "a non-USDC token sent to the Treasury",
+      "outcome": "success",
+      "events": [
+        "deposit_refused"
+      ],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "rawmeme.test.near",
+          "method": "ft_transfer_call",
+          "args": {
+            "amount": "1000000000000000000",
+            "msg": "{\"action\":\"deposit\"}",
+            "receiver_id": "treasury-dcl.test.near"
+          },
+          "result": {
+            "used": "0"
+          },
+          "proof": "used = 0: the whole amount is refunded"
+        }
+      ]
+    },
+    {
+      "step": "D1",
+      "what": "alice deposits 20 USDC",
+      "outcome": "success",
+      "events": [
+        "deposit_allocated"
+      ],
+      "gas_tgas": 6,
+      "calls": [
+        {
+          "contract": "usdc.test.near",
+          "method": "ft_transfer_call",
+          "args": {
+            "amount": "20000000",
+            "msg": "{\"action\":\"deposit\"}",
+            "receiver_id": "treasury-dcl.test.near"
+          },
+          "result": {
+            "amount": "20000000",
+            "community": "400000",
+            "confirmed_block": null,
+            "created_at": "<sandbox-time>",
+            "creator": "alice.test.near",
+            "dex": "dcl.test.near",
+            "dex_usdc": "0",
+            "dex_x": "0",
+            "dex_y": "0",
+            "fees_claimed_x": "0",
+            "fees_claimed_y": "0",
+            "id": "0",
+            "last_error": null,
+            "left_point": null,
+            "liquidity": "0",
+            "lp_budget": "18000000",
+            "lpt_id": null,
+            "marks": [
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "deposit_allocated"
+              }
+            ],
+            "plan": null,
+            "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+            "position_x": "0",
+            "position_y": "0",
+            "recovered_usdc": "0",
+            "recovered_x": "0",
+            "recovered_y": "0",
+            "reserve": "1600000",
+            "right_point": null,
+            "status": "BudgetAllocated",
+            "token_x": "rawmeme.test.near",
+            "token_y": "wrap.test.near",
+            "unlock_at": null,
+            "updated_at": "<sandbox-time>",
+            "usdc_unused_to_reserve": "0",
+            "usdc_used": "0"
+          },
+          "proof": "get_deposit(0): lp_budget 18 000 000 (90 %) + reserve 1 600 000 (8 %) + community 400 000 (2 %) = 20 000 000"
+        }
+      ]
+    },
+    {
+      "step": "E1",
+      "what": "bob executes alice's deposit",
+      "outcome": "failure",
+      "expected_error": "ERR_NOT_CREATOR",
+      "error": "ERR_NOT_CREATOR",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "execute_dcl_lp",
+          "args": {
+            "deposit_id": "0",
+            "plan": {
+              "amount_x": "2628575381155193908695097",
+              "amount_y": "3030117053578820105255520",
+              "deadline_ns": "<sandbox-time>",
+              "left_point": -20000,
+              "min_amount_x": "2576003873532090030521196",
+              "min_amount_y": "2969514712507243703150410",
+              "min_x_out": "2628575381155193908695097",
+              "min_y_out": "3030117053578820105255520",
+              "right_point": 20200,
+              "usdc_to_x": "8079648",
+              "usdc_to_y": "8920352"
+            }
+          },
+          "result": null,
+          "proof": "signer bob.test.near is not the creator"
+        }
+      ]
+    },
+    {
+      "step": "E2",
+      "what": "range not on the 200-point grid",
+      "outcome": "failure",
+      "expected_error": "ERR_RANGE_NOT_ON_POINT_DELTA",
+      "error": "ERR_RANGE_NOT_ON_POINT_DELTA",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "execute_dcl_lp",
+          "args": {
+            "deposit_id": "0",
+            "plan": {
+              "amount_x": "2628575381155193908695097",
+              "amount_y": "3030117053578820105255520",
+              "deadline_ns": "<sandbox-time>",
+              "left_point": -19900,
+              "min_amount_x": "2576003873532090030521196",
+              "min_amount_y": "2969514712507243703150410",
+              "min_x_out": "2628575381155193908695097",
+              "min_y_out": "3030117053578820105255520",
+              "right_point": 20200,
+              "usdc_to_x": "8079648",
+              "usdc_to_y": "8920352"
+            }
+          },
+          "result": null,
+          "proof": "see the call outcome / refusal reason"
+        }
+      ]
+    },
+    {
+      "step": "E3",
+      "what": "plan whose range is entirely above the price",
+      "outcome": "success",
+      "events": [
+        "preflight_started",
+        "job_failed"
+      ],
+      "gas_tgas": 66,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "execute_dcl_lp",
+          "args": {
+            "deposit_id": "0",
+            "plan": {
+              "amount_x": "2628575381155193908695097",
+              "amount_y": "3030117053578820105255520",
+              "deadline_ns": "<sandbox-time>",
+              "left_point": 2000,
+              "min_amount_x": "2576003873532090030521196",
+              "min_amount_y": "2969514712507243703150410",
+              "min_x_out": "2628575381155193908695097",
+              "min_y_out": "3030117053578820105255520",
+              "right_point": 8000,
+              "usdc_to_x": "8079648",
+              "usdc_to_y": "8920352"
+            }
+          },
+          "result": null,
+          "proof": "see the call outcome / refusal reason"
+        }
+      ],
+      "refused_on_chain": true,
+      "job_failed_reason": "guard: price out of range: current point 0 not in (2000, 8000)"
+    },
+    {
+      "step": "E4",
+      "what": "plan with both min outs at 50 % of the simulated outputs",
+      "outcome": "success",
+      "events": [
+        "preflight_started",
+        "job_failed"
+      ],
+      "gas_tgas": 69,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "execute_dcl_lp",
+          "args": {
+            "deposit_id": "0",
+            "plan": {
+              "amount_x": "1314287690577596954347548",
+              "amount_y": "1515058526789410052627760",
+              "deadline_ns": "<sandbox-time>",
+              "left_point": -20000,
+              "min_amount_x": "1288001936766045015260598",
+              "min_amount_y": "1484757356253621851575205",
+              "min_x_out": "1314287690577596954347548",
+              "min_y_out": "1515058526789410052627760",
+              "right_point": 20200,
+              "usdc_to_x": "8079648",
+              "usdc_to_y": "8920352"
+            }
+          },
+          "result": null,
+          "proof": "see the call outcome / refusal reason"
+        }
+      ],
+      "refused_on_chain": true,
+      "job_failed_reason": "guard: min_x_out 1314287690577596954347548 looser than 100 bps of quote 2641784302668536591653364"
+    },
+    {
+      "step": "E4b",
+      "what": "plan whose amounts do not fit the range ratio",
+      "outcome": "success",
+      "events": [
+        "preflight_started",
+        "job_failed"
+      ],
+      "gas_tgas": 69,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "execute_dcl_lp",
+          "args": {
+            "deposit_id": "0",
+            "plan": {
+              "amount_x": "1314287690577596954347548",
+              "amount_y": "3030117053578820105255520",
+              "deadline_ns": "<sandbox-time>",
+              "left_point": -20000,
+              "min_amount_x": "1288001936766045015260598",
+              "min_amount_y": "2969514712507243703150410",
+              "min_x_out": "1314287690577596954347548",
+              "min_y_out": "3030117053578820105255520",
+              "right_point": 20200,
+              "usdc_to_x": "8079648",
+              "usdc_to_y": "8920352"
+            }
+          },
+          "result": null,
+          "proof": "see the call outcome / refusal reason"
+        },
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "get_deposit",
+          "args": {
+            "deposit_id": "0"
+          },
+          "result": {
+            "lpt_id": null,
+            "status": "BudgetAllocated"
+          },
+          "proof": "after E1–E4b: still BudgetAllocated, no position, nothing sent"
+        }
+      ],
+      "refused_on_chain": true,
+      "job_failed_reason": "guard: DCL predict_hotzap refused this plan (its own range / min_amount / slippage checks): nothing sent"
+    },
+    {
+      "step": "E5",
+      "what": "books = real balances (views only, no transaction)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "get_accounting + ft_balance_of ×3 + DCL list_user_assets",
+          "args": {},
+          "result": {
+            "books": {
+              "community_total": "400000",
+              "dex_booked_usdc": "0",
+              "dex_booked_x": "0",
+              "dex_booked_y": "0",
+              "live_positions": "0",
+              "next_deposit_id": "1",
+              "owed_usdc": "1600000",
+              "owed_x": "0",
+              "owed_y": "0",
+              "pending_budget_total": "18000000",
+              "total_received": "20000000",
+              "zap_outstanding": "0"
+            }
+          },
+          "proof": {
+            "checks": [
+              "USDC wallet = owed_usdc + community_total + pending_budget_total + zap_outstanding",
+              "X wallet = owed_x",
+              "wNEAR wallet = owed_y",
+              "DCL account X/Y/USDC = dex_booked_x/y/usdc"
+            ],
+            "treasury_dcl_account": {},
+            "treasury_wallet": {
+              "usdc": "20000000",
+              "wnear": "0",
+              "x": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": "F1",
+      "what": "execute_dcl_lp: guards → HotZap (USDC→wNEAR→RAWMEME, USDC→wNEAR, add_liquidity) → lookup → confirm",
+      "outcome": "success",
+      "events": [
+        "preflight_started",
+        "zap_sent",
+        "zap_confirmed",
+        "position_found",
+        "position_confirmed"
+      ],
+      "gas_tgas": 139,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "execute_dcl_lp",
+          "args": {
+            "deposit_id": "0",
+            "plan": {
+              "amount_x": "2628575381155193908695097",
+              "amount_y": "3030117053578820105255520",
+              "deadline_ns": "<sandbox-time>",
+              "left_point": -20000,
+              "min_amount_x": "2576003873532090030521196",
+              "min_amount_y": "2969514712507243703150410",
+              "min_x_out": "2628575381155193908695097",
+              "min_y_out": "3030117053578820105255520",
+              "right_point": 20200,
+              "usdc_to_x": "8079648",
+              "usdc_to_y": "8920352"
+            }
+          },
+          "result": {
+            "creator": "alice.test.near",
+            "deposit_id": "0",
+            "dex": "dcl.test.near",
+            "fuel": "FUEL_NOT_ELIGIBLE",
+            "left_point": -20000,
+            "leftover_usdc": "0",
+            "leftover_x": "13208921513342682967999",
+            "leftover_y": "15639624259444073552636",
+            "liquidity": "222745662302570594080",
+            "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+            "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+            "position_x": "2628575381155193908685364",
+            "position_y": "3029704148181581157859945",
+            "right_point": 20200,
+            "unlock_at": "<sandbox-time>",
+            "usdc_used": "17000000"
+          },
+          "proof": {
+            "checks": [
+              "get_liquidity.owner_id = nft_token.owner_id = the Treasury",
+              "get_liquidity.amount = recorded liquidity > 0",
+              "range = plan range",
+              "usdc_used + usdc_unused_to_reserve = 18 USDC budget"
+            ],
+            "dcl_get_liquidity": {
+              "amount": "222745662302570594080",
+              "left_point": -20000,
+              "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+              "mft_id": "",
+              "owner_id": "treasury-dcl.test.near",
+              "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+              "right_point": 20200,
+              "unclaimed_fee_x": "0",
+              "unclaimed_fee_y": "0",
+              "v_liquidity": "0"
+            },
+            "dcl_nft_token_owner": "treasury-dcl.test.near",
+            "treasury_get_deposit": {
+              "amount": "20000000",
+              "community": "400000",
+              "confirmed_block": "<sandbox-time>",
+              "created_at": "<sandbox-time>",
+              "creator": "alice.test.near",
+              "dex": "dcl.test.near",
+              "dex_usdc": "0",
+              "dex_x": "13208921513342682967999",
+              "dex_y": "15639624259444073552636",
+              "fees_claimed_x": "0",
+              "fees_claimed_y": "0",
+              "id": "0",
+              "last_error": null,
+              "left_point": -20000,
+              "liquidity": "222745662302570594080",
+              "lp_budget": "18000000",
+              "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+              "marks": [
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "deposit_allocated"
+                },
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "preflight_started"
+                },
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "job_failed"
+                },
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "preflight_started"
+                },
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "job_failed"
+                },
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "preflight_started"
+                },
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "job_failed"
+                },
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "preflight_started"
+                },
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "zap_sent"
+                },
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "zap_confirmed"
+                },
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "position_found"
+                },
+                {
+                  "at": "<sandbox-time>",
+                  "block": "<sandbox-time>",
+                  "stage": "position_confirmed"
+                }
+              ],
+              "plan": {
+                "amount_x": "2628575381155193908695097",
+                "amount_y": "3030117053578820105255520",
+                "deadline_ns": "<sandbox-time>",
+                "left_point": -20000,
+                "min_amount_x": "2576003873532090030521196",
+                "min_amount_y": "2969514712507243703150410",
+                "min_x_out": "2628575381155193908695097",
+                "min_y_out": "3030117053578820105255520",
+                "right_point": 20200,
+                "usdc_to_x": "8079648",
+                "usdc_to_y": "8920352"
+              },
+              "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+              "position_x": "2628575381155193908685364",
+              "position_y": "3029704148181581157859945",
+              "recovered_usdc": "0",
+              "recovered_x": "0",
+              "recovered_y": "0",
+              "reserve": "1600000",
+              "right_point": 20200,
+              "status": "PositionConfirmed",
+              "token_x": "rawmeme.test.near",
+              "token_y": "wrap.test.near",
+              "unlock_at": "<sandbox-time>",
+              "updated_at": "<sandbox-time>",
+              "usdc_unused_to_reserve": "1000000",
+              "usdc_used": "17000000"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": "F2",
+      "what": "books = real balances (views only, no transaction)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "get_accounting + ft_balance_of ×3 + DCL list_user_assets",
+          "args": {},
+          "result": {
+            "books": {
+              "community_total": "400000",
+              "dex_booked_usdc": "0",
+              "dex_booked_x": "13208921513342682967999",
+              "dex_booked_y": "15639624259444073552636",
+              "live_positions": "1",
+              "next_deposit_id": "1",
+              "owed_usdc": "2600000",
+              "owed_x": "0",
+              "owed_y": "0",
+              "pending_budget_total": "0",
+              "total_received": "20000000",
+              "zap_outstanding": "0"
+            }
+          },
+          "proof": {
+            "checks": [
+              "USDC wallet = owed_usdc + community_total + pending_budget_total + zap_outstanding",
+              "X wallet = owed_x",
+              "wNEAR wallet = owed_y",
+              "DCL account X/Y/USDC = dex_booked_x/y/usdc"
+            ],
+            "treasury_dcl_account": {
+              "rawmeme.test.near": "13208921513342682967999",
+              "wrap.test.near": "15639624259444073552636"
+            },
+            "treasury_wallet": {
+              "usdc": "3000000",
+              "wnear": "0",
+              "x": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": "F3",
+      "what": "alice deposits 400 USDC",
+      "outcome": "success",
+      "events": [
+        "deposit_allocated"
+      ],
+      "gas_tgas": 6,
+      "calls": []
+    },
+    {
+      "step": "F4",
+      "what": "execute_dcl_lp of a 300 USDC plan",
+      "outcome": "success",
+      "events": [
+        "preflight_started",
+        "job_failed"
+      ],
+      "gas_tgas": 78,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "execute_dcl_lp",
+          "args": {
+            "deposit_id": "1",
+            "plan": {
+              "amount_x": "16910888806020133875594632",
+              "amount_y": "55332051120494191282277308",
+              "deadline_ns": "<sandbox-time>",
+              "left_point": -19200,
+              "min_amount_x": "16572671029899731198082740",
+              "min_amount_y": "54225410098084307456631762",
+              "min_x_out": "16910888806020133875594632",
+              "min_y_out": "55332051120494191282277308",
+              "right_point": 21000,
+              "usdc_to_x": "83062500",
+              "usdc_to_y": "216937500"
+            }
+          },
+          "result": null,
+          "proof": "300 USDC against shallow LOCAL pools: refused by the on-chain price-impact guard (max 1000 bps), nothing sent"
+        }
+      ],
+      "refused_on_chain": true,
+      "job_failed_reason": "guard: impact_x 3300 bps > 1000 bps"
+    },
+    {
+      "step": "F5",
+      "what": "abort deposit 1 (budget back to the USDC reserve)",
+      "outcome": "success",
+      "events": [
+        "lp_aborted"
+      ],
+      "gas_tgas": 2,
+      "calls": []
+    },
+    {
+      "step": "F6",
+      "what": "withdraw_token USDC (reserves + unused + aborted budget)",
+      "outcome": "success",
+      "events": [
+        "token_withdrawn"
+      ],
+      "gas_tgas": 6,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "withdraw_token",
+          "args": {
+            "amount": "394600000",
+            "token_id": "usdc.test.near"
+          },
+          "result": {
+            "alice_wallet_delta": "394600000"
+          },
+          "proof": "wallet delta = Treasury get_balance (8 % reserves + unused budget + aborted deposit 1)"
+        }
+      ]
+    },
+    {
+      "step": "F7",
+      "what": "books = real balances (views only, no transaction)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "get_accounting + ft_balance_of ×3 + DCL list_user_assets",
+          "args": {},
+          "result": {
+            "books": {
+              "community_total": "8400000",
+              "dex_booked_usdc": "0",
+              "dex_booked_x": "13208921513342682967999",
+              "dex_booked_y": "15639624259444073552636",
+              "live_positions": "1",
+              "next_deposit_id": "2",
+              "owed_usdc": "0",
+              "owed_x": "0",
+              "owed_y": "0",
+              "pending_budget_total": "0",
+              "total_received": "420000000",
+              "zap_outstanding": "0"
+            }
+          },
+          "proof": {
+            "checks": [
+              "USDC wallet = owed_usdc + community_total + pending_budget_total + zap_outstanding",
+              "X wallet = owed_x",
+              "wNEAR wallet = owed_y",
+              "DCL account X/Y/USDC = dex_booked_x/y/usdc"
+            ],
+            "treasury_dcl_account": {
+              "rawmeme.test.near": "13208921513342682967999",
+              "wrap.test.near": "15639624259444073552636"
+            },
+            "treasury_wallet": {
+              "usdc": "8400000",
+              "wnear": "0",
+              "x": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": "G1",
+      "what": "3 trader round trips through the pool (sandbox trader)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "dcl.test.near",
+          "method": "get_liquidity",
+          "args": {
+            "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4"
+          },
+          "result": {
+            "unclaimed_fee_x": "4489556198158189741415",
+            "unclaimed_fee_y": "5364718982511543640639"
+          },
+          "proof": "TEST fees from LOCAL trades: not a forecast"
+        }
+      ]
+    },
+    {
+      "step": "G2",
+      "what": "bob claims alice's fees",
+      "outcome": "failure",
+      "expected_error": "ERR_NOT_CREATOR",
+      "error": "ERR_NOT_CREATOR",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "claim_fees",
+          "args": {
+            "deposit_id": "0",
+            "signer": "bob.test.near"
+          },
+          "result": null,
+          "proof": "refused: not the creator"
+        }
+      ]
+    },
+    {
+      "step": "G3",
+      "what": "claim_fees (DCL remove_liquidity amount 0)",
+      "outcome": "success",
+      "events": [
+        "fees_claimed"
+      ],
+      "gas_tgas": 13,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "claim_fees",
+          "args": {
+            "deposit_id": "0"
+          },
+          "result": {
+            "deposit_id": "0",
+            "fee_x": "4489556198158189741415",
+            "fee_y": "5364718982511543640639",
+            "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+            "total_x": "4489556198158189741415",
+            "total_y": "5364718982511543640639"
+          },
+          "proof": "fees booked = DCL unclaimed_fee_x / unclaimed_fee_y read in G1"
+        }
+      ]
+    },
+    {
+      "step": "G4",
+      "what": "second claim_fees",
+      "outcome": "success",
+      "events": [
+        "fees_claimed"
+      ],
+      "gas_tgas": 12,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "claim_fees",
+          "args": {
+            "deposit_id": "0"
+          },
+          "result": {
+            "deposit_id": "0",
+            "fee_x": "0",
+            "fee_y": "0",
+            "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+            "total_x": "4489556198158189741415",
+            "total_y": "5364718982511543640639"
+          },
+          "proof": "a repeated claim books 0 / 0: no double count"
+        }
+      ]
+    },
+    {
+      "step": "G5",
+      "what": "books = real balances (views only, no transaction)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "get_accounting + ft_balance_of ×3 + DCL list_user_assets",
+          "args": {},
+          "result": {
+            "books": {
+              "community_total": "8400000",
+              "dex_booked_usdc": "0",
+              "dex_booked_x": "17698477711500872709414",
+              "dex_booked_y": "21004343241955617193275",
+              "live_positions": "1",
+              "next_deposit_id": "2",
+              "owed_usdc": "0",
+              "owed_x": "0",
+              "owed_y": "0",
+              "pending_budget_total": "0",
+              "total_received": "420000000",
+              "zap_outstanding": "0"
+            }
+          },
+          "proof": {
+            "checks": [
+              "USDC wallet = owed_usdc + community_total + pending_budget_total + zap_outstanding",
+              "X wallet = owed_x",
+              "wNEAR wallet = owed_y",
+              "DCL account X/Y/USDC = dex_booked_x/y/usdc"
+            ],
+            "treasury_dcl_account": {
+              "rawmeme.test.near": "17698477711500872709414",
+              "wrap.test.near": "21004343241955617193275"
+            },
+            "treasury_wallet": {
+              "usdc": "8400000",
+              "wnear": "0",
+              "x": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": "K1",
+      "what": "alice deposits 20 USDC (deposit 2)",
+      "outcome": "success",
+      "events": [
+        "deposit_allocated"
+      ],
+      "gas_tgas": 6,
+      "calls": []
+    },
+    {
+      "step": "K2",
+      "what": "execute_dcl_lp with a narrow range (±2 000 points)",
+      "outcome": "success",
+      "events": [
+        "preflight_started",
+        "zap_sent",
+        "zap_confirmed",
+        "position_found",
+        "position_confirmed"
+      ],
+      "gas_tgas": 134,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "execute_dcl_lp",
+          "args": {
+            "deposit_id": "2",
+            "plan": {
+              "amount_x": "1701276785950489083741008",
+              "amount_y": "3705277668805677777021109",
+              "deadline_ns": "<sandbox-time>",
+              "left_point": -1200,
+              "min_amount_x": "1667251250231479302066188",
+              "min_amount_y": "3631172115429564221480687",
+              "min_x_out": "1701276785950489083741008",
+              "min_y_out": "3705277668805677777021109",
+              "right_point": 3000,
+              "usdc_to_x": "5812539",
+              "usdc_to_y": "11187461"
+            }
+          },
+          "result": {
+            "lpt_id": "rawmeme.test.near|wrap.test.near|10000#5"
+          },
+          "proof": "narrow position ±2 000 points"
+        }
+      ]
+    },
+    {
+      "step": "K3",
+      "what": "a large LOCAL buy moves the price out of the narrow range",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "dcl.test.near",
+          "method": "get_pool + get_liquidity_view",
+          "args": {
+            "lpt_id": "rawmeme.test.near|wrap.test.near|10000#5"
+          },
+          "result": {
+            "current_point": 21776,
+            "position": {
+              "amount": "1327382758484484059905",
+              "fee_x": "0",
+              "fee_y": "10794136115252946036766",
+              "left_point": -1200,
+              "lpt_id": "rawmeme.test.near|wrap.test.near|10000#5",
+              "mft_id": "",
+              "owner_id": "treasury-dcl.test.near",
+              "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+              "right_point": 3000,
+              "token_x": "0",
+              "token_y": "5842174485153689106406322",
+              "v_liquidity": "0"
+            },
+            "range": [
+              -1200,
+              3000
+            ]
+          },
+          "proof": "out of range: the position holds a single asset"
+        }
+      ]
+    },
+    {
+      "step": "K4",
+      "what": "claim_fees right after leaving the range",
+      "outcome": "success",
+      "events": [
+        "fees_claimed"
+      ],
+      "gas_tgas": 11,
+      "calls": []
+    },
+    {
+      "step": "K5",
+      "what": "3 more LOCAL trades while the narrow position is out of range",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "dcl.test.near",
+          "method": "get_liquidity",
+          "args": {
+            "lpt_id": "rawmeme.test.near|wrap.test.near|10000#5"
+          },
+          "result": {
+            "narrow_unclaimed": [
+              "0",
+              "0"
+            ],
+            "wide_unclaimed": [
+              "0",
+              "38144748394627774714270"
+            ]
+          },
+          "proof": "out of range earns 0 / 0"
+        }
+      ]
+    },
+    {
+      "step": "K6",
+      "what": "books = real balances (views only, no transaction)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "get_accounting + ft_balance_of ×3 + DCL list_user_assets",
+          "args": {},
+          "result": {
+            "books": {
+              "community_total": "8800000",
+              "dex_booked_usdc": "0",
+              "dex_booked_x": "26524760402193152684120",
+              "dex_booked_y": "50417965130101416381497",
+              "live_positions": "2",
+              "next_deposit_id": "3",
+              "owed_usdc": "2600000",
+              "owed_x": "0",
+              "owed_y": "0",
+              "pending_budget_total": "0",
+              "total_received": "440000000",
+              "zap_outstanding": "0"
+            }
+          },
+          "proof": {
+            "checks": [
+              "USDC wallet = owed_usdc + community_total + pending_budget_total + zap_outstanding",
+              "X wallet = owed_x",
+              "wNEAR wallet = owed_y",
+              "DCL account X/Y/USDC = dex_booked_x/y/usdc"
+            ],
+            "treasury_dcl_account": {
+              "rawmeme.test.near": "26524760402193152684120",
+              "wrap.test.near": "50417965130101416381497"
+            },
+            "treasury_wallet": {
+              "usdc": "11400000",
+              "wnear": "0",
+              "x": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": "H1",
+      "what": "withdraw_position during the lock",
+      "outcome": "failure",
+      "expected_error": "ERR_POSITION_LOCKED",
+      "error": "ERR_POSITION_LOCKED",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "withdraw_position",
+          "args": {
+            "deposit_id": "0"
+          },
+          "result": null,
+          "proof": "refused during the lock (unlock_at not reached)"
+        }
+      ]
+    },
+    {
+      "step": "H2",
+      "what": "bob withdraws alice's position",
+      "outcome": "failure",
+      "expected_error": "ERR_NOT_CREATOR",
+      "error": "ERR_NOT_CREATOR",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "withdraw_position",
+          "args": {
+            "deposit_id": "0",
+            "signer": "bob.test.near"
+          },
+          "result": null,
+          "proof": "refused: not the creator"
+        }
+      ]
+    },
+    {
+      "step": "H3",
+      "what": "withdraw_position: nft_transfer to alice, owner checked",
+      "outcome": "success",
+      "events": [
+        "position_withdrawn"
+      ],
+      "gas_tgas": 14,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "withdraw_position",
+          "args": {
+            "deposit_id": "0"
+          },
+          "result": {
+            "dcl_nft_token_owner": "alice.test.near"
+          },
+          "proof": "after the lock: the DCL NFT owner is the creator"
+        }
+      ]
+    },
+    {
+      "step": "H4",
+      "what": "second withdraw_position",
+      "outcome": "failure",
+      "expected_error": "ERR_NO_CONFIRMED_POSITION",
+      "error": "ERR_NO_CONFIRMED_POSITION",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "withdraw_position",
+          "args": {
+            "deposit_id": "0"
+          },
+          "result": null,
+          "proof": "no double exit"
+        }
+      ]
+    },
+    {
+      "step": "H5",
+      "what": "claim_fees after the position left the Treasury",
+      "outcome": "failure",
+      "expected_error": "ERR_NO_CONFIRMED_POSITION",
+      "error": "ERR_NO_CONFIRMED_POSITION",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "claim_fees",
+          "args": {
+            "deposit_id": "0"
+          },
+          "result": null,
+          "proof": "no claim once the NFT left the Treasury"
+        }
+      ]
+    },
+    {
+      "step": "H6",
+      "what": "alice remove_liquidity 50 % on the DCL",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 13,
+      "calls": []
+    },
+    {
+      "step": "H7",
+      "what": "alice remove_liquidity the rest",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 13,
+      "calls": [
+        {
+          "contract": "dcl.test.near",
+          "method": "get_liquidity",
+          "args": {
+            "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4"
+          },
+          "result": null,
+          "proof": "the creator removed 50 % then the rest on the DCL herself: position deleted (null)"
+        }
+      ]
+    },
+    {
+      "step": "J1",
+      "what": "withdraw_dex_balance rawmeme.test.near (leftovers + fees)",
+      "outcome": "success",
+      "events": [
+        "dex_balance_recovered"
+      ],
+      "gas_tgas": 18,
+      "calls": []
+    },
+    {
+      "step": "J2",
+      "what": "withdraw_token rawmeme.test.near",
+      "outcome": "success",
+      "events": [
+        "token_withdrawn"
+      ],
+      "gas_tgas": 6,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "withdraw_token",
+          "args": {
+            "amount": "17698477711500872709414",
+            "token_id": "rawmeme.test.near"
+          },
+          "result": {
+            "creator_wallet_delta": "17698477711500872709414"
+          },
+          "proof": "leftovers + claimed fees reached the creator's wallet = booked to the atomic unit"
+        }
+      ]
+    },
+    {
+      "step": "J1",
+      "what": "withdraw_dex_balance wrap.test.near (leftovers + fees)",
+      "outcome": "success",
+      "events": [
+        "dex_balance_recovered"
+      ],
+      "gas_tgas": 18,
+      "calls": []
+    },
+    {
+      "step": "J2",
+      "what": "withdraw_token wrap.test.near",
+      "outcome": "success",
+      "events": [
+        "token_withdrawn"
+      ],
+      "gas_tgas": 6,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "withdraw_token",
+          "args": {
+            "amount": "21004343241955617193275",
+            "token_id": "wrap.test.near"
+          },
+          "result": {
+            "creator_wallet_delta": "21004343241955617193275"
+          },
+          "proof": "leftovers + claimed fees reached the creator's wallet = booked to the atomic unit"
+        }
+      ]
+    },
+    {
+      "step": "J3",
+      "what": "withdraw_dex_balance again",
+      "outcome": "failure",
+      "expected_error": "ERR_NOTHING_TO_WITHDRAW",
+      "error": "ERR_NOTHING_TO_WITHDRAW",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "withdraw_dex_balance",
+          "args": {
+            "deposit_id": "0",
+            "token_id": "rawmeme.test.near"
+          },
+          "result": null,
+          "proof": "no double recovery"
+        }
+      ]
+    },
+    {
+      "step": "R",
+      "what": "books = real balances (views only, no transaction)",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": null,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "get_accounting + ft_balance_of ×3 + DCL list_user_assets",
+          "args": {},
+          "result": {
+            "books": {
+              "community_total": "8800000",
+              "dex_booked_usdc": "0",
+              "dex_booked_x": "8826282690692279974706",
+              "dex_booked_y": "29413621888145799188222",
+              "live_positions": "1",
+              "next_deposit_id": "3",
+              "owed_usdc": "2600000",
+              "owed_x": "0",
+              "owed_y": "0",
+              "pending_budget_total": "0",
+              "total_received": "440000000",
+              "zap_outstanding": "0"
+            }
+          },
+          "proof": {
+            "checks": [
+              "USDC wallet = owed_usdc + community_total + pending_budget_total + zap_outstanding",
+              "X wallet = owed_x",
+              "wNEAR wallet = owed_y",
+              "DCL account X/Y/USDC = dex_booked_x/y/usdc"
+            ],
+            "treasury_dcl_account": {
+              "rawmeme.test.near": "8826282690692279974706",
+              "wrap.test.near": "29413621888145799188222"
+            },
+            "treasury_wallet": {
+              "usdc": "11400000",
+              "wnear": "0",
+              "x": "0"
+            }
+          }
+        },
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "get_deposit",
+          "args": {
+            "deposit_id": "0"
+          },
+          "result": {
+            "amount": "20000000",
+            "community": "400000",
+            "confirmed_block": "<sandbox-time>",
+            "created_at": "<sandbox-time>",
+            "creator": "alice.test.near",
+            "dex": "dcl.test.near",
+            "dex_usdc": "0",
+            "dex_x": "0",
+            "dex_y": "0",
+            "fees_claimed_x": "4489556198158189741415",
+            "fees_claimed_y": "5364718982511543640639",
+            "id": "0",
+            "last_error": null,
+            "left_point": -20000,
+            "liquidity": "222745662302570594080",
+            "lp_budget": "18000000",
+            "lpt_id": "rawmeme.test.near|wrap.test.near|10000#4",
+            "marks": [
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "deposit_allocated"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "preflight_started"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "job_failed"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "preflight_started"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "job_failed"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "preflight_started"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "job_failed"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "preflight_started"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "zap_sent"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "zap_confirmed"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "position_found"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "position_confirmed"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "fee_claim_started"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "fees_claimed"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "fee_claim_started"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "fees_claimed"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "position_transfer_started"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "position_withdrawn"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "dex_balance_recovered"
+              },
+              {
+                "at": "<sandbox-time>",
+                "block": "<sandbox-time>",
+                "stage": "dex_balance_recovered"
+              }
+            ],
+            "plan": {
+              "amount_x": "2628575381155193908695097",
+              "amount_y": "3030117053578820105255520",
+              "deadline_ns": "<sandbox-time>",
+              "left_point": -20000,
+              "min_amount_x": "2576003873532090030521196",
+              "min_amount_y": "2969514712507243703150410",
+              "min_x_out": "2628575381155193908695097",
+              "min_y_out": "3030117053578820105255520",
+              "right_point": 20200,
+              "usdc_to_x": "8079648",
+              "usdc_to_y": "8920352"
+            },
+            "pool_id": "rawmeme.test.near|wrap.test.near|10000",
+            "position_x": "2628575381155193908685364",
+            "position_y": "3029704148181581157859945",
+            "recovered_usdc": "0",
+            "recovered_x": "17698477711500872709414",
+            "recovered_y": "21004343241955617193275",
+            "reserve": "1600000",
+            "right_point": 20200,
+            "status": "PositionWithdrawn",
+            "token_x": "rawmeme.test.near",
+            "token_y": "wrap.test.near",
+            "unlock_at": "<sandbox-time>",
+            "updated_at": "<sandbox-time>",
+            "usdc_unused_to_reserve": "1000000",
+            "usdc_used": "17000000"
+          },
+          "proof": "final state of deposit 0"
+        }
+      ]
+    },
+    {
+      "step": "S1",
+      "what": "lp gifts 5 USDC to TreasuryDCL by plain ft_transfer",
+      "outcome": "success",
+      "events": [],
+      "gas_tgas": 2,
+      "calls": [
+        {
+          "contract": "treasury-dcl.test.near",
+          "method": "get_accounting",
+          "args": {},
+          "result": {
+            "gifter_credited": "0",
+            "unchanged": true,
+            "wallet_after": "16400000",
+            "wallet_before": "11400000"
+          },
+          "proof": "a plain transfer moves no book and credits nobody"
+        }
+      ]
+    }
+  ]
+}

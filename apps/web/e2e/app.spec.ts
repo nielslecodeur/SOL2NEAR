@@ -670,26 +670,28 @@ test.describe("@live V4.3A Creator Portal", () => {
     await expect(s2.locator('li[data-offer="near-testnet:ref-finance-101.testnet:2131"]')).toContainText("NOT AVAILABLE");
   });
 
-  test("explore mode: banner, mainnet DCL cards with a disabled 'execution not available yet' button, sandbox preview in step 5; nothing enabled can execute", async ({ page }) => {
+  test("explore mode = the NEARLY journey: 8 steps, a LIVE mainnet quote from Rhea views, the sandbox proof; nothing enabled can execute", async ({ page }) => {
     await freshPortal(page);
     await page.goto("/");
     await page.getByRole("tab", { name: /Explore/ }).click();
     await expect(page.getByTestId("mode-note")).toContainText("EXPLORE MODE");
     await expect(page.getByTestId("mode-note")).toContainText("Nothing in this mode can be signed or executed");
     await expect(nearPanel(page)).toBeHidden(); // no NEAR wallet in this mode
+    await expect(page.getByRole("list", { name: "Journey" }).getByRole("button")).toHaveCount(8);
     await step(page, 1).click();
-    await page.getByRole("button", { name: "Read the 3 Nearly pools (mainnet, read-only)" }).click();
-    await expect(page.locator("article.dclpool")).toHaveCount(3, { timeout: 60_000 });
-    const fund = page.getByRole("button", { name: "Fund — execution not available yet" });
-    await expect(fund).toHaveCount(3);
-    for (let i = 0; i < 3; i++) await expect(fund.nth(i)).toBeDisabled();
+    await expect(page.getByLabel("NEARLY step 2 Choose pool")).toContainText("nearly-993927.nearlytrade.near|wrap.near|10000");
     await step(page, 3).click();
-    await expect(page.getByRole("button", { name: "Execute on DCL — not available yet" })).toBeDisabled();
+    await page.getByRole("button", { name: /Get a live quote/ }).click();
+    const q = page.getByLabel("NEARLY step 4 Quote");
+    await expect(q.getByTestId("quote-source")).toHaveText("LIVE", { timeout: 120_000 });
+    await expect(page.getByLabel("NEARLY contribution quote")).toContainText("NEARLY +");
+    await expect(page.getByLabel("NEARLY contribution quote")).toContainText("Price impact");
     await step(page, 4).click();
-    await expect(page.getByLabel("DCL position preview")).toContainText("PREVIEW — TreasuryDCL views from a LOCAL SANDBOX");
-    // no enabled button anywhere in explore mode says fund / execute / sign / deposit
+    await expect(page.getByRole("button", { name: "Execute on mainnet — not available" })).toBeDisabled();
+    await step(page, 7).click();
+    await expect(page.getByRole("button", { name: "Fund NEARLY on mainnet — not available" })).toBeDisabled();
     const actionable = await page.locator("button:enabled:visible").allInnerTexts();
-    expect(actionable.filter((t) => /^s*(fund|execute|sign|deposit|bridge|deploy|claim|withdraw)/i.test(t))).toEqual([]);
+    expect(actionable.filter((t) => /^\s*(fund|execute|sign|deposit|bridge|deploy|claim|withdraw)/i.test(t))).toEqual([]);
   });
 
   test("step 5: the real G6/G7 creator's positions in the common shape — #1/#2 confirmed with verified shares, #3 (bridged) not LP; no exit offered", async ({ page }) => {
@@ -837,7 +839,8 @@ test.describe("@offline @public G9.1 read-only demo build", () => {
     await publicOffline(page);
     await page.goto(PUBLIC);
     await expect(page.getByRole("heading", { name: /Bring your Solana USDC to NEAR memecoin liquidity/ })).toBeVisible();
-    await expect(page.getByTestId("wallets-disabled")).toContainText("contains no wallet code");
+    await expect(page.getByTestId("wallets-disabled")).toContainText("contains no wallet code"); // NEARLY journey, step 1
+    await page.getByRole("tab", { name: /Live/ }).click(); // the testnet journey: wallet panel and bridge card are read-only stubs
     await expect(page.getByLabel("NEAR wallet (not available in the public demo)")).toContainText("not included");
     await page.getByRole("list", { name: "Journey" }).getByRole("button").nth(3).click();
     await expect(page.getByLabel("Bridge (read-only)")).toContainText("not available");
@@ -866,6 +869,58 @@ test.describe("@offline @public G9.1 read-only demo build", () => {
       await expect(page.getByTestId("read-only-banner")).toBeVisible();
       await page.waitForTimeout(300);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), hash).toBeLessThanOrEqual(0);
+    }
+  });
+  test("H1/H3 NEARLY journey offline: recorded snapshot + quote labelled with their block, the real error of a failed live quote, the sandbox proof with code provenance", async ({ page }) => {
+    test.setTimeout(150_000); // the failed live quote goes through the client's retries on every provider first
+    await publicOffline(page);
+    await page.goto(PUBLIC);
+    await expect(page.getByTestId("mode-note")).toContainText("EXPLORE MODE"); // the public demo opens on the NEARLY journey
+    await expect(page.getByTestId("nearly-evidence-note")).toContainText("no mainnet contribution has ever been made");
+    const nav = page.getByRole("list", { name: "Journey" }).getByRole("button");
+    await expect(nav).toHaveCount(8);
+    await nav.nth(1).click();
+    await expect(page.getByLabel("NEARLY step 2 Choose pool")).toContainText(/SNAPSHOT block \d+/);
+    await nav.nth(2).click();
+    await expect(page.getByLabel("90/8/2 split")).toContainText("90 USDC");
+    await nav.nth(3).click();
+    await expect(page.getByTestId("quote-source")).toHaveText("RECORDED");
+    await expect(page.getByLabel("NEARLY step 4 Quote")).toContainText(/recorded at mainnet block \d+/);
+    await page.getByRole("button", { name: /Get a live quote/ }).click();
+    await expect(page.getByTestId("quote-error")).toContainText("Live quote failed", { timeout: 60_000 }); // every endpoint is blocked: the real error is shown
+    await expect(page.getByTestId("quote-source")).toHaveText("RECORDED"); // and the recorded quote keeps its label
+    await nav.nth(2).click();
+    await page.getByLabel("USDC you would send").fill("250");
+    await nav.nth(3).click();
+    await expect(page.getByTestId("quote-none")).toBeVisible(); // no invented quote for another amount
+    await nav.nth(6).click();
+    const pr = page.getByLabel("NEARLY step 7 Sandbox proof");
+    await expect(pr).toContainText("LOCAL SANDBOX");
+    await expect(page.getByLabel("Code provenance").getByText("= mainnet code")).toHaveCount(3);
+    await expect(page.getByLabel("Sandbox steps").locator("tr[data-step]")).toHaveCount(58);
+    await expect(page.getByLabel("Sandbox proof summary")).toContainText("treasury-dcl.test.near");
+    await page.locator('tr[data-step="F1"]').getByRole("button", { name: "proof" }).click();
+    await expect(pr.locator("pre.json")).toContainText("dcl_nft_token_owner");
+    await page.screenshot({ path: "../../docs/v4/h1-nearly-sandbox-proof.jpg", type: "jpeg", quality: 70, fullPage: true });
+    await nav.nth(7).click();
+    await expect(page.getByLabel("NEARLY step 8 Fees and exit")).toContainText("not a forecast");
+    await expect(page.getByRole("button", { name: "Fund NEARLY on mainnet — not available" })).toBeDisabled();
+    await nav.nth(2).click();
+    await page.getByLabel("USDC you would send").fill("100");
+    await nav.nth(3).click();
+    await expect(page.getByTestId("quote-source")).toHaveText("RECORDED");
+    await page.screenshot({ path: "../../docs/v4/h1-nearly-quote.jpg", type: "jpeg", quality: 70, fullPage: true });
+    expect(await page.evaluate(() => (window as any).__phantomCalls)).toBe(0);
+  });
+  test("H1 NEARLY journey at 390px: no horizontal scroll on any of the 8 steps", async ({ page }) => {
+    await publicOffline(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(PUBLIC);
+    const nav = page.getByRole("list", { name: "Journey" }).getByRole("button");
+    for (let i = 0; i < 8; i++) {
+      await nav.nth(i).click();
+      if (i === 6) await page.locator('tr[data-step="F1"]').getByRole("button", { name: "proof" }).click();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), `step ${i + 1}`).toBeLessThanOrEqual(0);
     }
   });
 });

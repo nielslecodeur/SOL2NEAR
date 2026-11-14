@@ -14,7 +14,7 @@ import { BridgeLive, injected } from "../BridgeLive.tsx";
 import { TREASURY_ACCOUNT_ID, view, type Snapshot } from "../chain.ts";
 import { formatUnits, parseUnits } from "../format.ts";
 import { poolReaders, type Catalog } from "../pools/live.ts";
-import { DclPositionPreview, V42Dcl } from "../v4/Dcl.tsx";
+import { NEARLY_STEPS, NearlyJourney } from "./NearlyJourney.tsx";
 import { UnifiedCard } from "./UnifiedCard.tsx";
 
 const USDC_TP = "usdc.tidepool-sandbox.testnet";
@@ -37,24 +37,27 @@ const STEPS = ["Connect", "Choose pool", "Amount & simulation", "Review & sign",
 export function CreatorPortal({ wallet, account, snap, nearPanel, onWatch }: {
   wallet: string | null; account: string; snap: Snapshot | null; nearPanel: ReactNode; onWatch: (a: string) => void;
 }) {
-  const [mode, setModeState] = useState<PortalMode>(() => (readStore("sol2near:portal-mode") as PortalMode) ?? "LIVE_TESTNET");
-  const [step, setStepState] = useState(() => Math.min(4, Math.max(0, Number(readStore("sol2near:portal-step") ?? 0) || 0)));
+  // the public read-only demo opens on the NEARLY journey (nothing to sign there); the full app keeps the last choice
+  const [mode, setModeState] = useState<PortalMode>(() => (readStore("sol2near:portal-mode") as PortalMode) ?? (READ_ONLY ? "EXPLORE_MEMECOINS" : "LIVE_TESTNET"));
+  const [stepRaw, setStepState] = useState(() => Math.max(0, Number(readStore("sol2near:portal-step") ?? 0) || 0));
   const setMode = (m: PortalMode) => { writeStore("sol2near:portal-mode", m); setModeState(m); };
   const setStep = (s: number) => { writeStore("sol2near:portal-step", String(s)); setStepState(s); };
   const live = mode === "LIVE_TESTNET";
+  const steps: readonly string[] = live ? STEPS : NEARLY_STEPS;
+  const step = Math.min(stepRaw, steps.length - 1);
   return (
     <main className="portal">
       <Hero />
       <section className="card" aria-label="Mode">
         <div className="modes" role="tablist" aria-label="Portal mode">
           <button role="tab" aria-selected={live} className={live ? "on" : ""} onClick={() => setMode("LIVE_TESTNET")}>Live · NEAR testnet</button>
-          <button role="tab" aria-selected={!live} className={!live ? "on" : ""} onClick={() => setMode("EXPLORE_MEMECOINS")}>Explore · NEAR memecoins (read-only)</button>
+          <button role="tab" aria-selected={!live} className={!live ? "on" : ""} onClick={() => setMode("EXPLORE_MEMECOINS")}>Explore · NEARLY memecoin (read-only)</button>
         </div>
         {live
           ? <p className="muted" data-testid="mode-note">Deployed contracts on <b>NEAR testnet</b> only. {READ_ONLY ? "State is read live; signing is not available in this public demo (the full app, run locally, asks your own wallet to approve each transaction after a review)." : "Real transactions, each approved in your own wallet after a review."} The only fundable pool today is Ref Classic <b>#2951 USDC/wNEAR — not a memecoin</b>.</p>
-          : <div className="banner sim" data-testid="mode-note">EXPLORE MODE — real NEAR memecoin pools read on <b>mainnet</b> (view calls), reference simulations and LOCAL SANDBOX evidence. Nothing in this mode can be signed or executed.</div>}
+          : <div className="banner sim" data-testid="mode-note">EXPLORE MODE — the real NEARLY memecoin pool read on <b>mainnet</b> (view calls), a reference simulation and the LOCAL SANDBOX proof of the position. Nothing in this mode can be signed or executed.</div>}
         <ol className="stepper" aria-label="Journey">
-          {STEPS.map((s, i) => (
+          {steps.map((s, i) => (
             <li key={s}><button className={i === step ? "on" : i < step ? "done" : ""} aria-current={i === step ? "step" : undefined} onClick={() => setStep(i)}>{i + 1} · {s}</button></li>
           ))}
         </ol>
@@ -63,15 +66,16 @@ export function CreatorPortal({ wallet, account, snap, nearPanel, onWatch }: {
       {/* The real NEAR panel stays mounted (wallet session); it is shown where the journey needs it. */}
       <div hidden={!(live && (step === 0 || step === 3))}>{nearPanel}</div>
 
-      {step === 0 && <StepConnect live={live} wallet={wallet} />}
-      {step === 1 && (live ? <StepPoolLive /> : <V42Dcl withPreview={false} />)}
-      {step === 2 && (live ? <StepSimulate wallet={wallet} /> : <ExploreSimulateNote />)}
-      {step === 3 && (live ? <StepReview wallet={wallet} account={account} /> : <ExploreReview />)}
-      {step === 4 && (live ? <StepTrack account={account} snap={snap} onWatch={onWatch} /> : <section className="card"><DclPositionPreview /></section>)}
+      {live && step === 0 && <StepConnect live={live} wallet={wallet} />}
+      {live && step === 1 && <StepPoolLive />}
+      {live && step === 2 && <StepSimulate wallet={wallet} />}
+      {live && step === 3 && <StepReview wallet={wallet} account={account} />}
+      {live && step === 4 && <StepTrack account={account} snap={snap} onWatch={onWatch} />}
+      {!live && <NearlyJourney step={step} connect={<StepConnect live={false} wallet={wallet} />} />}
 
       <div className="watch navsteps">
         <button className="ghost" disabled={step === 0} onClick={() => setStep(step - 1)}>← Back</button>
-        <button disabled={step === STEPS.length - 1} onClick={() => setStep(step + 1)}>Next: {STEPS[Math.min(step + 1, STEPS.length - 1)]} →</button>
+        <button disabled={step === steps.length - 1} onClick={() => setStep(step + 1)}>Next: {steps[Math.min(step + 1, steps.length - 1)]} →</button>
       </div>
     </main>
   );
@@ -290,35 +294,6 @@ function StepTrack({ account, snap, onWatch }: { account: string; snap: Snapshot
       {snap && ps.length === 0 && <p className="muted">No Treasury deposit for <code>{account || "—"}</code> on testnet.</p>}
       {ps.map((p) => <UnifiedCard key={p.key} p={p} />)}
       <p className="muted small">V4.1 (Classic memecoin pilot) and V4.2A (DCL) positions are not deployed: see <a href="#/positions">Positions</a> for their sandbox previews.</p>
-    </section>
-  );
-}
-
-function ExploreSimulateNote() {
-  return (
-    <section className="card" aria-label="Explore simulation">
-      <h3>3 · Simulation (Explore) <span className="badge neutral">SIMULATION</span></h3>
-      <p>Open a pool in step 2 and press <b>Estimate (read-only)</b>: the DCL estimator uses Rhea's own <code>quote</code> and <code>predict_hotzap</code> views on mainnet.</p>
-      <ul className="checks">
-        <li className="ko"><b>Bridge:</b> not available for these pools — SOL2NEAR bridges with Tidepool (testnet), and these pools are on mainnet.</li>
-        <li><b>Concentrated liquidity:</b> your position only earns while the price is inside its range; outside, it holds a single asset (all memecoin below the range, all wNEAR above) and earns nothing until the price returns.</li>
-        <li><b>Exposure:</b> part of your capital becomes the memecoin; it can lose most of its value. No yield is promised.</li>
-        <li><b>Exit (planned design):</b> after the lock the position is transferred to you; withdrawing the liquidity, collecting fees and recovering leftovers are separate steps.</li>
-      </ul>
-    </section>
-  );
-}
-
-function ExploreReview() {
-  return (
-    <section className="card" aria-label="Explore review">
-      <h3>4 · What execution would require (not available yet)</h3>
-      <ol className="signs">
-        <li>A TreasuryDCL deployed on the same network as the pool — today it exists only in a local sandbox.</li>
-        <li>A USDC route on that network: Nearly pools are on mainnet; SOL2NEAR's bridge (Tidepool) is testnet-only.</li>
-        <li>Then: one creator approval for the deposit, one for <code>execute_dcl_lp</code> (HotZap), later <code>claim_fees</code>, <code>withdraw_position</code>, <code>withdraw_dex_balance</code>.</li>
-      </ol>
-      <button disabled>Execute on DCL — not available yet</button>
     </section>
   );
 }

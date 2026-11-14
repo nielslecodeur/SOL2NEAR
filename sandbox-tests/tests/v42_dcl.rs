@@ -57,14 +57,34 @@ fn failure(r: &ExecutionFinalResult) -> String {
 fn burnt(r: &ExecutionFinalResult) -> u64 {
     r.total_gas_burnt.as_tgas()
 }
+// ---------- H2 proof recorder: every step is logged in order, then exported (scripts/proofs/export-nearly-proof.mjs) ----------
+// "call" = a transaction sent (must / must_fail), "refusal" = the contract's job_failed reason, "rec" = the method,
+// contract, arguments, result and the on-chain reads that prove it. LOCAL SANDBOX only.
+static PROOF_LOG: std::sync::Mutex<Vec<Value>> = std::sync::Mutex::new(Vec::new());
+fn log(v: Value) {
+    PROOF_LOG.lock().unwrap().push(v);
+}
+fn rec(step: &str, contract: impl std::fmt::Display, method: &str, args: Value, result: Value, proof: Value) {
+    log(json!({ "kind": "rec", "step": step, "contract": contract.to_string(), "method": method, "args": args, "result": result, "proof": proof }));
+}
+fn short_err(f: &str) -> String {
+    match f.find("panicked: ") {
+        Some(i) => f[i + 10..].split('"').next().unwrap_or("").trim_end_matches('\\').to_string(),
+        None => f.chars().take(240).collect(),
+    }
+}
 fn must(n: &str, what: &str, r: ExecutionFinalResult) -> anyhow::Result<ExecutionFinalResult> {
     println!("[{n}] {what}: {} · {} Tgas · events {:?}", if r.is_success() { "OK" } else { "FAILED" }, burnt(&r), events(&r));
+    log(json!({ "kind": "call", "step": n, "what": what, "outcome": if r.is_success() { "success" } else { "failure" }, "gas_tgas": burnt(&r), "events": events(&r),
+        "error": if r.is_success() { Value::Null } else { json!(short_err(&failure(&r))) } }));
     anyhow::ensure!(r.is_success(), "{what} failed: {}", failure(&r));
     Ok(r)
 }
 fn must_fail(n: &str, what: &str, r: ExecutionFinalResult, expect: &str) -> anyhow::Result<()> {
     let f = failure(&r);
     println!("[{n}] {what}: refused as expected ({})", if f.contains(expect) { expect } else { "?" });
+    log(json!({ "kind": "call", "step": n, "what": what, "outcome": if r.is_success() { "success" } else { "failure" }, "expected_error": expect,
+        "error": short_err(&f), "events": events(&r) }));
     anyhow::ensure!(!r.is_success() && f.contains(expect), "{what}: expected failure {expect}, got success={} {f}", r.is_success());
     Ok(())
 }
@@ -72,6 +92,7 @@ fn must_fail(n: &str, what: &str, r: ExecutionFinalResult, expect: &str) -> anyh
 fn must_refuse(n: &str, what: &str, r: &ExecutionFinalResult, expect: &str) -> anyhow::Result<()> {
     let why = event_data(r, "job_failed").map(|d| d["reason"].as_str().unwrap_or("").to_string()).unwrap_or_default();
     println!("[{n}] {what}: refused on-chain as expected — {why}");
+    log(json!({ "kind": "refusal", "step": n, "what": what, "expected": expect, "job_failed_reason": why }));
     anyhow::ensure!(why.contains(expect), "{what}: expected job_failed containing {expect:?}, got {why:?} ({:?})", events(r));
     Ok(())
 }
@@ -209,6 +230,10 @@ async fn reconcile_books(e: &Env, t: &AccountId, tag: &str) -> anyhow::Result<Va
         u(&a["owed_x"]), u(&a["owed_y"]), dg(e.raw.id()), u(&a["dex_booked_x"]), dg(e.wrap.id()), u(&a["dex_booked_y"]), dg(e.usdc.id()), u(&a["dex_booked_usdc"]));
     anyhow::ensure!(usdc == expect_usdc && x == u(&a["owed_x"]) && yb == u(&a["owed_y"]), "wallet books differ");
     anyhow::ensure!(dg(e.raw.id()) == u(&a["dex_booked_x"]) && dg(e.wrap.id()) == u(&a["dex_booked_y"]) && dg(e.usdc.id()) == u(&a["dex_booked_usdc"]), "DCL books differ");
+    log(json!({ "kind": "call", "step": tag, "what": "books = real balances (views only, no transaction)", "outcome": "success", "events": [] }));
+    rec(tag, t, "get_accounting + ft_balance_of ×3 + DCL list_user_assets", json!({}), json!({ "books": a }),
+        json!({ "treasury_wallet": { "usdc": usdc.to_string(), "x": x.to_string(), "wnear": yb.to_string() }, "treasury_dcl_account": dex,
+            "checks": ["USDC wallet = owed_usdc + community_total + pending_budget_total + zap_outstanding", "X wallet = owed_x", "wNEAR wallet = owed_y", "DCL account X/Y/USDC = dex_booked_x/y/usdc"] }));
     Ok(a)
 }
 
@@ -237,6 +262,16 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     must("A5", "TAXMEME new (Nearly tax v6 code, buy 3 % / sell 4 %, LOCAL TEST TOKEN)", factory.call(tax.id(), "new").args_json(json!({ "owner_id": lp.id(), "total_supply": (1_000_000_000 * E18).to_string(),
         "metadata": { "spec": "ft-1.0.0", "name": "TAXMEME (LOCAL TEST, NO VALUE)", "symbol": "TAXMEME", "decimals": 18 },
         "tax": { "buy_bps": 300, "sell_bps": 400, "pairs": [dcl.id()], "admin": factory.id(), "exempt": [] } })).transact().await?)?;
+    log(json!({ "kind": "call", "step": "A0", "what": "deploy the real code in a fresh local sandbox (genesis state, no fork)", "outcome": "success", "events": [] }));
+    let deployed: serde_json::Map<String, Value> = [
+        (dcl.id(), "res/dcl_mainnet.wasm (dclv2.ref-labs.near, Rhea DCL v2.4.2)"),
+        (wrap.id(), "res/wrap_near.wasm (wrap.near)"),
+        (usdc.id(), "res/tidepool_usdc.wasm (usdc.tidepool-sandbox.testnet)"),
+        (raw.id(), "res/nearly_token_raw_v1.wasm (Nearly raw v1 global code = the code of nearly-993927.nearlytrade.near)"),
+        (tax.id(), "res/nearly_token_tax_v6.wasm (Nearly tax v6 global code)"),
+    ].into_iter().map(|(k, v)| (k.to_string(), json!(v))).collect();
+    rec("A0", root.id(), "deploy", Value::Object(deployed), json!({ "token_x_metadata": view(&w, raw.id(), "ft_metadata", json!({})).await?, "dcl_metadata": view(&w, dcl.id(), "get_metadata", json!({})).await? }),
+        json!("SHA-256 of each file in the export's provenance section"));
     let e = Env { w, root, dcl, wrap, usdc, raw, tax };
     let mut fx = serde_json::Map::new();
     let mut points = serde_json::Map::new();
@@ -270,6 +305,8 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
             "amount_x": ax.to_string(), "amount_y": ay.to_string(), "min_amount_x": "0", "min_amount_y": "0" })).gas(tgas(150)).transact().await?)?;
     }
     println!("pool RAWMEME/wNEAR {}", view(&e.w, e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() })).await?);
+    rec("B2", e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() }), view(&e.w, e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() })).await?,
+        json!("pool of the NEARLY-code token / wNEAR, fee 10000 (1 %), point_delta 200 = the NEARLY mainnet pool type; LOCAL price and liquidity, seeded by lp"));
 
     // ---------- setup: on-chain checks ----------
     let t_tax = treasury(&e, "treasury-tax", &e.tax, 18).await?;
@@ -277,6 +314,7 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let c = view(&e.w, t_tax.id(), "get_config", json!({})).await?;
     println!("[C0] taxed-token Treasury ready = {}, setup_error = {}", c["ready"], c["setup_error"]);
     anyhow::ensure!(c["ready"] == false && c["setup_error"].as_str().unwrap_or("").contains("BLOCKED_TAX"));
+    rec("C0", t_tax.id(), "setup", json!({}), json!({ "ready": c["ready"], "setup_error": c["setup_error"] }), json!("get_config after setup: a taxed token pool is refused"));
     let t_bad = treasury(&e, "treasury-bad", &e.raw, 24).await?;
     must("C1", "setup with WRONG token_x decimals (24)", e.root.call(t_bad.id(), "setup").deposit(mn(700)).gas(tgas(300)).transact().await?)?;
     let c = view(&e.w, t_bad.id(), "get_config", json!({})).await?;
@@ -287,6 +325,9 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let cfg = view(&e.w, t.id(), "get_config", json!({})).await?;
     anyhow::ensure!(cfg["ready"] == true && cfg["fuel"] == "FUEL_NOT_ELIGIBLE", "config {cfg}");
     fx.insert("config".into(), cfg.clone());
+    rec("C2", t.id(), "setup", json!({}), cfg.clone(), json!({
+        "dcl_get_user_storage_detail": view(&e.w, e.dcl.id(), "get_user_storage_detail", json!({ "user_id": t.id() })).await?,
+        "dcl_get_user_registered_tokens": view(&e.w, e.dcl.id(), "get_user_registered_tokens", json!({ "account_id": t.id() })).await? }));
     println!("[C2] Treasury DCL storage {} registered {}", view(&e.w, e.dcl.id(), "get_user_storage_detail", json!({ "user_id": t.id() })).await?,
         view(&e.w, e.dcl.id(), "get_user_registered_tokens", json!({ "account_id": t.id() })).await?);
 
@@ -295,9 +336,13 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let used: String = r.clone().json()?;
     println!("[D0] RAWMEME sent to the Treasury → used {used} (refunded) · events {:?}", events(&r));
     anyhow::ensure!(used == "0");
+    log(json!({ "kind": "call", "step": "D0", "what": "a non-USDC token sent to the Treasury", "outcome": "success", "events": events(&r) }));
+    rec("D0", e.raw.id(), "ft_transfer_call", json!({ "receiver_id": t.id(), "amount": E18.to_string(), "msg": DEPOSIT_MSG }), json!({ "used": used }), json!("used = 0: the whole amount is refunded"));
     must("D1", "alice deposits 20 USDC", alice.call(e.usdc.id(), "ft_transfer_call").args_json(json!({ "receiver_id": t.id(), "amount": (20 * USDC1).to_string(), "msg": DEPOSIT_MSG })).deposit(y(1)).gas(tgas(100)).transact().await?)?;
     let d = view(&e.w, t.id(), "get_deposit", json!({ "deposit_id": "0" })).await?;
     anyhow::ensure!(u(&d["lp_budget"]) == 18 * USDC1 && u(&d["reserve"]) == 1_600_000 && u(&d["community"]) == 400_000);
+    rec("D1", e.usdc.id(), "ft_transfer_call", json!({ "receiver_id": t.id(), "amount": (20 * USDC1).to_string(), "msg": DEPOSIT_MSG }), d.clone(),
+        json!("get_deposit(0): lp_budget 18 000 000 (90 %) + reserve 1 600 000 (8 %) + community 400 000 (2 %) = 20 000 000"));
     points.insert("deposit_allocated".into(), view(&e.w, e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() })).await?["current_point"].clone());
     fx.insert("deposit_allocated".into(), view(&e.w, t.id(), "get_position", json!({ "deposit_id": "0" })).await?);
 
@@ -305,15 +350,18 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let dl = now(&e).await? + 5 * MIN_NS;
     let good = plan_for(&e, 17 * USDC1, 20_000, dl).await?;
     must_fail("E1", "bob executes alice's deposit", bob.call(t.id(), "execute_dcl_lp").args_json(json!({ "deposit_id": "0", "plan": good })).gas(tgas(300)).transact().await?, "ERR_NOT_CREATOR")?;
+    rec("E1", t.id(), "execute_dcl_lp", json!({ "deposit_id": "0", "plan": good }), json!(null), json!("signer bob.test.near is not the creator"));
     let mut off_grid = good.clone();
     off_grid["left_point"] = json!(good["left_point"].as_i64().unwrap() + 100);
     must_fail("E2", "range not on the 200-point grid", alice.call(t.id(), "execute_dcl_lp").args_json(json!({ "deposit_id": "0", "plan": off_grid })).gas(tgas(300)).transact().await?, "ERR_RANGE_NOT_ON_POINT_DELTA")?;
+    rec("E2", t.id(), "execute_dcl_lp", json!({ "deposit_id": "0", "plan": off_grid }), json!(null), json!("see the call outcome / refusal reason"));
     let mut above = good.clone();
     let cur = view(&e.w, e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() })).await?["current_point"].as_i64().unwrap();
     above["left_point"] = json!((cur / 200 + 10) * 200);
     above["right_point"] = json!((cur / 200 + 40) * 200);
     let r = must("E3", "plan whose range is entirely above the price", alice.call(t.id(), "execute_dcl_lp").args_json(json!({ "deposit_id": "0", "plan": above })).gas(tgas(300)).transact().await?)?;
     must_refuse("E3", "range out of the current price", &r, "out of range")?;
+    rec("E3", t.id(), "execute_dcl_lp", json!({ "deposit_id": "0", "plan": above }), json!(null), json!("see the call outcome / refusal reason"));
     // both legs' minimums at 50 % of DCL's simulated outputs (a coherent plan, but no slippage protection)
     let mut loose = good.clone();
     for (o, a, m) in [("min_x_out", "amount_x", "min_amount_x"), ("min_y_out", "amount_y", "min_amount_y")] {
@@ -323,6 +371,7 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     }
     let r = must("E4", "plan with both min outs at 50 % of the simulated outputs", alice.call(t.id(), "execute_dcl_lp").args_json(json!({ "deposit_id": "0", "plan": loose })).gas(tgas(300)).transact().await?)?;
     must_refuse("E4", "slippage guard", &r, "looser")?;
+    rec("E4", t.id(), "execute_dcl_lp", json!({ "deposit_id": "0", "plan": loose }), json!(null), json!("see the call outcome / refusal reason"));
     // only the X side halved: the position ratio no longer fits, DCL's own simulation refuses it
     let mut lopsided = good.clone();
     lopsided["min_x_out"] = json!((u(&good["min_x_out"]) / 2).to_string());
@@ -330,8 +379,10 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     lopsided["min_amount_x"] = json!((u(&lopsided["amount_x"]) * 98 / 100 + 1).to_string());
     let r = must("E4b", "plan whose amounts do not fit the range ratio", alice.call(t.id(), "execute_dcl_lp").args_json(json!({ "deposit_id": "0", "plan": lopsided })).gas(tgas(300)).transact().await?)?;
     must_refuse("E4b", "DCL simulation refusal", &r, "predict_hotzap refused")?;
+    rec("E4b", t.id(), "execute_dcl_lp", json!({ "deposit_id": "0", "plan": lopsided }), json!(null), json!("see the call outcome / refusal reason"));
     let d = view(&e.w, t.id(), "get_deposit", json!({ "deposit_id": "0" })).await?;
     anyhow::ensure!(d["status"] == "BudgetAllocated" && d["lpt_id"].is_null(), "nothing sent: {d}");
+    rec("E4b", t.id(), "get_deposit", json!({ "deposit_id": "0" }), json!({ "status": d["status"], "lpt_id": d["lpt_id"] }), json!("after E1–E4b: still BudgetAllocated, no position, nothing sent"));
     reconcile_books(&e, t.id(), "E5").await?;
 
     // ---------- the position ----------
@@ -350,6 +401,9 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     anyhow::ensure!(onchain["left_point"] == good["left_point"] && onchain["right_point"] == good["right_point"]);
     let d = view(&e.w, t.id(), "get_deposit", json!({ "deposit_id": "0" })).await?;
     anyhow::ensure!(u(&d["usdc_used"]) + u(&d["usdc_unused_to_reserve"]) == 18 * USDC1, "USDC side reconciles");
+    rec("F1", t.id(), "execute_dcl_lp", json!({ "deposit_id": "0", "plan": good }), conf.clone(), json!({
+        "dcl_get_liquidity": onchain, "dcl_nft_token_owner": nft["owner_id"], "treasury_get_deposit": d,
+        "checks": ["get_liquidity.owner_id = nft_token.owner_id = the Treasury", "get_liquidity.amount = recorded liquidity > 0", "range = plan range", "usdc_used + usdc_unused_to_reserve = 18 USDC budget"] }));
     println!("[F1] USDC used {} + back to reserve {} = 18 USDC budget; position x {} y {}; leftovers in DCL x {} y {} usdc {}",
         d["usdc_used"], d["usdc_unused_to_reserve"], d["position_x"], d["position_y"], d["dex_x"], d["dex_y"], d["dex_usdc"]);
     points.insert("position_confirmed".into(), view(&e.w, e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() })).await?["current_point"].clone());
@@ -364,6 +418,7 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let big = plan_for(&e, 300 * USDC1, 20_000, dl).await?;
     let r = must("F4", "execute_dcl_lp of a 300 USDC plan", alice.call(t.id(), "execute_dcl_lp").args_json(json!({ "deposit_id": "1", "plan": big })).gas(tgas(300)).transact().await?)?;
     must_refuse("F4", "price-impact guard", &r, "impact")?;
+    rec("F4", t.id(), "execute_dcl_lp", json!({ "deposit_id": "1", "plan": big }), json!(null), json!("300 USDC against shallow LOCAL pools: refused by the on-chain price-impact guard (max 1000 bps), nothing sent"));
     must("F5", "abort deposit 1 (budget back to the USDC reserve)", alice.call(t.id(), "abort").args_json(json!({ "deposit_id": "1" })).transact().await?)?;
     let bal = view(&e.w, t.id(), "get_balance", json!({ "account_id": alice.id(), "token_id": e.usdc.id() })).await?;
     let before = u(&view(&e.w, e.usdc.id(), "ft_balance_of", json!({ "account_id": alice.id() })).await?);
@@ -371,6 +426,7 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let after = u(&view(&e.w, e.usdc.id(), "ft_balance_of", json!({ "account_id": alice.id() })).await?);
     println!("[F6] alice USDC +{} = Treasury balance {}", after - before, u(&bal));
     anyhow::ensure!(after - before == u(&bal));
+    rec("F6", t.id(), "withdraw_token", json!({ "token_id": e.usdc.id(), "amount": bal }), json!({ "alice_wallet_delta": (after - before).to_string() }), json!("wallet delta = Treasury get_balance (8 % reserves + unused budget + aborted deposit 1)"));
     reconcile_books(&e, t.id(), "F7").await?;
 
     // ---------- fees ----------
@@ -380,17 +436,22 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let pre = view(&e.w, e.dcl.id(), "get_liquidity", json!({ "lpt_id": lpt })).await?;
     println!("[G1] after trades: unclaimed fees x {} y {}", pre["unclaimed_fee_x"], pre["unclaimed_fee_y"]);
     anyhow::ensure!(u(&pre["unclaimed_fee_x"]) > 0 && u(&pre["unclaimed_fee_y"]) > 0);
+    log(json!({ "kind": "call", "step": "G1", "what": "3 trader round trips through the pool (sandbox trader)", "outcome": "success", "events": [] }));
+    rec("G1", e.dcl.id(), "get_liquidity", json!({ "lpt_id": lpt }), json!({ "unclaimed_fee_x": pre["unclaimed_fee_x"], "unclaimed_fee_y": pre["unclaimed_fee_y"] }), json!("TEST fees from LOCAL trades: not a forecast"));
     points.insert("fees_unclaimed".into(), view(&e.w, e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() })).await?["current_point"].clone());
     fx.insert("fees_unclaimed".into(), view(&e.w, t.id(), "get_position", json!({ "deposit_id": "0" })).await?);
     fx.insert("fees_unclaimed_dcl".into(), pre.clone());
     must_fail("G2", "bob claims alice's fees", bob.call(t.id(), "claim_fees").args_json(json!({ "deposit_id": "0" })).gas(tgas(100)).transact().await?, "ERR_NOT_CREATOR")?;
+    rec("G2", t.id(), "claim_fees", json!({ "deposit_id": "0", "signer": bob.id() }), json!(null), json!("refused: not the creator"));
     let r = must("G3", "claim_fees (DCL remove_liquidity amount 0)", alice.call(t.id(), "claim_fees").args_json(json!({ "deposit_id": "0" })).gas(tgas(100)).transact().await?)?;
     let fc = event_data(&r, "fees_claimed").unwrap();
     println!("[G3] fees_claimed {fc}");
     anyhow::ensure!(fc["fee_x"] == pre["unclaimed_fee_x"] && fc["fee_y"] == pre["unclaimed_fee_y"], "booked = DCL's unclaimed fees");
+    rec("G3", t.id(), "claim_fees", json!({ "deposit_id": "0" }), fc.clone(), json!("fees booked = DCL unclaimed_fee_x / unclaimed_fee_y read in G1"));
     let r = must("G4", "second claim_fees", alice.call(t.id(), "claim_fees").args_json(json!({ "deposit_id": "0" })).gas(tgas(100)).transact().await?)?;
     let fc2 = event_data(&r, "fees_claimed").unwrap();
     anyhow::ensure!(u(&fc2["fee_x"]) == 0 && u(&fc2["fee_y"]) == 0, "no double count");
+    rec("G4", t.id(), "claim_fees", json!({ "deposit_id": "0" }), fc2.clone(), json!("a repeated claim books 0 / 0: no double count"));
     let d = view(&e.w, t.id(), "get_deposit", json!({ "deposit_id": "0" })).await?;
     anyhow::ensure!(d["fees_claimed_x"] == pre["unclaimed_fee_x"]);
     reconcile_books(&e, t.id(), "G5").await?;
@@ -403,6 +464,7 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let narrow = plan_for(&e, 17 * USDC1, 2_000, dl).await?;
     let r = must("K2", "execute_dcl_lp with a narrow range (±2 000 points)", alice.call(t.id(), "execute_dcl_lp").args_json(json!({ "deposit_id": "2", "plan": narrow })).gas(tgas(300)).transact().await?)?;
     let lpt2 = event_data(&r, "position_confirmed").ok_or_else(|| anyhow::anyhow!("K2 {:?} {}", events(&r), failure(&r)))?["lpt_id"].as_str().unwrap().to_string();
+    rec("K2", t.id(), "execute_dcl_lp", json!({ "deposit_id": "2", "plan": narrow }), json!({ "lpt_id": lpt2 }), json!("narrow position ±2 000 points"));
     // a large buy of RAWMEME pushes the point below the range (price of X in Y falls when X is bought? DCL: buying X raises the point)
     let s = json!({ "Swap": { "pool_ids": [e.p_raw()], "output_token": e.raw.id(), "min_output_amount": "0" } });
     trader.call(e.wrap.id(), "ft_transfer_call").args_json(json!({ "receiver_id": e.dcl.id(), "amount": (120 * E24).to_string(), "msg": s.to_string() })).deposit(y(1)).gas(tgas(200)).transact().await?.into_result()?;
@@ -411,6 +473,8 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     println!("[K3] point now {} vs range [{}, {}] → position holds x {} y {}", p["current_point"], narrow["left_point"], narrow["right_point"], l2["token_x"], l2["token_y"]);
     let outside = p["current_point"].as_i64().unwrap() >= narrow["right_point"].as_i64().unwrap() || p["current_point"].as_i64().unwrap() < narrow["left_point"].as_i64().unwrap();
     anyhow::ensure!(outside, "price must have left the narrow range");
+    log(json!({ "kind": "call", "step": "K3", "what": "a large LOCAL buy moves the price out of the narrow range", "outcome": "success", "events": [] }));
+    rec("K3", e.dcl.id(), "get_pool + get_liquidity_view", json!({ "lpt_id": lpt2 }), json!({ "current_point": p["current_point"], "range": [narrow["left_point"], narrow["right_point"]], "position": l2 }), json!("out of range: the position holds a single asset"));
     must("K4", "claim_fees right after leaving the range", alice.call(t.id(), "claim_fees").args_json(json!({ "deposit_id": "2" })).gas(tgas(100)).transact().await?)?;
     // trades that stay outside the narrow range: further small buys of RAWMEME only (the point keeps rising)
     for _ in 0..3 {
@@ -423,6 +487,8 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
         oor["unclaimed_fee_x"], oor["unclaimed_fee_y"], wide["unclaimed_fee_x"], wide["unclaimed_fee_y"]);
     anyhow::ensure!(u(&oor["unclaimed_fee_x"]) == 0 && u(&oor["unclaimed_fee_y"]) == 0, "out of range earns nothing");
     anyhow::ensure!(u(&wide["unclaimed_fee_x"]) + u(&wide["unclaimed_fee_y"]) > 0, "the wide position kept the fees of the K3 swap that crossed its range");
+    log(json!({ "kind": "call", "step": "K5", "what": "3 more LOCAL trades while the narrow position is out of range", "outcome": "success", "events": [] }));
+    rec("K5", e.dcl.id(), "get_liquidity", json!({ "lpt_id": lpt2 }), json!({ "narrow_unclaimed": [oor["unclaimed_fee_x"], oor["unclaimed_fee_y"]], "wide_unclaimed": [wide["unclaimed_fee_x"], wide["unclaimed_fee_y"]] }), json!("out of range earns 0 / 0"));
     points.insert("out_of_range".into(), view(&e.w, e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() })).await?["current_point"].clone());
     fx.insert("out_of_range".into(), view(&e.w, t.id(), "get_position", json!({ "deposit_id": "2" })).await?);
     fx.insert("out_of_range_dcl".into(), json!({ "pool": view(&e.w, e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() })).await?, "liquidity_view": view(&e.w, e.dcl.id(), "get_liquidity_view", json!({ "lpt_id": lpt2 })).await? }));
@@ -430,7 +496,9 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
 
     // ---------- exit ----------
     must_fail("H1", "withdraw_position during the lock", alice.call(t.id(), "withdraw_position").args_json(json!({ "deposit_id": "0" })).deposit(y(1)).gas(tgas(100)).transact().await?, "ERR_POSITION_LOCKED")?;
+    rec("H1", t.id(), "withdraw_position", json!({ "deposit_id": "0" }), json!(null), json!("refused during the lock (unlock_at not reached)"));
     must_fail("H2", "bob withdraws alice's position", bob.call(t.id(), "withdraw_position").args_json(json!({ "deposit_id": "0" })).deposit(y(1)).gas(tgas(100)).transact().await?, "ERR_NOT_CREATOR")?;
+    rec("H2", t.id(), "withdraw_position", json!({ "deposit_id": "0", "signer": bob.id() }), json!(null), json!("refused: not the creator"));
     let unlock = u(&view(&e.w, t.id(), "get_deposit", json!({ "deposit_id": "0" })).await?["unlock_at"]) as u64;
     while now(&e).await? < unlock {
         e.w.fast_forward(50).await?;
@@ -440,10 +508,13 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let owner = view(&e.w, e.dcl.id(), "nft_token", json!({ "token_id": lpt })).await?["owner_id"].clone();
     println!("[H3] DCL nft_token owner = {owner}");
     anyhow::ensure!(owner == alice.id().as_str());
+    rec("H3", t.id(), "withdraw_position", json!({ "deposit_id": "0" }), json!({ "dcl_nft_token_owner": owner }), json!("after the lock: the DCL NFT owner is the creator"));
     points.insert("position_withdrawn".into(), view(&e.w, e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() })).await?["current_point"].clone());
     fx.insert("position_withdrawn".into(), view(&e.w, t.id(), "get_position", json!({ "deposit_id": "0" })).await?);
     must_fail("H4", "second withdraw_position", alice.call(t.id(), "withdraw_position").args_json(json!({ "deposit_id": "0" })).deposit(y(1)).gas(tgas(100)).transact().await?, "ERR_NO_CONFIRMED_POSITION")?;
+    rec("H4", t.id(), "withdraw_position", json!({ "deposit_id": "0" }), json!(null), json!("no double exit"));
     must_fail("H5", "claim_fees after the position left the Treasury", alice.call(t.id(), "claim_fees").args_json(json!({ "deposit_id": "0" })).gas(tgas(100)).transact().await?, "ERR_NO_CONFIRMED_POSITION")?;
+    rec("H5", t.id(), "claim_fees", json!({ "deposit_id": "0" }), json!(null), json!("no claim once the NFT left the Treasury"));
     // the creator now acts on the DCL directly: partial then full removal
     let amount = u(&view(&e.w, e.dcl.id(), "get_liquidity", json!({ "lpt_id": lpt })).await?["amount"]);
     must("H6", "alice remove_liquidity 50 % on the DCL", alice.call(e.dcl.id(), "remove_liquidity").args_json(json!({ "lpt_id": lpt, "amount": (amount / 2).to_string(), "min_amount_x": "0", "min_amount_y": "0" })).gas(tgas(150)).transact().await?)?;
@@ -452,6 +523,7 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     let gone = view(&e.w, e.dcl.id(), "get_liquidity", json!({ "lpt_id": lpt })).await?;
     println!("[H7] position after full removal: {gone}; alice wallet RAWMEME {} wNEAR(+NEAR unwrapped)", view(&e.w, e.raw.id(), "ft_balance_of", json!({ "account_id": alice.id() })).await?);
     anyhow::ensure!(gone.is_null());
+    rec("H7", e.dcl.id(), "get_liquidity", json!({ "lpt_id": lpt }), gone.clone(), json!("the creator removed 50 % then the rest on the DCL herself: position deleted (null)"));
 
     // ---------- leftovers and claimed fees back to the creator ----------
     for tok in [e.raw.id(), e.wrap.id()] {
@@ -467,12 +539,15 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
         let w1 = u(&view(&e.w, tok, "ft_balance_of", json!({ "account_id": alice.id() })).await?);
         println!("[J2] alice {tok} wallet +{} = booked {}", w1 - w0, u(&b));
         anyhow::ensure!(w1 - w0 == u(&b));
+        rec("J2", t.id(), "withdraw_token", json!({ "token_id": tok, "amount": b }), json!({ "creator_wallet_delta": (w1 - w0).to_string() }), json!("leftovers + claimed fees reached the creator's wallet = booked to the atomic unit"));
     }
     must_fail("J3", "withdraw_dex_balance again", alice.call(t.id(), "withdraw_dex_balance").args_json(json!({ "deposit_id": "0", "token_id": e.raw.id() })).deposit(y(1)).gas(tgas(150)).transact().await?, "ERR_NOTHING_TO_WITHDRAW")?;
+    rec("J3", t.id(), "withdraw_dex_balance", json!({ "deposit_id": "0", "token_id": e.raw.id() }), json!(null), json!("no double recovery"));
     let a = reconcile_books(&e, t.id(), "R").await?;
     fx.insert("accounting".into(), a);
     let d0 = view(&e.w, t.id(), "get_deposit", json!({ "deposit_id": "0" })).await?;
     println!("[R] deposit 0: claimed fees x {} y {}, recovered x {} y {}, status {}", d0["fees_claimed_x"], d0["fees_claimed_y"], d0["recovered_x"], d0["recovered_y"], d0["status"]);
+    rec("R", t.id(), "get_deposit", json!({ "deposit_id": "0" }), d0.clone(), json!("final state of deposit 0"));
     fx.insert("points".into(), Value::Object(points));
     fx.insert("pool_raw".into(), view(&e.w, e.dcl.id(), "get_pool", json!({ "pool_id": e.p_raw() })).await?);
     std::fs::write("../packages/near-client/src/fixtures/v42_dcl_sandbox_views.json", serde_json::to_string_pretty(&Value::Object(fx))? + "\n")?;
@@ -491,6 +566,11 @@ async fn v42_treasury_dcl_end_to_end_in_local_sandbox() -> anyhow::Result<()> {
     anyhow::ensure!(wallet1 == wallet0 + 5 * USDC1);
     let trader_bal = view(&e.w, t.id(), "get_balance", json!({ "account_id": lp.id(), "token_id": e.usdc.id() })).await?;
     anyhow::ensure!(u(&trader_bal) == 0, "the gifter is credited nothing");
+    rec("S1", t.id(), "get_accounting", json!({}), json!({ "unchanged": before == after, "wallet_before": wallet0.to_string(), "wallet_after": wallet1.to_string(), "gifter_credited": trader_bal }), json!("a plain transfer moves no book and credits nobody"));
     println!("[S1] unattributed USDC = wallet - (owed + community + pending + outstanding) = {} (nobody can withdraw it)", wallet1 - (u(&after["owed_usdc"]) + u(&after["community_total"]) + u(&after["pending_budget_total"]) + u(&after["zap_outstanding"])));
+    std::fs::create_dir_all("out")?;
+    std::fs::write("out/nearly_dcl_proof.raw.json", serde_json::to_string_pretty(&Value::Array(PROOF_LOG.lock().unwrap().clone()))? + "
+")?;
+    println!("proof log written: sandbox-tests/out/nearly_dcl_proof.raw.json ({} entries)", PROOF_LOG.lock().unwrap().len());
     Ok(())
 }

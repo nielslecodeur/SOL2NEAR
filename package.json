@@ -12,7 +12,9 @@
     "verify:testnet": "node scripts/probes/verify-testnet.mjs",
     "build:shared": "pnpm --filter @sol2near/shared build",
     "check:release": "node scripts/check-release.mjs",
-    "check:public": "node scripts/check-public-bundle.mjs"
+    "check:public": "node scripts/check-public-bundle.mjs",
+    "proof:nearly": "bash scripts/proofs/nearly-proof.sh",
+    "proof:nearly:check": "node scripts/proofs/export-nearly-proof.mjs --check"
   },
   "pnpm": {
     "overrides": {

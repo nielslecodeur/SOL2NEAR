@@ -155,3 +155,15 @@ nav { flex-wrap: wrap; }
 table.status .badge, table.sim .badge { white-space: normal; }
 /* G9.1: a badge used as a message paragraph (e.g. an RPC error) must wrap on mobile instead of overflowing */
 p.badge { white-space: normal; overflow-wrap: anywhere; }
+/* H1 NEARLY journey: sandbox proof steps and raw JSON never widen the page */
+table.sim td { overflow-wrap: anywhere; }
+.proofsteps td { vertical-align: top; }
+.proofsteps code.small { font-size: 11px; }
+pre.json { max-width: 100%; max-height: 360px; overflow: auto; margin: 0; font-size: 11px; white-space: pre-wrap; overflow-wrap: anywhere; background: rgba(127,127,127,.08); padding: 8px; border-radius: 8px; }
+table.sim.ntab td:first-child { width: 30%; }
+table.sim.ntab td:last-child { width: auto; }
+table.sim.ntab td:nth-child(3) { width: 110px; }
+table.sim.proofsteps td:first-child { width: 40px; }
+table.sim.proofsteps td:nth-child(3) { width: 84px; }
+table.sim.proofsteps td:last-child { width: 64px; }
+table.sim.proofsteps td[colspan] { width: auto; }

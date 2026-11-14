@@ -36,3 +36,7 @@ apps/web/dist-public/
 
 # Vercel CLI link (project id, local only)
 .vercel/
+
+# H2 sandbox proof log (raw, time-dependent; the deterministic export is committed)
+sandbox-tests/out/
+sandbox-tests/out-run.log
