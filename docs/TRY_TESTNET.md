@@ -1,13 +1,14 @@
 # Try Testnet — real wallet connection, signing locked
 
-A third build of the site, next to the full app and the read-only build. **Deployed at https://sol2near-demo.vercel.app**
-since H8 (2026-11-14, approved by the lead), replacing the read-only build there.
+A build of the site with every signature locked. It was deployed on https://sol2near-demo.vercel.app for part of H8; since
+the lead's later decision the site serves the **testnet live** build (same wallets, signing in the user's own wallet).
 
 | Build | Command | Wallet | Can sign |
 |---|---|---|---|
-| Read-only demo (deployed until H8) | `pnpm --filter @sol2near/web build:public` | none (no wallet code in the bundle) | no |
-| **Try Testnet** (deployed) | `pnpm --filter @sol2near/web build:testnet` | **real NEAR Wallet Selector**: MyNearWallet, Meteor (testnet); Phantom connect (devnet balance) | **no** — locked twice |
-| Full app | `pnpm --filter @sol2near/web dev` | same wallets | yes, each transaction reviewed, then approved in the user's own wallet |
+| Read-only demo | `pnpm --filter @sol2near/web build:public` | none (no wallet code in the bundle) | no |
+| Try Testnet (this page) | `pnpm --filter @sol2near/web build:testnet` | **real NEAR Wallet Selector**: MyNearWallet, Meteor (testnet); Phantom connect (devnet balance) | **no** — locked twice |
+| **Testnet live (deployed)** | `pnpm --filter @sol2near/web build:live` + `pnpm check:live` | same wallets | yes: each transaction reviewed on the page, then approved in the user's own wallet; testnet / devnet only |
+| Full app (local dev) | `pnpm --filter @sol2near/web dev` | same wallets | same as testnet live, without the CSP meta |
 
 ## Run it
 

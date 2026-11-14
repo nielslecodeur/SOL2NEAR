@@ -103,3 +103,34 @@ test.describe("@live @testnet Try Testnet build: real wallet connection, signing
     await expect(panel(page).getByRole("button", { name: "Deposit to Treasury" })).toHaveCount(0);
   });
 });
+
+// TESTNET LIVE build (`build:live`, :4186, deployed since H8): same wallets, but signing goes to the user's own wallet after the
+// review. This test stops at the review: it NEVER clicks "Confirm & open wallet" (that would ask a wallet to sign).
+const L = "http://127.0.0.1:4186/";
+test.describe("@live @testnet Testnet live build: real wallet, signing in the user's own wallet after a review", () => {
+  test("banner; restored session with test USDC: the review shows the exact ft_transfer_call and offers 'Confirm & open wallet' (not clicked); no wallet window opens by itself", async ({ page, context }) => {
+    const errors = watch(page);
+    const popups: string[] = [];
+    context.on("page", (p) => popups.push(p.url()));
+    await restoreSession(context, "sol2near-dev.testnet");
+    await page.goto(L + "#/dashboard");
+    await expect(page.getByTestId("testnet-live-banner")).toContainText("approved by you in your own wallet");
+    await expect(panel(page).getByText("accepted by Treasury")).toBeVisible({ timeout: 30_000 });
+    await panel(page).getByLabel("USDC amount").fill("2");
+    await panel(page).getByRole("button", { name: "Deposit to Treasury" }).click();
+    const review = page.getByRole("dialog", { name: "Review before signing" });
+    await expect(review).toContainText("ft_transfer_call");
+    await expect(review).toContainText("treasury.sol2near-dev.testnet");
+    await expect(review.getByRole("button", { name: "Confirm & open wallet" })).toBeEnabled();
+    await expect(page.getByTestId("signing-locked")).toHaveCount(0);
+    await review.getByRole("button", { name: "Cancel" }).click(); // never Confirm in a test
+    expect(popups).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+  test("a mainnet account restored from the wallet is never exposed: nothing can be signed for it", async ({ page, context }) => {
+    await restoreSession(context, "alice.near");
+    await page.goto(L + "#/dashboard");
+    await expect(panel(page).getByRole("button", { name: "Connect NEAR wallet" })).toBeVisible({ timeout: 30_000 });
+    await expect(panel(page)).not.toContainText("alice.near");
+  });
+});

@@ -38,6 +38,13 @@ export default defineConfig({
       timeout: 60_000,
     },
     {
+      // The TESTNET LIVE build (`build:live`, deployed since H8): real signatures, only in the user's own wallet.
+      command: "npx vite preview --outDir dist-live --port 4186 --strictPort --host 127.0.0.1",
+      url: "http://127.0.0.1:4186",
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
+    {
       // The Vite DEV server, exactly what README step 6 runs (`pnpm --filter @sol2near/web dev`).
       command: "npx vite --port 4184 --strictPort --host 127.0.0.1",
       url: "http://127.0.0.1:4184",

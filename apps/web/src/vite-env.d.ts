@@ -6,4 +6,6 @@ interface ImportMetaEnv {
   readonly VITE_PUBLIC_READ_ONLY?: string;
   /** "1" only in the Try Testnet build (`--mode testnet`): real wallet connection, every signature locked. */
   readonly VITE_SIGNING_LOCKED?: string;
+  /** "1" only in the testnet live build (`--mode live`): full app, real signatures in the user's own wallet. */
+  readonly VITE_TESTNET_LIVE?: string;
 }

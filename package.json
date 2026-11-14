@@ -15,6 +15,7 @@
     "check:public": "node scripts/check-public-bundle.mjs",
     "check:docs": "node scripts/check-doc-links.mjs",
     "check:testnet": "node scripts/check-testnet-bundle.mjs",
+    "check:live": "node scripts/check-live-bundle.mjs",
     "proof:nearly": "bash scripts/proofs/nearly-proof.sh",
     "proof:nearly:check": "node scripts/proofs/export-nearly-proof.mjs --check"
   },

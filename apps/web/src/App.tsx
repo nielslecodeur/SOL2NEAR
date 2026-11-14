@@ -141,6 +141,11 @@ export function App() {
         </div>
       )}
 
+      {import.meta.env.VITE_TESTNET_LIVE === "1" && (
+        <div className="statusbar" role="note" data-testid="testnet-live-banner">
+          <span className="dot" aria-hidden="true" /><span><b>NEAR testnet app</b> — connect your testnet wallet. Every transaction is reviewed here first, then approved by you in your own wallet. Test tokens only, no real funds.</span>
+        </div>
+      )}
       {SIGNING_LOCKED && (
         <div className="statusbar" role="note" data-testid="signing-locked-banner">
           <span className="dot" aria-hidden="true" /><span><b>Try Testnet build</b> — connect a real NEAR testnet wallet and read your account. Signing is locked: this build cannot send any transaction.</span>

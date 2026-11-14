@@ -5,9 +5,10 @@ What it proves, and what it does not: [`HACKATHON_MEMECOIN_PROOF.md`](HACKATHON_
 
 ## 0. Look first (2 minutes, nothing to install)
 
-- Public demo: https://sol2near-demo.vercel.app, the **Try Testnet** build ([TRY_TESTNET.md](TRY_TESTNET.md)): the same
-  three-step interface as step 2 below, plus **Try Testnet** to connect a real NEAR testnet wallet (MyNearWallet, Meteor) and
-  read your account. Every signature is locked. The fully read-only build (no wallet code at all) is `build:public`.
+- Public demo: https://sol2near-demo.vercel.app, the **testnet live** build (`build:live`): the same three-step interface as
+  step 2 below, plus **Try Testnet** to connect a real NEAR testnet wallet (MyNearWallet, Meteor). Transactions are reviewed
+  on the page, then approved or refused in your own wallet (testnet only, mainnet accounts refused). Other builds: signing
+  locked (`build:testnet`, [TRY_TESTNET.md](TRY_TESTNET.md)) and fully read-only (`build:public`).
 - Proofs page (`#/proofs`): every testnet/devnet transaction hash with its explorer link.
 
 ## 1. Requirements

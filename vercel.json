@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter @sol2near/web build:testnet && node scripts/check-testnet-bundle.mjs",
-  "outputDirectory": "apps/web/dist-testnet",
+  "buildCommand": "pnpm --filter @sol2near/web build:live && node scripts/check-live-bundle.mjs",
+  "outputDirectory": "apps/web/dist-live",
   "git": { "deploymentEnabled": false },
   "headers": [
     {

@@ -74,14 +74,32 @@ function tryTestnet(): Plugin {
   };
 }
 
+/**
+ * TESTNET LIVE build (`vite build --mode live`, H8, deployed with the lead's approval): the full app — real wallets AND real
+ * testnet signatures — with the same CSP as the public builds. Every transaction is shown in a review first, then approved
+ * by the user in their OWN wallet (MyNearWallet / Meteor on NEAR testnet, Phantom on Solana devnet); mainnet accounts are
+ * refused. The site holds no key. Checked by scripts/check-live-bundle.mjs.
+ */
+function testnetLive(): Plugin {
+  const ro = publicReadOnly();
+  return {
+    name: "sol2near-testnet-live",
+    transformIndexHtml(html) {
+      const withCsp = (ro.transformIndexHtml as (h: string) => string)(html);
+      return withCsp.replace(/<title>[^<]*<\/title>/, "<title>SOL2NEAR — NEAR testnet (signing in your own wallet)</title>");
+    },
+  };
+}
+
 // `--mode e2e` (Playwright build only) enables the mocked-wallet test hook; the production build never has it.
 // `--mode public` builds the read-only demo (no signing code at all).
 export default defineConfig(({ mode }) => ({
-  plugins: mode === "public" ? [publicReadOnly(), react()] : mode === "testnet" ? [tryTestnet(), react()] : [react()],
+  plugins: mode === "public" ? [publicReadOnly(), react()] : mode === "testnet" ? [tryTestnet(), react()] : mode === "live" ? [testnetLive(), react()] : [react()],
   base: "./",
   define:
     mode === "e2e" ? { "import.meta.env.VITE_E2E": JSON.stringify("1") }
     : mode === "public" ? { "import.meta.env.VITE_PUBLIC_READ_ONLY": JSON.stringify("1") }
     : mode === "testnet" ? { "import.meta.env.VITE_SIGNING_LOCKED": JSON.stringify("1") }
+    : mode === "live" ? { "import.meta.env.VITE_TESTNET_LIVE": JSON.stringify("1") }
     : {},
 }));

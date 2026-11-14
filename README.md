@@ -4,11 +4,12 @@
 liquidity position on NEAR that anyone can verify: who holds it, what it earned, how it exits.
 
 **Live demo → https://sol2near-demo.vercel.app** · explore without a wallet, or connect a real **NEAR testnet** wallet
-(MyNearWallet, Meteor) to read your own account. **Signing is locked**: the site cannot send a transaction. Test networks
-only; test tokens have no value.
+(MyNearWallet, Meteor). Every transaction is shown in a review first, then **approved by you in your own wallet**; the site
+holds no key and refuses mainnet accounts. Test networks only; test tokens have no value.
 
-> The site serves the **Try Testnet** build ([docs/TRY_TESTNET.md](docs/TRY_TESTNET.md)), built from a clean clone of `main`
-> and checked by `pnpm check:testnet`. The fully read-only build (no wallet code) is still `build:public` + `check:public`.
+> The site serves the **testnet live** build (`build:live`, checked by `pnpm check:live`), built from a clean clone of `main`.
+> Two other builds exist: signing locked (`build:testnet`, [docs/TRY_TESTNET.md](docs/TRY_TESTNET.md)) and fully read-only,
+> with no wallet code (`build:public` + `check:public`).
 
 ![SOL2NEAR home page](docs/h6/after-home-1440.jpg)
 
@@ -32,7 +33,7 @@ In the browser (nothing to install; rows 1–8 need no wallet):
 
 | # | Do | See |
 |---|---|---|
-| 1 | Open https://sol2near-demo.vercel.app | "Fuel memecoin liquidity across chains." and the bar "Try Testnet build — … Signing is locked: this build cannot send any transaction" |
+| 1 | Open https://sol2near-demo.vercel.app | "Fuel memecoin liquidity across chains." and the bar "NEAR testnet app — … Every transaction is reviewed here first, then approved by you in your own wallet" |
 | 2 | Click **Explore the demo** | Step 1 **Choose**: NEARLY / wNEAR · Rhea DCL v2.4.2, "Mainnet pool · read-only", data "Snapshot · block 224535331", amount 100 USDC |
 | 3 | Click **Next: Preview** | **Historical quote** · Mainnet block 224535331 · 2026-11-14 15:51 UTC · "Not an executable offer": 100 USDC → 90 USDC to liquidity → 91,662 NEARLY + 13.91 wNEAR, price impact 0.11 % |
 | 4 | Click **Get a live indicative quote** | **Live indicative quote** with the current mainnet block (all views at that block). If a public RPC fails, the real error is shown and the historical quote stays |
@@ -40,7 +41,7 @@ In the browser (nothing to install; rows 1–8 need no wallet):
 | 6 | Open **Proof** → **Technical view** | 16 testnet / devnet transaction hashes, each linking to its explorer (nearblocks testnet, Solana explorer devnet) |
 | 7 | **Developers → Dashboard**, type `sol2near-dev.testnet` in *Creator account*, click **Load** | Live testnet reads: 20 USDC received, split 18 / 1.6 / 0.4, LP **BACKED ON REF**, FUEL `Claimed` |
 | 8 | **Developers → FUEL Reactor** | Reactor level, current season, supply buckets and season history read from `fuel.sol2near-dev.testnet` |
-| 9 | Click **Try Testnet** → **Connect NEAR wallet**, sign in with a **testnet** account (MyNearWallet or Meteor; no access key is requested) | Your account, its real NEAR and test-USDC balances, Treasury deposits and V3 positions. A review shows the exact contract call, then "Signing locked in this build": nothing can be sent |
+| 9 | Click **Try Testnet** → **Connect NEAR wallet**, sign in with a **testnet** account (MyNearWallet or Meteor; no access key is requested) | Your account, its real NEAR and test-USDC balances, Treasury deposits and V3 positions. A deposit shows a review with the exact contract call, then **Confirm & open wallet** hands it to your wallet, where you approve or refuse it (you need test USDC `usdc.tidepool-sandbox.testnet` to deposit) |
 
 On your machine (commands and expected output in [Quick start](#quick-start) and [Reproduce the proof](#reproduce-the-proof)):
 
@@ -158,7 +159,7 @@ The run rewrites the timestamps of `packages/near-client/src/fixtures/v42_dcl_sa
   [docs/G8_FINAL_EXECUTION.md](docs/G8_FINAL_EXECUTION.md).
 - **No V3 exit demonstrated:** `withdraw_lp` exists in code but was never exercised on-chain, and V3 cannot return an
   unused LP budget.
-- **The public demo cannot sign.** It can connect a testnet wallet and read it; every signature is locked. Quotes are historical or indicative, never executable offers.
+- **The public demo signs only on test networks, only in your own wallet.** Each transaction is reviewed on the page, then approved or refused in your wallet; mainnet accounts are refused and the site holds no key. The V3 Treasury cannot return an LP budget once deposited (see G8). Quotes are historical or indicative, never executable offers.
 - **No yield is promised.** Pool fees vary and can be zero; a concentrated position earns nothing outside its range, and
   a memecoin can lose most of its value.
 - **Fees:** no bridge, swap or protocol fee is hard-coded; costs come from real quotes (Tidepool `/v0/quote`, Ref

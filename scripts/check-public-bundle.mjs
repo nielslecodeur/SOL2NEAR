@@ -44,7 +44,8 @@ if (existsSync(vercelPath)) {
     // H8: the site serves the Try Testnet build (wallet connect, signing locked); either pair is a checked build
     ["vercel.json builds a checked bundle (build:public + this check, or build:testnet + check-testnet-bundle)",
       (/build:public/.test(v.buildCommand) && /check-public-bundle/.test(v.buildCommand) && v.outputDirectory === "apps/web/dist-public")
-      || (/build:testnet/.test(v.buildCommand) && /check-testnet-bundle/.test(v.buildCommand) && v.outputDirectory === "apps/web/dist-testnet")],
+      || (/build:testnet/.test(v.buildCommand) && /check-testnet-bundle/.test(v.buildCommand) && v.outputDirectory === "apps/web/dist-testnet")
+      || (/build:live/.test(v.buildCommand) && /check-live-bundle/.test(v.buildCommand) && v.outputDirectory === "apps/web/dist-live")],
     ["vercel.json disables automatic git deployments", v.git?.deploymentEnabled === false],
     ["vercel.json CSP header = meta connect-src, plus frame-ancestors 'none'", !!metaCsp && connect(hdr["Content-Security-Policy"]) === connect(metaCsp) && /frame-ancestors 'none'/.test(hdr["Content-Security-Policy"] ?? "")],
     ["vercel.json X-Frame-Options / nosniff / Referrer-Policy", hdr["X-Frame-Options"] === "DENY" && hdr["X-Content-Type-Options"] === "nosniff" && hdr["Referrer-Policy"] === "no-referrer"],
