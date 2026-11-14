@@ -67,6 +67,8 @@ test("SYNTHETIC variants: pool tax, paused, code changed, unreadable tax, no rou
   assert.equal(v((l) => { l.tokenGlobalHash = "SomethingElse111"; }), "BLOCKED_TAX");
   assert.equal(v((l) => { l.tax = { kind: "UNREADABLE", error: "timeout" }; }), "BLOCKED_TAX");
   assert.equal(v((l) => { l.quoteRef = 0n; }), "BLOCKED_ROUTE");
+  // a quote that could not be READ is not "no route": the page passes the read error, which concludes nothing (V4.3A/G8 fix)
+  assert.equal(assessDcl(c, new Error("NEAR RPC query: HTTP 429")).verdict, "OBSERVE_ONLY");
   assert.equal(v((l) => { l.quoteRef = l.quoteSmall! * 900n; }), "BLOCKED_LIQUIDITY");
   assert.equal(assessDcl(c, new Error("rpc down")).verdict, "OBSERVE_ONLY", "a failed read concludes nothing");
 });

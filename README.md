@@ -36,7 +36,8 @@ Every line names its kind of evidence. They are never mixed: a sandbox run is no
 | Feature | Proof |
 |---|---|
 | 2 USDC sent from Phantom on Solana devnet, through **Tidepool (a community 1Click-compatible sandbox, not NEAR Intents)**, arrived as 1.9948 USDC on NEAR testnet and was deposited into the Treasury | G7-SOL `bGUicpgy…887R` → G7-NEAR `J58H2uyu…RFqf` → G7-TREAS `J7uMjikj…Bdhz` |
-| **Not done (G8):** one operation reconciled end to end Solana → Treasury → LP → FUEL. The bridged deposit #3 has no LP: its 29 % price impact on the shallow pool 2951 is refused by the guard | — |
+| Correlation Solana tx ↔ Tidepool record ↔ NEAR settlement re-verified (intent hashes match the on-chain events); the Treasury deposit contains the bridged USDC by balance arithmetic (86 + 1.9948, USDC is fungible) | `node scripts/probes/g8-audit.mjs` · `docs/G8_PROOF_LEDGER.md` |
+| **G8 — `READY FOR USER SIGNATURE`, not done:** deposit #3 (the bridged funds) is `BudgetAllocated`, no job in flight, books = balances. Its LP plan is prepared from live Ref reads (29.13 % price impact on the test pool, so the dashboard refuses it; the contract would accept it) and waits for the creator's signature; FUEL then has a 30 min + 5 min window | `docs/G8_FINAL_EXECUTION.md` |
 
 ### 3. Tested only in a local sandbox (real contract code, local state — NOT deployed)
 | Feature | Evidence |
@@ -77,7 +78,7 @@ Prerequisites:
 | 3 | `cargo test -p sol2near-fuel demo_walkthrough -- --nocapture` | 6 numbered steps: position admitted with its Ref/Treasury proof, a non-backed one refused, season progress, `close_season` → Success/level 1, claim paid, **second claim REJECTED** | output says "MOCKED NEAR VM (not testnet)" |
 | 4 | `bash scripts/build-wasm.sh` (Linux/WSL, cargo-near) | `Contract successfully built!` twice | sizes and SHA-256 printed. The FUEL ABI has no mint method |
 | 5 | `pnpm install --frozen-lockfile && pnpm typecheck && pnpm test:ts && pnpm --filter @sol2near/web test` | all `fail 0`: near-client 57, crosschain 36, web 48 | the near-client tests run on real read fixtures (labelled); crosschain tests are **mocked** (Tidepool + Solana RPC) |
-| 6 | `pnpm --filter @sol2near/web e2e` | 43 passed in local Chrome. Live tests read public endpoints; one automatic retry absorbs a provider blip, and retried tests are listed as "flaky" | `@live`, `@mock` and `@preview` in the test names say which ones use intercepted data |
+| 6 | `pnpm --filter @sol2near/web e2e` (or `e2e:offline` / `e2e:live`) | **offline** project: 12 deterministic tests (replayed RPC snapshot + fixtures, every public endpoint blocked, no retry). **live** project: 31 smoke tests on public NEAR / Solana / Tidepool endpoints, one retry, retried tests listed as "flaky" | `@offline`, `@preview`, `@live`, `@mock` in the test names |
 | 7 | `pnpm --filter @sol2near/web dev`, open the URL | **Creator Portal**: the journey Connect → Choose pool → Amount → Review → Track, with two separate modes (*Live · NEAR testnet* and *Explore · NEAR memecoins*, read-only). `#/dashboard`: type `sol2near-dev.testnet`, click **Load** → 20 USDC received, split 18 / 1.6 / 0.4, LP **BACKED ON REF**, FUEL `Claimed` | the *What is real today* table on the portal shows the evidence kind of every feature |
 | 8 | `node scripts/probes/verify-testnet.mjs` and `node scripts/probes/verify-g6-g7.mjs` (read-only, no keys) | `all checks passed`; `all G6/G7 proofs re-verified` | Tidepool is a community service with no SLA: on a network that filters its domain the Tidepool checks print `FAIL … fetch failed` |
 | 9 | Sandbox runs (Linux/WSL): `node scripts/probes/fetch-sandbox-wasm.mjs && node scripts/probes/fetch-dcl-wasm.mjs`, then `bash scripts/build-wasm.sh treasury-v4 sandbox-meme treasury-dcl`, then `bash sandbox-tests/run.sh v4_pilot` and `bash sandbox-tests/run.sh v42_dcl` | `test result: ok. 1 passed` for each | the wasm come from the chains with read-only `view_code` (SHA-256 printed). Nothing is committed |
@@ -147,6 +148,7 @@ SOL2NEAR takes **0 %** during the hackathon.
 ## Key docs
 
 - `docs/HACKATHON_CHECKLIST.md`: official rules mapped to this project, with the final pre-submission check
+- `docs/G8_FINAL_EXECUTION.md`, `docs/G8_PROOF_LEDGER.md`, `docs/FINAL_RELEASE_AUDIT.md`: G8 state of deposit #3, the prepared LP transaction, the full proof ledger, final release audit
 - `docs/RELEASE_READINESS.md`, `docs/V4_3A_CREATOR_PORTAL.md`, `docs/V4_3A_EXECUTION.md`: V4.3A Creator Portal, unified positions, release readiness and reproducibility audit
 - `docs/V4_2A_DCL_FEASIBILITY.md`, `docs/V4_2A_EXECUTION.md`: V4.2A Rhea DCL / Nearly audit (interfaces measured on the real wasm, taxes, ownership, 3 real pools), TreasuryDCL local adapter and its sandbox run
 - `docs/V4_1B_EXECUTION.md`: V4.1B dashboard integration, TreasuryV4 interface audit, Position Manager, public validation plan

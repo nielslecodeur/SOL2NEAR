@@ -49,7 +49,7 @@ async function retry<T>(f: () => Promise<T>): Promise<T> {
 async function readLive(c: DclCandidate): Promise<DclLive> {
   const ref = 100_000_000n;
   const route = [c.usdcPool, c.poolId];
-  const q = (amount: bigint) => mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route, input_token: MAINNET_USDC, output_token: c.tokenX, input_amount: String(amount) }).then((r) => BigInt(r.amount)).catch(() => null);
+  const q = (amount: bigint) => mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route, input_token: MAINNET_USDC, output_token: c.tokenX, input_amount: String(amount) }).then((r) => BigInt(r.amount)); // a failed read throws (→ OBSERVE_ONLY "unreadable"); only a real DCL answer of 0 means "no route"
   // sequential on purpose: a burst of parallel views is rate-limited by the public providers
   const pool = await retry(() => mainnet.view<RawDclPoolFull>(c.dex, "get_pool", { pool_id: c.poolId }));
   const meta = await retry(() => mainnet.view<{ state: string }>(c.dex, "get_metadata"));

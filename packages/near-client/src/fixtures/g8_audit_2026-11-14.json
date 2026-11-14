@@ -1,0 +1,483 @@
+{
+  "read_at": "2026-11-14T14:01:02.142Z",
+  "note": "READ-ONLY testnet / devnet reads for G8",
+  "block": {
+    "height": 277666398,
+    "timestamp_ns": "1794664860103317573"
+  },
+  "code_treasury.sol2near-dev.testnet": "8njzxUPU74wzskUUJ6QDjowp953JePSqL96ez5kqJ7F3",
+  "code_fuel.sol2near-dev.testnet": "Bz7dZyzXorvrtA2SVD51YiYYyaDpiDwS57Aw6pGm9inP",
+  "treasury_config": {
+    "config": {
+      "usdc_token": "usdc.tidepool-sandbox.testnet",
+      "wnear_token": "wnear.tidepool-sandbox.testnet",
+      "ref_exchange": "ref-finance-101.testnet",
+      "pool_id": 2951,
+      "min_deposit": "1000000",
+      "lp_lock_duration_ns": "600000000000"
+    },
+    "lp_bps": 9000,
+    "reserve_bps": 800,
+    "community_bps": 200,
+    "ready": true,
+    "usdc_pool_index": 0
+  },
+  "accounting": {
+    "total_received": "121994800",
+    "reserve_total": "9759584",
+    "community_total": "2439896",
+    "pending_budget_total": "79195320",
+    "ref_expected_usdc": "3",
+    "ref_expected_wnear": "234833257333084394",
+    "recorded_shares": "268750243691052670214318",
+    "deposits_count": "4"
+  },
+  "in_flight": null,
+  "deposit3": {
+    "id": "3",
+    "creator": "lowarena9362.testnet",
+    "amount": "87994800",
+    "lp_budget": "79195320",
+    "reserve": "7039584",
+    "community": "1759896",
+    "status": "BudgetAllocated",
+    "plan": null,
+    "lp_shares": "0",
+    "lp_verified": false,
+    "usdc_swapped": "0",
+    "usdc_in_lp": "0",
+    "wnear_in_lp": "0",
+    "dust_usdc": "0",
+    "dust_wnear": "0",
+    "unlock_at": null,
+    "pool_id": null,
+    "lp_confirmed_at": null,
+    "lp_confirmed_block": null,
+    "last_error": null,
+    "created_at": "1794606345833792160",
+    "updated_at": "1794606345833792160"
+  },
+  "creator_deposits": [
+    {
+      "id": "1",
+      "status": "LpConfirmed",
+      "amount": "2000000",
+      "lp_budget": "1800000",
+      "lp_shares": "15282093210022862277595"
+    },
+    {
+      "id": "2",
+      "status": "LpConfirmed",
+      "amount": "12000000",
+      "lp_budget": "10800000",
+      "lp_shares": "87827896964884103917701"
+    },
+    {
+      "id": "3",
+      "status": "BudgetAllocated",
+      "amount": "87994800",
+      "lp_budget": "79195320",
+      "lp_shares": "0"
+    }
+  ],
+  "creator_reserve": "8159584",
+  "last_proof": {
+    "block_height": "277550963",
+    "timestamp": "1794596905665427154",
+    "onchain_shares": "268750243691052670214318",
+    "recorded_shares": "268750243691052670214318",
+    "ok": true
+  },
+  "pool": {
+    "pool_kind": "SIMPLE_POOL",
+    "token_account_ids": [
+      "usdc.tidepool-sandbox.testnet",
+      "wnear.tidepool-sandbox.testnet"
+    ],
+    "amounts": [
+      "80699997",
+      "14011261309647048936214624"
+    ],
+    "total_fee": 30,
+    "shares_total_supply": "1268822730751472693063636",
+    "amp": 0
+  },
+  "ref_treasury_shares": "268750243691052670214318",
+  "ref_treasury_deposits": {
+    "wnear.tidepool-sandbox.testnet": "234833257333084394",
+    "usdc.tidepool-sandbox.testnet": "3"
+  },
+  "ref_treasury_storage": {
+    "deposit": "100000000000000000000000",
+    "usage": "3980000000000000000000"
+  },
+  "ref_metadata": {
+    "version": "1.9.19",
+    "owner": "reflabs.sputnikv2.testnet",
+    "boost_farm_id": "boostfarm.ref-finance.testnet",
+    "burrowland_id": "burrow.services.ref-labs.testnet",
+    "guardians": [
+      "napoleon.testnet",
+      "messages.testnet",
+      "pika8.testnet",
+      "u1.testnet"
+    ],
+    "pool_count": 2981,
+    "state": "Running",
+    "admin_fee_bps": 2000,
+    "cumulative_info_record_interval_sec": 720,
+    "wnear_id": "wrap.testnet",
+    "auto_whitelisted_postfix": [
+      ".tkns.testnet",
+      ".portalpad1.testnet",
+      "meme-cooking.testnet",
+      ".tkndev.testnet"
+    ]
+  },
+  "usdc_treasury": "91394800",
+  "usdc_creator": "0",
+  "wnear_treasury": "0",
+  "reactor": {
+    "level": 2,
+    "now": "1794664860786094096",
+    "current_season_id": 108,
+    "current_season": {
+      "id": 108,
+      "start": "1794664142578932153",
+      "end": "1794665942578932153",
+      "target_usdc": "5000000",
+      "progress_usdc": "0",
+      "positions": 0,
+      "committed_creator": "0",
+      "committed_community": "0",
+      "status": "Open",
+      "burned": "0",
+      "level_after": null,
+      "closed_at": null
+    },
+    "seasons_touched": [
+      0,
+      70
+    ],
+    "buckets": {
+      "total_supply": "1000000000000000000000000",
+      "contract_balance": "650987789708000000000000",
+      "pol_available": "599984737135000000000000",
+      "pol_committed": "0",
+      "pol_distributed": "12210292000000000000",
+      "community_reserve": "3052573000000000000",
+      "burn_reserve": "1000000000000000000000",
+      "burned_total": "0",
+      "team_locked": "50000000000000000000000",
+      "team_released": "0"
+    },
+    "config": {
+      "treasury_id": "treasury.sol2near-dev.testnet",
+      "ref_exchange": "ref-finance-101.testnet",
+      "pool_id": 2951,
+      "ecosystem_id": "sol2near-dev.testnet",
+      "liquidity_id": "sol2near-dev.testnet",
+      "team_id": "sol2near-dev.testnet",
+      "genesis_ns": "1794469742578932153",
+      "season_duration_ns": "1800000000000",
+      "registration_grace_ns": "300000000000",
+      "season_target_usdc": "5000000",
+      "season_reward_budget": "5000000000000000000000",
+      "season_burn": "10000000000000000000",
+      "min_lock_ns": "600000000000",
+      "vault_cap": "2000000000000000000000",
+      "team_cliff_ns": "3600000000000",
+      "team_vesting_ns": "36000000000000"
+    }
+  },
+  "fuel_position3": null,
+  "fuel_creator_storage": {
+    "total": "1250000000000000000000",
+    "available": "0"
+  },
+  "G7-SOL": {
+    "confirmationStatus": "finalized",
+    "confirmations": null,
+    "err": null,
+    "slot": 521962250,
+    "status": {
+      "Ok": null
+    }
+  },
+  "G7-NEAR": {
+    "status": "SuccessValue",
+    "final": "FINAL",
+    "signer": "maker.tidepool-sandbox.testnet",
+    "receiver": "verifier.tidepool-sandbox.testnet",
+    "args": [
+      {
+        "method": "execute_intents",
+        "args": "{\"signed\":[{\"standard\":\"nep413\",\"payload\":{\"message\":\"{\\\"signer_id\\\":\\\"maker.tidepool-sandbox.testnet\\\",\\\"verifying_contract\\\":\\\"verifier.tidepool-sandbox.testnet\\\",\\\"deadline\\\":\\\"2026-11-13T21:41:04.378Z\\\",\\\"nonce\\\":\\\"EsIm9XOVAF4cp4gAvnD8CKBZhgCKyV1084QyPIwzX38=\\\",\\\"intents\\\":[{\\\"intent\\\":\\\"token_diff\\\",\\\"diff\\\":{\\\"nep141:sol-d48c1adc423a64867ac91ed2e1c0df76da323235.tp-omft.testnet\\\":\\\"2000000\\\",\\\"nep141:usdc.tidepool-sandbox.testnet\\\":\\\"-1994800\\\"}}]}\",\"nonce\":\"EsIm9XOVAF4cp4gAvnD8CKBZhgCKyV1084QyPIwzX38=\",\"recipient\":\"verifier.tidepool-sandbox.testnet\"},\"public_key\":\"ed25519:U1Mu4u1nHnHmgABpCkfDGXt2FZj8k29UGqhkMAu4iWY\",\"signature\":\"ed25519:2nvF8nQDRRWAhEFoM9af8bSbbRm2VZQNziCcugpxsD55XFd2Tz8FtzWkcxFhDCp2VKwMH2xC3VruNhRU8SCKDsQe\"},{\"standard\":\"nep413\",\"payload\":{\"message\":\"{\\\"signer_id\\\":\\\"72a15d68d814f56d4ddb929d1eb26cdc20f8aca513b95fdb04a03b21cd10d646\\\",\\\"verifying_contract\\\":\\\"verifier.tidepool-sandbox.testnet\\\",\\\"deadline\\\":\\\"2026-11-13T21:41:04.377Z\\\",\\\"nonce\\\":\\\"FOtl7zf9FI2K1H/pNoyK53FvX9FuUupJP8m4VCnB9DE=\\\",\\\"intents\\\":[{\\\"intent\\\":\\\"token_diff\\\",\\\"diff\\\":{\\\"nep141:sol-d48c1adc423a64867ac91ed2e1c0df76da323235.tp-omft.testnet\\\":\\\"-2000000\\\",\\\"nep141:usdc.tidepool-sandbox.testnet\\\":\\\"1994800\\\"}},{\\\"intent\\\":\\\"ft_withdraw\\\",\\\"token\\\":\\\"usdc.tidepool-sandbox.testnet\\\",\\\"receiver_id\\\":\\\"lowarena9362.testnet\\\",\\\"amount\\\":\\\"1994800\\\"}]}\",\"nonce\":\"FOtl7zf9FI2K1H/pNoyK53FvX9FuUupJP8m4VCnB9DE=\",\"recipient\":\"verifier.tidepool-sandbox.testnet\"},\"public_key\":\"ed25519:8iUBzMd3EwNcatBtjsx7NgrT61B9ejWs8CqdU5ks8udw\",\"signature\":\"ed25519:21m4PTun3rzsQxeedmRBcbL6Do5t8fiSKoKA1D7ptYgezM5tKo4PwxGAvQKQiBQoEUt7nMRxCFPS4WsyvKnYorNT\"}]}"
+      }
+    ],
+    "events": [
+      {
+        "standard": "dip4",
+        "event": "token_diff",
+        "data": [
+          {
+            "intent_hash": "4gkmbTHM7sMXLp8S5g8iwtTbG8EqXUoRnQU54AdpsM91",
+            "account_id": "maker.tidepool-sandbox.testnet",
+            "diff": {
+              "nep141:sol-d48c1adc423a64867ac91ed2e1c0df76da323235.tp-omft.testnet": "2000000",
+              "nep141:usdc.tidepool-sandbox.testnet": "-1994800"
+            }
+          }
+        ]
+      },
+      {
+        "standard": "dip4",
+        "event": "token_diff",
+        "data": [
+          {
+            "intent_hash": "6frePNkFgp7WAVYhkpT91U5Fq4XJXoQeikuzzB7iKjJ7",
+            "account_id": "72a15d68d814f56d4ddb929d1eb26cdc20f8aca513b95fdb04a03b21cd10d646",
+            "diff": {
+              "nep141:sol-d48c1adc423a64867ac91ed2e1c0df76da323235.tp-omft.testnet": "-2000000",
+              "nep141:usdc.tidepool-sandbox.testnet": "1994800"
+            }
+          }
+        ]
+      },
+      {
+        "standard": "dip4",
+        "event": "ft_withdraw",
+        "data": [
+          {
+            "intent_hash": "6frePNkFgp7WAVYhkpT91U5Fq4XJXoQeikuzzB7iKjJ7",
+            "account_id": "72a15d68d814f56d4ddb929d1eb26cdc20f8aca513b95fdb04a03b21cd10d646",
+            "token": "usdc.tidepool-sandbox.testnet",
+            "receiver_id": "lowarena9362.testnet",
+            "amount": "1994800"
+          }
+        ]
+      },
+      {
+        "standard": "dip4",
+        "event": "intents_executed",
+        "data": [
+          {
+            "intent_hash": "4gkmbTHM7sMXLp8S5g8iwtTbG8EqXUoRnQU54AdpsM91",
+            "account_id": "maker.tidepool-sandbox.testnet",
+            "nonce": "EsIm9XOVAF4cp4gAvnD8CKBZhgCKyV1084QyPIwzX38="
+          },
+          {
+            "intent_hash": "6frePNkFgp7WAVYhkpT91U5Fq4XJXoQeikuzzB7iKjJ7",
+            "account_id": "72a15d68d814f56d4ddb929d1eb26cdc20f8aca513b95fdb04a03b21cd10d646",
+            "nonce": "FOtl7zf9FI2K1H/pNoyK53FvX9FuUupJP8m4VCnB9DE="
+          }
+        ]
+      },
+      {
+        "standard": "nep245",
+        "event": "mt_transfer",
+        "data": [
+          {
+            "old_owner_id": "72a15d68d814f56d4ddb929d1eb26cdc20f8aca513b95fdb04a03b21cd10d646",
+            "new_owner_id": "maker.tidepool-sandbox.testnet",
+            "token_ids": [
+              "nep141:sol-d48c1adc423a64867ac91ed2e1c0df76da323235.tp-omft.testnet"
+            ],
+            "amounts": [
+              "2000000"
+            ]
+          },
+          {
+            "old_owner_id": "maker.tidepool-sandbox.testnet",
+            "new_owner_id": "72a15d68d814f56d4ddb929d1eb26cdc20f8aca513b95fdb04a03b21cd10d646",
+            "token_ids": [
+              "nep141:usdc.tidepool-sandbox.testnet"
+            ],
+            "amounts": [
+              "1994800"
+            ]
+          }
+        ]
+      },
+      {
+        "standard": "nep245",
+        "event": "mt_burn",
+        "data": [
+          {
+            "owner_id": "72a15d68d814f56d4ddb929d1eb26cdc20f8aca513b95fdb04a03b21cd10d646",
+            "token_ids": [
+              "nep141:usdc.tidepool-sandbox.testnet"
+            ],
+            "amounts": [
+              "1994800"
+            ],
+            "memo": "withdraw"
+          }
+        ]
+      },
+      {
+        "standard": "nep141",
+        "event": "ft_transfer",
+        "data": [
+          {
+            "old_owner_id": "verifier.tidepool-sandbox.testnet",
+            "new_owner_id": "lowarena9362.testnet",
+            "amount": "1994800"
+          }
+        ]
+      }
+    ]
+  },
+  "G7-TREAS": {
+    "status": "SuccessValue",
+    "final": "FINAL",
+    "signer": "lowarena9362.testnet",
+    "receiver": "usdc.tidepool-sandbox.testnet",
+    "args": [
+      {
+        "method": "ft_transfer_call",
+        "args": "{\"receiver_id\":\"treasury.sol2near-dev.testnet\",\"amount\":\"87994800\",\"msg\":\"{\\\"action\\\":\\\"deposit\\\"}\"}"
+      }
+    ],
+    "events": [
+      {
+        "standard": "nep141",
+        "event": "ft_transfer",
+        "data": [
+          {
+            "old_owner_id": "lowarena9362.testnet",
+            "new_owner_id": "treasury.sol2near-dev.testnet",
+            "amount": "87994800"
+          }
+        ]
+      },
+      {
+        "standard": "sol2near",
+        "event": "deposit_allocated",
+        "data": [
+          {
+            "deposit_id": "3",
+            "creator": "lowarena9362.testnet",
+            "amount": "87994800",
+            "lp_budget": "79195320",
+            "reserve": "7039584",
+            "community": "1759896"
+          }
+        ]
+      }
+    ]
+  },
+  "G7-SOL-transfer": [
+    {
+      "authority": "4NKELSMWVaGu12xPZm1H5fppzNHDKycttYaAS44NE4z5",
+      "destination": "CwHAAyy32KoRQx7tEPaaznCaDhQ52nQygL5wBCVi6RkN",
+      "mint": "7pafEGXSmR35rLKNaD6inpfLYuEnRX9DyBc1c7M8r4Xr",
+      "source": "AFDH7pLEKkegSCkt1Jmwk2nBG4Tof1RNr9NQZgGE97M1",
+      "tokenAmount": {
+        "amount": "2000000",
+        "decimals": 6,
+        "uiAmount": 2,
+        "uiAmountString": "2"
+      }
+    }
+  ],
+  "tidepool_status": {
+    "correlationId": "d0112628-3063-4c47-9a40-5836b92468d2",
+    "quoteResponse": {
+      "correlationId": "d0112628-3063-4c47-9a40-5836b92468d2",
+      "timestamp": "2026-11-13T21:38:31.690Z",
+      "quoteRequest": {
+        "dry": false,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:sol-d48c1adc423a64867ac91ed2e1c0df76da323235.tp-omft.testnet",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:usdc.tidepool-sandbox.testnet",
+        "amount": "2000000",
+        "refundTo": "4NKELSMWVaGu12xPZm1H5fppzNHDKycttYaAS44NE4z5",
+        "refundType": "ORIGIN_CHAIN",
+        "recipient": "lowarena9362.testnet",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-13T22:08:31.478Z"
+      },
+      "quote": {
+        "amountIn": "2000000",
+        "amountInFormatted": "2",
+        "amountInUsd": "1.9990",
+        "minAmountIn": "2000000",
+        "amountOut": "1994800",
+        "amountOutFormatted": "1.9948",
+        "amountOutUsd": "1.9938",
+        "minAmountOut": "1974852",
+        "timeEstimate": 60,
+        "depositAddress": "5gUT7A3ZdqgnEe5eKTwQRBrwTcm3EJmNfRiCZTG2vNpU",
+        "deadline": "2026-11-13T22:08:31.478Z",
+        "timeWhenInactive": "2026-11-13T22:08:31.478Z"
+      },
+      "signature": "ed25519:2CtPt173DGzrF1GF828EnWgAGb4j6nwZyYftJxXhkSMx3eT8QAgM63dQfkCVaJRfEnHKZPWdc8ZbjpnXpqdfBoCf"
+    },
+    "status": "SUCCESS",
+    "updatedAt": "2026-11-13T21:39:08.234Z",
+    "swapDetails": {
+      "intentHashes": [
+        "4gkmbTHM7sMXLp8S5g8iwtTbG8EqXUoRnQU54AdpsM91",
+        "6frePNkFgp7WAVYhkpT91U5Fq4XJXoQeikuzzB7iKjJ7"
+      ],
+      "nearTxHashes": [
+        "77YYSfWFHVHo4WS7ZhzKiXJo9GvC2kE989eAhyvTP8By",
+        "7oQQZa1EBx5m2voadDzoWWhAguD4QMzXVpNryVJ45XPN",
+        "J58H2uyuGo4wJsjbNuX1AEEwszD4Z8CMAppCqCirRFqf"
+      ],
+      "originChainTxHashes": [
+        {
+          "hash": "bGUicpgyYtePFP3BcEXYHQ9me67uqFjFQWmS8FsKWhYSzwpcVDv5SZyyLxYneLX93Bic4JZRFrWvphQUkEs887R",
+          "explorerUrl": "https://explorer.solana.com/tx/bGUicpgyYtePFP3BcEXYHQ9me67uqFjFQWmS8FsKWhYSzwpcVDv5SZyyLxYneLX93Bic4JZRFrWvphQUkEs887R?cluster=devnet"
+        }
+      ],
+      "destinationChainTxHashes": [
+        {
+          "hash": "J58H2uyuGo4wJsjbNuX1AEEwszD4Z8CMAppCqCirRFqf",
+          "explorerUrl": "https://testnet.nearblocks.io/txns/J58H2uyuGo4wJsjbNuX1AEEwszD4Z8CMAppCqCirRFqf"
+        }
+      ],
+      "amountIn": "2000000",
+      "amountInFormatted": "2",
+      "amountInUsd": "1.9989",
+      "amountOut": "1994800",
+      "amountOutFormatted": "1.9948",
+      "amountOutUsd": "1.9937",
+      "slippage": 0,
+      "depositedAmount": "2000000",
+      "depositedAmountFormatted": "2",
+      "depositedAmountUsd": "1.9989",
+      "withdrawFee": "0"
+    },
+    "tidepool": {
+      "explorer": [
+        {
+          "label": "sweep deposit address into treasury (Solana Devnet)",
+          "url": "https://explorer.solana.com/tx/MsLcPLnE2uDhpb8HkADsqhj3k1c2ntDA6s5Xnd2ESV21PDcSD2EWAqswr62zRshbGxfSRgQgBZxtCeY1Mvmx8CW?cluster=devnet"
+        },
+        {
+          "label": "mint bridged USDC (Solana Devnet deposit)",
+          "url": "https://testnet.nearblocks.io/txns/77YYSfWFHVHo4WS7ZhzKiXJo9GvC2kE989eAhyvTP8By"
+        },
+        {
+          "label": "credit deposit into verifier (ft_transfer_call)",
+          "url": "https://testnet.nearblocks.io/txns/7oQQZa1EBx5m2voadDzoWWhAguD4QMzXVpNryVJ45XPN"
+        },
+        {
+          "label": "swap (execute_intents)",
+          "url": "https://testnet.nearblocks.io/txns/J58H2uyuGo4wJsjbNuX1AEEwszD4Z8CMAppCqCirRFqf"
+        }
+      ],
+      "intentsAccount": "72a15d68d814f56d4ddb929d1eb26cdc20f8aca513b95fdb04a03b21cd10d646"
+    }
+  },
+  "correlation": {
+    "solana_tx_in_tidepool_record": true,
+    "near_tx_in_tidepool_record": true,
+    "intent_hashes_match_onchain_events": true,
+    "recipient": "lowarena9362.testnet"
+  }
+}

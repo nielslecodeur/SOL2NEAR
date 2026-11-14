@@ -5,7 +5,7 @@
 // No test clicks anything that could reach a real wallet signature: the only "Confirm & open wallet" clicks
 // happen with the mocked wallet, which rejects and never touches the network.
 import { expect, test, type Page } from "@playwright/test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
 const RPCS = ["https://near-testnet.drpc.org", "https://test.rpc.fastnear.com"];
 const DEV = "sol2near-dev.testnet";
@@ -428,9 +428,20 @@ test.describe("@preview V4.1B Position Manager on REAL contract views from the L
   });
 });
 
-/** MOCK: answers the public testnet RPC as if the pilot were deployed. Everything else goes to the real RPC. */
+/**
+ * OFFLINE replay for the V4.1B "deployed pilot" tests. The pilot accounts are answered by hand (below). Every OTHER testnet
+ * RPC call the page makes (V3 Treasury snapshot, deployed FUEL config, wallet balances…) is answered from a dated snapshot
+ * of the real responses, recorded once with `E2E_RECORD=1`: no public endpoint is contacted, so these tests are
+ * deterministic. An unrecorded call gets an explicit RPC error (the page must then show "read failed", never guess).
+ * Mainnet, Tidepool and Solana are blocked in these tests.
+ */
+const RPC_SNAPSHOT = new URL("./fixtures/testnet-rpc-snapshot.json", import.meta.url);
+const RECORD = !!process.env.E2E_RECORD;
+const recorded: Record<string, unknown> = !RECORD && existsSync(RPC_SNAPSHOT) ? JSON.parse(readFileSync(RPC_SNAPSHOT, "utf8")).responses : {};
+const rpcKey = (body: { method?: string; params?: unknown }) => `${body.method} ${JSON.stringify(body.params)}`;
 async function mockDeployedPilot(page: Page, o: { config: object; position?: object; inFlight?: object | null; nowNs: string }) {
   const bytes = (v: unknown) => Array.from(Buffer.from(JSON.stringify(v)));
+  await page.route(/free\.rpc\.fastnear\.com|near\.drpc\.org|usetidepool\.tech|solana\.com/, (route) => route.abort("blockedbyclient")); // offline
   await page.route(/near-testnet\.drpc\.org|test\.rpc\.fastnear\.com/, async (route) => {
     const body = JSON.parse(route.request().postData() ?? "{}");
     const p = body.params ?? {};
@@ -457,7 +468,20 @@ async function mockDeployedPilot(page: Page, o: { config: object; position?: obj
         if (p.method_name in ref) return reply({ result: bytes(ref[p.method_name]), logs: [], block_height: 1, block_hash: "x" });
       }
     }
-    return route.continue();
+    const key = rpcKey(body);
+    if (RECORD) {
+      for (let i = 0; ; i++) {
+        const resp = await route.fetch().catch(() => null);
+        const j = resp ? await resp.json().catch(() => null) : null;
+        if (j?.result || i >= 3) {
+          if (j?.result) recorded[key] = j.result;
+          return j ? route.fulfill({ json: { ...j, id: body.id } }) : route.abort("failed");
+        }
+        await new Promise((r) => setTimeout(r, 1500 * (i + 1)));
+      }
+    }
+    if (key in recorded) return route.fulfill({ json: { jsonrpc: "2.0", id: body.id, result: recorded[key] } });
+    return route.fulfill({ json: { jsonrpc: "2.0", id: body.id, error: { code: -32000, message: `E2E OFFLINE: unrecorded RPC call ${key.slice(0, 160)}` } } });
   });
 }
 const plannedConfig = (poolId: number) => ({
@@ -466,7 +490,10 @@ const plannedConfig = (poolId: number) => ({
   lp_bps: 9000, reserve_bps: 800, community_bps: 200, ready: true, usdc_pool_index: 0, fuel: "FUEL_NOT_ELIGIBLE",
 });
 
-test.describe("@mock V4.1B with an intercepted RPC (no contract exists on testnet)", () => {
+test.describe("@offline V4.1B with a replayed RPC (no contract exists on testnet)", () => {
+  test.afterAll(() => {
+    if (RECORD) writeFileSync(RPC_SNAPSHOT, JSON.stringify({ recorded_at: new Date().toISOString(), note: "REAL public NEAR testnet RPC responses recorded with E2E_RECORD=1 for the @offline tests (view calls only). Replayed, never edited by hand.", responses: recorded }, null, 1) + "\n");
+  });
   test("deployed with the WRONG configuration (the sandbox config): DEPLOYED · NOT READY, nothing unlocked", async ({ page }) => {
     await mockDeployedPilot(page, { config: SANDBOX_VIEWS.config, nowNs: SANDBOX_VIEWS.budget_allocated.now_ns });
     await page.goto("/#/pools");
