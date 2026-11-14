@@ -153,3 +153,5 @@ table.sim tr.warn td:nth-child(3) { color: var(--warn); }
 }
 nav { flex-wrap: wrap; }
 table.status .badge, table.sim .badge { white-space: normal; }
+/* G9.1: a badge used as a message paragraph (e.g. an RPC error) must wrap on mobile instead of overflowing */
+p.badge { white-space: normal; overflow-wrap: anywhere; }

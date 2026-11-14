@@ -20,6 +20,8 @@ import { UnifiedCard } from "./UnifiedCard.tsx";
 const USDC_TP = "usdc.tidepool-sandbox.testnet";
 const tidepool = createTidepoolClient({ store: memoryStore() }); // dry quotes only: no deposit address, nothing stored
 const solana = new SolanaDevnet();
+/** Public read-only build: no wallet code is bundled (vite.config.ts), wallets are never offered. */
+const READ_ONLY = import.meta.env.VITE_PUBLIC_READ_ONLY === "1";
 const readers = poolReaders();
 /** Placeholder refund address for DRY quotes only (the Tidepool devnet USDC mint, as in the bridge card). */
 const DRY_REFUND = "7pafEGXSmR35rLKNaD6inpfLYuEnRX9DyBc1c7M8r4Xr";
@@ -49,7 +51,7 @@ export function CreatorPortal({ wallet, account, snap, nearPanel, onWatch }: {
           <button role="tab" aria-selected={!live} className={!live ? "on" : ""} onClick={() => setMode("EXPLORE_MEMECOINS")}>Explore · NEAR memecoins (read-only)</button>
         </div>
         {live
-          ? <p className="muted" data-testid="mode-note">Deployed contracts on <b>NEAR testnet</b> only. Real transactions, each approved in your own wallet after a review. The only fundable pool today is Ref Classic <b>#2951 USDC/wNEAR — not a memecoin</b>.</p>
+          ? <p className="muted" data-testid="mode-note">Deployed contracts on <b>NEAR testnet</b> only. {READ_ONLY ? "State is read live; signing is not available in this public demo (the full app, run locally, asks your own wallet to approve each transaction after a review)." : "Real transactions, each approved in your own wallet after a review."} The only fundable pool today is Ref Classic <b>#2951 USDC/wNEAR — not a memecoin</b>.</p>
           : <div className="banner sim" data-testid="mode-note">EXPLORE MODE — real NEAR memecoin pools read on <b>mainnet</b> (view calls), reference simulations and LOCAL SANDBOX evidence. Nothing in this mode can be signed or executed.</div>}
         <ol className="stepper" aria-label="Journey">
           {STEPS.map((s, i) => (
@@ -143,10 +145,11 @@ function StepConnect({ live, wallet }: { live: boolean; wallet: string | null })
       <div className="wallets">
         <div className="card" aria-label="Solana wallet">
           <h4>Solana · Phantom</h4>
-          {!sol.detected && <p className="badge pending">Phantom not detected in this browser</p>}
-          {sol.addr
+          {READ_ONLY ? <p data-testid="wallets-disabled"><span className="badge neutral">READ-ONLY DEMO</span> Not available here: this site contains no wallet code. Run the app locally to connect Phantom (devnet).</p>
+            : !sol.detected && <p className="badge pending">Phantom not detected in this browser</p>}
+          {!READ_ONLY && (sol.addr
             ? <p>Connected <code>{sol.addr}</code><br />USDC on Solana <b>devnet</b>: {sol.balance === null ? "reading…" : <b data-testid="sol-usdc">{formatUnits(sol.balance, 6, 6)}</b>} <small className="muted">(Tidepool devnet USDC mint 7paf…r4Xr, read from Solana devnet RPC)</small></p>
-            : <button onClick={sol.connect} disabled={!sol.detected}>Connect Phantom</button>}
+            : <button onClick={sol.connect} disabled={!sol.detected}>Connect Phantom</button>)}
           <p className="muted small">Phantom does not tell a website which network it is on: switch it to <b>Testnet mode / Devnet</b>. A transfer prepared for devnet cannot land on mainnet (its blockhash is devnet-only), but check before approving.</p>
           {sol.balance === "0" && <p className="badge pending">No devnet USDC on this address: the bridge step would have nothing to send.</p>}
           {sol.err && <p className="badge failed">{sol.err}</p>}
@@ -266,7 +269,7 @@ function StepReview({ wallet, account }: { wallet: string | null; account: strin
         <li><b>NEAR wallet, optional</b> — FUEL <code>register_position</code> while a season is open, later <code>claim</code>. <i>NEAR panel / FUEL Reactor.</i></li>
       </ol>
       <p className="muted small">Why not one signature: the Solana transfer and the NEAR transactions are on two chains with two keys. Merging them would need a new custody or delegation design, which is not built (see the Creator Portal doc). This page never signs anything itself.</p>
-      <div className="card" aria-label="Bridge card"><h4>Bridge · Solana devnet → NEAR testnet (real)</h4><BridgeLive nearAccount={wallet ?? account} /></div>
+      <div className="card" aria-label="Bridge card"><h4>Bridge · Solana devnet → NEAR testnet {READ_ONLY ? "(read-only here)" : "(real)"}</h4><BridgeLive nearAccount={wallet ?? account} /></div>
     </section>
   );
 }

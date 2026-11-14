@@ -10,9 +10,13 @@ import { CreatorPortal } from "./portal/CreatorPortal.tsx";
 import { UnifiedCard } from "./portal/UnifiedCard.tsx";
 import { DclPositionPreview } from "./v4/Dcl.tsx";
 import { fromV3Deposit } from "../../../packages/near-client/src/index.ts";
+import { ProofsPage } from "./proofs/Proofs.tsx";
+
+/** Public read-only demo build (`vite build --mode public`): no wallet or signing code is bundled (see vite.config.ts). */
+const READ_ONLY = import.meta.env.VITE_PUBLIC_READ_ONLY === "1";
 import { bridgeTone, depositStatus, duration, fuel, pct, usdc, wnear, type Tone } from "./format.ts";
 
-type Route = { page: "creator" } | { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" } | { page: "pools" } | { page: "positions" };
+type Route = { page: "creator" } | { page: "proofs" } | { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" } | { page: "pools" } | { page: "positions" };
 
 function parseRoute(): Route {
   const [, page, id] = location.hash.split("/");
@@ -21,6 +25,7 @@ function parseRoute(): Route {
   if (page === "pools") return { page: "pools" };
   if (page === "positions") return { page: "positions" };
   if (page === "dashboard") return { page: "dashboard" };
+  if (page === "proofs") return { page: "proofs" };
   return { page: "creator" };
 }
 
@@ -90,6 +95,7 @@ export function App() {
           <a href="#/reactor" className={route.page === "reactor" ? "on" : ""}>FUEL Reactor</a>
           <a href="#/pools" className={route.page === "pools" ? "on" : ""}>Pools (V4)</a>
           <a href="#/positions" className={route.page === "positions" ? "on" : ""}>Positions (V4)</a>
+          <a href="#/proofs" className={route.page === "proofs" ? "on" : ""}>Proofs</a>
         </nav>
         <div className="net">
           <Badge tone="pending">TESTNET</Badge>
@@ -100,6 +106,12 @@ export function App() {
         </div>
       </header>
 
+      {READ_ONLY && (
+        <div className="banner sim" role="note" data-testid="read-only-banner">
+          PUBLIC READ-ONLY DEMO — this site contains no wallet and no signing code: it cannot send any transaction. Testnet and mainnet data are read with
+          public view calls; sandbox results are labelled. To sign on testnet with your own wallets, run the app locally (README).
+        </div>
+      )}
       {demo && <div className="banner sim">SIMULATED / DEMO DATA: nothing on this screen comes from a chain.</div>}
       <div className="banner info">
         Tidepool, used for the Solana Devnet → NEAR bridge, is a <b>community sandbox, not official NEAR Intents</b>. Test tokens have no value.
@@ -126,6 +138,7 @@ export function App() {
       {route.page === "creator" && (demo
         ? <main><div className="banner sim">The Creator Portal has no simulated data: switch to Live testnet.</div></main>
         : <CreatorPortal wallet={walletAccount} account={account} snap={snap} nearPanel={nearPanel} onWatch={watch} />)}
+      {route.page === "proofs" && <ProofsPage />}
       {snap && route.page === "dashboard" && <Dashboard snap={snap} account={account} onTidepool={setTidepoolOk} />}
       {snap && route.page === "vault" && <Vault snap={snap} id={route.id} />}
       {snap && route.page === "reactor" && <ReactorPage snap={snap} />}

@@ -30,3 +30,6 @@ Thumbs.db
 apps/web/dist-e2e/
 apps/web/test-results/
 apps/web/playwright-report/
+
+# public read-only demo build (V4 G9.1)
+apps/web/dist-public/

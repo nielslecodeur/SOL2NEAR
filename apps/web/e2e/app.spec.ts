@@ -805,3 +805,67 @@ test.describe("@mock V4.3A Creator Portal with an intercepted Tidepool quote (po
     await expect(step(page, 3)).toHaveAttribute("aria-current", "step");
   });
 });
+
+// ---- G9.1: PUBLIC READ-ONLY DEMO build (dist-public, served on :4182). Every external request is blocked: deterministic.
+const PUBLIC = "http://127.0.0.1:4182/";
+async function publicOffline(page: Page) {
+  await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, (route) => route.abort("blockedbyclient")); // offline: no public endpoint
+  // a Phantom-like provider is present in the browser: the public build must never touch it
+  await page.addInitScript(() => {
+    (window as any).__phantomCalls = 0;
+    const spy = async () => { (window as any).__phantomCalls++; throw new Error("e2e: must not be called"); };
+    (window as any).phantom = { solana: { publicKey: null, connect: spy, signAndSendTransaction: spy, signTransaction: spy } };
+    (window as any).solana = (window as any).phantom.solana;
+  });
+}
+test.describe("@offline @public G9.1 read-only demo build", () => {
+  test("every route loads directly and after a reload; the read-only banner is always shown; no wallet, no signing button", async ({ page }) => {
+    await publicOffline(page);
+    const pageErrors: string[] = [];
+    page.on("pageerror", (e) => pageErrors.push(e.message));
+    for (const hash of ["", "#/", "#/dashboard", "#/pools", "#/positions", "#/proofs", "#/reactor"]) {
+      await page.goto(PUBLIC + hash);
+      await expect(page.getByTestId("read-only-banner")).toContainText("cannot send any transaction");
+      await page.reload();
+      await expect(page.getByTestId("read-only-banner")).toBeVisible();
+      await expect(page.getByRole("button", { name: /Connect NEAR wallet|Connect Phantom|Connect Solana wallet|Bridge \d|Deploy liquidity|Register for FUEL|Claim .* FUEL|Sign/ })).toHaveCount(0);
+    }
+    expect(await page.evaluate(() => (window as any).__phantomCalls)).toBe(0);
+    expect(pageErrors).toEqual([]);
+  });
+  test("Creator Portal: wallets explained as unavailable, the NEAR panel is the read-only notice, the bridge card cannot deposit", async ({ page }) => {
+    await publicOffline(page);
+    await page.goto(PUBLIC);
+    await expect(page.getByRole("heading", { name: /Bring your Solana USDC to NEAR memecoin liquidity/ })).toBeVisible();
+    await expect(page.getByTestId("wallets-disabled")).toContainText("contains no wallet code");
+    await expect(page.getByLabel("NEAR wallet (not available in the public demo)")).toContainText("not included");
+    await page.getByRole("list", { name: "Journey" }).getByRole("button").nth(3).click();
+    await expect(page.getByLabel("Bridge (read-only)")).toContainText("not available");
+    expect(await page.locator("button:enabled:visible").allInnerTexts().then((t) => t.filter((x) => /^\s*(fund|execute|sign|deposit|bridge|deploy|claim|withdraw|connect)/i.test(x)))).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__phantomCalls)).toBe(0);
+    await page.screenshot({ path: "../../docs/v4/g91-public-portal.jpg", type: "jpeg", quality: 70, fullPage: true });
+  });
+  test("Proofs page lists the executed transactions with explorer links and the documentation; CSP meta present", async ({ page }) => {
+    await publicOffline(page);
+    await page.goto(PUBLIC + "#/proofs");
+    const txs = page.getByLabel("Executed transactions");
+    await expect(txs.locator("tr")).toHaveCount(16);
+    await expect(txs.locator('[data-proof="G7-SOL"] a')).toHaveAttribute("href", /explorer\.solana\.com\/tx\/bGUicpgy.*cluster=devnet/);
+    await expect(txs.locator('[data-proof="C2"] a')).toHaveAttribute("href", "https://testnet.nearblocks.io/txns/4F2wXqzmyBVaPqKa6mE3KMFjFv2S3U3GxXJYJfNsSSHA");
+    await expect(page.getByLabel("Proofs and documentation")).toContainText("G8 is not completed");
+    const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute("content");
+    expect(csp).toContain("connect-src 'self' https://near-testnet.drpc.org");
+    expect(csp).toContain("form-action 'none'");
+    await page.screenshot({ path: "../../docs/v4/g91-public-proofs.jpg", type: "jpeg", quality: 70, fullPage: true });
+  });
+  test("mobile 390px: no horizontal scroll on the public routes", async ({ page }) => {
+    await publicOffline(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const hash of ["#/", "#/proofs", "#/pools", "#/positions"]) {
+      await page.goto(PUBLIC + hash);
+      await expect(page.getByTestId("read-only-banner")).toBeVisible();
+      await page.waitForTimeout(300);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), hash).toBeLessThanOrEqual(0);
+    }
+  });
+});

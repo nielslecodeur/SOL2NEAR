@@ -24,6 +24,13 @@ export default defineConfig({
       timeout: 60_000,
     },
     {
+      // The PUBLIC read-only demo build (`build:public`), served exactly as a static host would serve it.
+      command: "npx vite preview --outDir dist-public --port 4182 --strictPort --host 127.0.0.1",
+      url: "http://127.0.0.1:4182",
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
+    {
       // The Vite DEV server, exactly what README step 6 runs (`pnpm --filter @sol2near/web dev`).
       command: "npx vite --port 4184 --strictPort --host 127.0.0.1",
       url: "http://127.0.0.1:4184",

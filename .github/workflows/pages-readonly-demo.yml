@@ -1,0 +1,47 @@
+# SOL2NEAR — PUBLIC READ-ONLY DEMO on GitHub Pages.
+# MANUAL ONLY (workflow_dispatch): pushing this file deploys nothing. It runs only when someone with write access clicks
+# "Run workflow" (Actions tab), after Settings → Pages → Source = "GitHub Actions".
+# The build is `--mode public`: no wallet or signing code is bundled; the job FAILS if the bundle check finds any.
+name: Deploy read-only demo (GitHub Pages)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-readonly-demo
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @sol2near/web build:public
+      - name: Prove the bundle cannot sign (no wallet selector, no tx builder, no Phantom calls, CSP present)
+        run: node scripts/check-public-bundle.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist-public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
