@@ -123,11 +123,8 @@ field overflowed at 390 px, two live tests failed (§6).
 
 ## 8. Remaining limitations
 
-- **Not published.** The new interface, README and archive are local commits. Publishing needs two separate approvals:
-  push, then a Vercel redeploy of the existing project (same procedure as H5: clean clone, `build:public`,
-  `check:public`, Build Output API, `vercel deploy --prebuilt --prod`).
-- The README note "the site currently serves `4c88875`" and the matching lines of `JUDGE_QUICKSTART.md` and
-  `HACKATHON_MEMECOIN_PROOF.md` §10 must be updated after that deployment.
+- Published since §10. This deployment record (and the README line saying which commit the site serves) is a later
+  commit, pushed only with its own approval.
 - A pinned live quote can still fail for real reasons (RPC rate limits, an RPC that no longer serves that block). The
   error is shown as it is and the historical quote keeps its label.
 - The Pools page estimator still reads unpinned views (developer tool, unchanged in H6).
@@ -162,4 +159,4 @@ field overflowed at 390 px, two live tests failed (§6).
 | `c851dcb` | docs: README rewrite, stale docs fixed, docs map, this report and its screenshots |
 | next commit | docs: clean-clone result recorded in §6 |
 
-`origin/main` = `4c88875`. These four commits are **ahead of origin, not pushed**. No force push, rebase or rewrite.
+The four commits above were pushed in §10 (`origin/main` = `3cbf7d8`). No force push, rebase or rewrite.
