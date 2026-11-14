@@ -19,7 +19,8 @@ const isText = (f) => !/\.(jpg|jpeg|png|gif|ico|wasm|woff2?|lock)$/i.test(f);
 // 1. key material (NEAR ed25519 secret keys are 64 bytes → ~87-88 base58 chars; public keys ~43-44)
 const SECRET = [
   // a 64-byte ed25519 SIGNATURE (public, e.g. a Tidepool quote) has the same length as a secret key: skip "signature" fields
-  [/(?<!"signature"\s*:\s*")ed25519:[1-9A-HJ-NP-Za-km-z]{80,}/, "NEAR secret key"],
+  // (also when the JSON is escaped inside a recorded tx argument: \"signature\":\"ed25519:…\")
+  [/(?<!"signature\\*"\s*:\s*\\*")ed25519:[1-9A-HJ-NP-Za-km-z]{80,}/, "NEAR secret key"],
   [/"private_key"\s*:/, "private_key field"],
   [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, "PEM private key"],
   [/\[\s*(\d{1,3}\s*,\s*){63}\d{1,3}\s*\]/, "64-byte array (Solana keypair file)"],
