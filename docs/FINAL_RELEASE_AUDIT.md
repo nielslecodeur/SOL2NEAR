@@ -99,9 +99,9 @@ Commands: `pnpm --filter @sol2near/web e2e` (both projects), `e2e:offline`, `e2e
 | Item | Value |
 |---|---|
 | `origin/main` | `2a16cb4` |
-| Local commits not pushed | **9** after the G8 commit: 8 verified at the start of this checkpoint (`cbb2f84` … `3d6ffaf`) + the G8 commit. History not rewritten |
+| Local commits not pushed | the 8 verified at the start of this checkpoint (`cbb2f84` … `3d6ffaf`) + the G8 commits (`abed3f9` and two small follow-ups); exact list: `git log --oneline origin/main..HEAD`. History not rewritten |
 | Content check | no secret, keypair, `.env`, wasm, `node_modules`, build directory or temporary file; the largest files are JPEG captures ≤ 400 KB; fixtures and logs hold public chain data only (accounts, hashes, amounts) |
-| Push preconditions | (1) your explicit approval; (2) `pnpm check:release` green on the pushed tree; (3) a quick live re-run of `verify-testnet.mjs`. The push publishes 9 commits, ≈ 95 files, + 20 k lines, all docs and fixtures included |
+| Push preconditions | (1) your explicit approval; (2) `pnpm check:release` green on the pushed tree; (3) a quick live re-run of `verify-testnet.mjs`. The push publishes those commits (≈ 100 files, + 20 k lines), all docs and fixtures included |
 
 ## 9. Maturity (objective)
 
