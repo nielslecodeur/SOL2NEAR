@@ -18,7 +18,13 @@ SOL2NEAR lets a creator **voluntarily** route USDC from Solana to a NEAR **Treas
 3. **measures the LP shares on-chain**, holds them for the creator, locks them, and publishes a **Proof of Liquidity**;
 4. feeds the **FUEL Reactor**: FUEL is a fixed-supply NEP-141 memecoin earned only for LP that Ref itself confirms the Treasury holds. Community seasons level the Reactor up, or level it down and burn a small prefunded slice of supply. The mechanic reads LP state, never the price chart. See `docs/FUEL_REACTOR.md`.
 
-The rules (split, lock, token ids, pool, FUEL supply and season parameters) are fixed at deployment, and nobody holds an admin key over them.
+The rules (split, lock, token ids, pool, FUEL supply and season parameters) are fixed at deployment: the contracts have **no owner, no admin method and no setter**. **However, the testnet contract accounts `treasury.sol2near-dev.testnet` and `fuel.sol2near-dev.testnet` still hold a full-access key** (read with `view_access_key_list`, 2026-11-14): its holder, the developer, could redeploy different code. The rules are therefore enforced by the code, not yet locked at the account level. Deleting those keys would make them immutable; that has not been done.
+
+## Why NEAR (what the code actually relies on)
+
+- **The proof is checked by contracts, not by a server:** the Treasury reads Ref with asynchronous cross-contract calls (`get_pool_shares`, `get_deposits`) to confirm the LP it holds, and FUEL re-reads the Treasury and Ref before admitting a position. No oracle and no backend are involved.
+- **A destination for cross-chain capital:** NEAR Intents' 1Click API lets a Solana user deliver tokens to a NEAR account. SOL2NEAR uses Tidepool, a community 1Click-compatible **testnet sandbox** (not NEAR Intents itself), for that leg.
+- **NEAR memecoin markets exist on Ref/Rhea:** Classic pools, and DCL pools where Nearly launches its tokens. SOL2NEAR targets them as the place where the creator's liquidity ends up. Today that is only in a local sandbox (V4); the executable path is the test pool 2951.
 
 ## Status — what is proven, and how (2026-11-14)
 
@@ -58,7 +64,8 @@ Every line names its kind of evidence. They are never mixed: a sandbox run is no
 
 ### 6. FUEL, custody and transfer risks
 - **FUEL** recognises only the V3 Treasury and pool 2951 (no setter). V4.1 and V4.2A positions are `FUEL_NOT_ELIGIBLE`.
-- **Custody:** LP shares and DCL positions are held by the Treasury contract for the creator (no admin key, no setter). The deployed contracts are **unaudited**; Ref/Rhea contracts are upgradeable by their DAOs.
+- **Custody:** LP shares and DCL positions are held by the Treasury contract for the creator (no admin method, no setter in the code). The deployed testnet accounts still have a **full-access key** (the developer could redeploy them); they are not locked. The contracts are **unaudited**; Ref/Rhea contracts are upgradeable by their DAOs.
+- **V3 budget lock-in:** the deployed V3 Treasury has no `abort` and no way to return an LP budget. Once deposited, the 90 % budget can only become LP in pool 2951 (deposit #3 waits for that, see G8).
 - **Transfers:** Tidepool is a third-party test service without SLA (deposit address, settlement). Test tokens have no value.
 - **No yield is promised.** Pool fees are variable and can be zero; a concentrated position earns nothing out of its range.
 

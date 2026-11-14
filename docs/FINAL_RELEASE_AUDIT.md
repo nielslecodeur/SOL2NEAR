@@ -12,7 +12,7 @@ Technical freeze audit. No X post, video, deck or submission. Nothing pushed, no
 
 ```text
 Solana devnet ──Phantom──▶ Tidepool (community 1Click-compatible sandbox) ──▶ NEAR testnet wallet
-NEAR wallet ──ft_transfer_call──▶ Treasury V3 (deployed, no admin) ── 90/8/2 ──▶ execute_lp ──▶ Ref Classic #2951 (USDC/wNEAR test pool)
+NEAR wallet ──ft_transfer_call──▶ Treasury V3 (deployed, no admin method; account still has a full-access key) ── 90/8/2 ──▶ execute_lp ──▶ Ref Classic #2951 (USDC/wNEAR test pool)
 Treasury LP shares ──Proof of Liquidity──▶ FUEL (deployed, fixed supply, seasons of 30 min)
 V4.1 TreasuryV4 (Classic memecoin pilot)  ─ local sandbox only
 V4.2A TreasuryDCL (Rhea DCL / Nearly)      ─ local sandbox only; Nearly pools read on mainnet (views only)

@@ -81,7 +81,7 @@ function Hero() {
       <h2>Bring your Solana USDC to NEAR memecoin liquidity — with proof of where it went</h2>
       <p>
         You send USDC you control from Solana. It is bridged to NEAR, split <b>90 % liquidity / 8 % your reserve / 2 % community</b> by a contract with no
-        admin key, and put into a NEAR pool. The liquidity position is held for you, verified on-chain, locked for a fixed time, and shown here with
+        admin method (on testnet its account still has a developer key, so it is not locked yet), and put into a NEAR pool. The liquidity position is held for you, verified on-chain, locked for a fixed time, and shown here with
         every transaction. SOL2NEAR is a router for liquidity, not a bridge, a launchpad or a DEX.
       </p>
       <div className="route" aria-label="Networks">
