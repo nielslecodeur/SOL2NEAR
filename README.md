@@ -179,6 +179,10 @@ The run rewrites the timestamps of `packages/near-client/src/fixtures/v42_dcl_sa
 - **External services:** Tidepool (community testnet sandbox), Ref/Rhea testnet exchange, NEAR and Solana public RPCs,
   read-only mainnet view calls to Ref/Rhea, Rhea DCL and Nearly (token code from github.com/sam3dsol/Nearlytrade).
 - **Templates:** none.
+- **Other project by the same author (rule Q-015):** the author also submits **LAST — Last Buyer Wins**
+  (https://github.com/nielslecodeur/LAST), a last-buyer-wins memecoin game on NEAR testnet, in the `memecoins` track as
+  well. The two projects are independent: separate repositories, contracts and testnet accounts, and a different
+  mechanic (LAST: a countdown jackpot game; SOL2NEAR: cross-chain liquidity routing and the FUEL Reactor).
 - **AI assistance:** code and documentation were written with **Claude Code (Anthropic)** under the direction of the
   author, then reviewed and tested by the author.
 
