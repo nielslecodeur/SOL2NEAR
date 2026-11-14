@@ -1,7 +1,7 @@
 # G9.1 — Public read-only demo: readiness
 
-Status: **READY FOR PUBLIC DEMO DEPLOYMENT APPROVAL** (with the limitations listed below).
-The demo has been **prepared and tested locally only**. **It is not deployed**: no public URL exists yet.
+Status: **DEPLOYED (read-only) on Vercel, 2026-11-14**, with the lead's approval: **https://sol2near-demo.vercel.app**
+(commit `ce3dff1`, see §11 for the deployment record and the live checks).
 
 ## 1. Published vs local-only
 
@@ -9,8 +9,8 @@ The demo has been **prepared and tested locally only**. **It is not deployed**: 
 |---|---|
 | G9 commits `62dfc04`, `9033645`, `9b96f76` | **published** on `origin/main` |
 | G9.1 commit `3368d8a` (read-only build, Proofs page, bundle check, e2e tests, Pages workflow, this doc) | **published** on `origin/main` (pushed with the lead's approval, checked on the remote) |
-| Vercel config (`vercel.json`, bundle check extension, this section) | local commit, not pushed |
-| Vercel project / deployment | **not created, not deployed** |
+| Vercel config `ce3dff1` (`vercel.json`, bundle check extension) | **published** on `origin/main` (pushed with the lead's approval) |
+| Vercel project `sol2near-demo` | **created and deployed** (production): https://sol2near-demo.vercel.app — GitHub repository **not connected**, no automatic deployment |
 | GitHub Pages site | **not enabled, not deployed** (kept as a manual-only fallback) |
 | FullAccess keys on `treasury.sol2near-dev.testnet` and `fuel.sol2near-dev.testnet` | **kept** (lead's decision), disclosed in README, portal and G9 docs |
 | G8 (`execute_lp(3)`) | **not executed** (refused by the lead), still `G8 READY FOR USER SIGNATURE` |
@@ -171,3 +171,32 @@ pnpm check:public                             # proves no signing code in the bu
 pnpm --filter @sol2near/web e2e:offline       # 16 tests incl. 4 @public
 pnpm --filter @sol2near/web exec vite preview --outDir dist-public   # look at it locally
 ```
+
+## 11. Deployment record (2026-11-14)
+
+- Approved by the lead ("ok fais ca"): push of `ce3dff1`, creation of the Vercel project, production deployment.
+- Source: clean clone of `origin/main` = `ce3dff1`; `pnpm install --frozen-lockfile`; `vercel link --yes` (project
+  `sol2near-demo`); `vercel pull --yes --environment=production`.
+- **Deviation**: `vercel build --prod` fails on Windows (`EPERM … symlink` while installing the CLI's builder; Windows blocks
+  symlinks without Developer Mode). Instead, `pnpm --filter @sol2near/web build:public` + `node scripts/check-public-bundle.mjs`
+  (all PASS) were run, and `.vercel/output` was written in the Build Output API v3 format: `static/` = `apps/web/dist-public`
+  (3 files), `config.json` = the `vercel.json` headers on `^/(.*)$` then `{ "handle": "filesystem" }`. Then
+  `vercel deploy --prebuilt --prod`. Only these static files were uploaded.
+- Deployment `sol2near-demo-g7t2uyeej-niels-d911.vercel.app` (Ready, Production). That per-deployment URL is behind Vercel
+  Authentication (302); the production alias is public.
+
+Live checks on https://sol2near-demo.vercel.app (2026-11-14):
+
+| Check | Result |
+|---|---|
+| `curl -sI` | 200; `Content-Security-Policy` (same as the meta + `frame-ancestors 'none'`), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `Permissions-Policy`, HSTS |
+| bundle served vs tested | `assets/index-BKbwgFUH.js` SHA-256 `a388208f…b648`, **identical** to the locally built and e2e-tested file |
+| real Chrome, 7 routes (direct + reload) | read-only banner on all, **0** signing / connect buttons |
+| Phantom spy provider | called **0** times |
+| Proofs page | 16 transaction rows |
+| 390 px (`#/`, `#/proofs`) | no horizontal overflow |
+| hosts contacted | the site, Google Fonts, `free.rpc.fastnear.com`, `near-testnet.drpc.org`, `www.usetidepool.tech` (all CSP-listed) |
+| page errors / CSP violations | none / none |
+
+Redeploy: same procedure from a clean clone of the new commit (each deployment needs the lead's approval).
+Rollback: `npx vercel@65.16.0 rollback`, or `npx vercel@65.16.0 remove sol2near-demo`, or delete the project in the dashboard.
