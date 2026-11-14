@@ -74,7 +74,7 @@ not NEAR Intents) and the watch form; the product pages do not show them.
 - [`docs/README.md`](README.md): map by audience and kind (reviewer, product, architecture and contracts, tests and
   sandboxes, on-chain / sandbox / mainnet-read proofs, archive).
 - `scripts/check-doc-links.mjs` → `pnpm check:docs`: every relative Markdown link and every quoted `docs/…md` path must
-  exist (146 checked, 0 broken). Before the move it found one pre-existing dangling path (a planned doc, allow-listed).
+  exist (147 checked, 0 broken). Before the move it found one pre-existing dangling path (a planned doc, allow-listed).
 - Nothing deleted: contracts, sandbox tests, fixtures, logs, screenshots and proofs stay where scripts and tests expect
   them. Code, Cargo and fixture paths are untouched.
 
@@ -100,7 +100,7 @@ deployed site (`4c88875`) **does** contain the NEARLY journey, in its 8-step for
 | live e2e (public endpoints, 1 retry) | 31 tests: 29 passed on the first full run; the 2 failures were H6 regressions, both fixed and re-run green (a label clash on `Data source`, and the wallet-return route described in §3) |
 | Live quote pinned to one block | the live Explore test **4/4 without retry**, then again in the full run |
 | `bash scripts/proofs/nearly-proof.sh` (WSL) | sandbox `1 passed`, PASS × 3 code = mainnet, TreasuryDCL wasm identical, **PASS export identical (58 steps)** |
-| Clean clone | see §9 |
+| Clean clone of `c851dcb` (fresh `git clone`) | `pnpm install --frozen-lockfile`, typecheck, near-client 64, crosschain 36, web 48, web build, `build:public`, `check:public`, `check:release`, `check:docs` (147 links), **e2e offline 20/20** |
 
 Visual checks in real Chrome at 1440, 768 and 390 px: no horizontal scroll on any product route; the only console
 errors in offline runs are the blocked Google Fonts requests.
@@ -141,6 +141,7 @@ field overflowed at 390 px, two live tests failed (§6).
 |---|---|
 | `8e7a03b` | feat(web): H6 product redesign |
 | `cb84218` | chore(repo): archive historical checkpoint reports, add a docs link check |
-| this commit | docs: README rewrite, stale docs fixed, docs map, this report and its screenshots |
+| `c851dcb` | docs: README rewrite, stale docs fixed, docs map, this report and its screenshots |
+| next commit | docs: clean-clone result recorded in §6 |
 
-`origin/main` = `4c88875`. These three commits are **ahead of origin, not pushed**. No force push, rebase or rewrite.
+`origin/main` = `4c88875`. These four commits are **ahead of origin, not pushed**. No force push, rebase or rewrite.
