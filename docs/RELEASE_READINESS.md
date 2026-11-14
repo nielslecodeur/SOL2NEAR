@@ -66,7 +66,7 @@ Legend: ✅ yes · — no · ⛔ blocked by a dependency
 | `63d0302` V4.1B | dashboard pilot + Position Manager, sandbox views fixture, reconcile fix | 29 (10 added, 3 deleted) |
 | `d7c0812` V4.2A | TreasuryDCL, DCL probes and sandbox runs, client, UI section, docs, captures | 32 (25 added) |
 | `ab1d7c0` V4.3A | Creator Portal, portal model, unified positions, S1, docs correction, release checks | 25 (9 added) |
-| `25dd7a6` V4.3A | DCL plan drift fix, exact e2e locators, the three V4.3A docs, README numbers | 11 |
+| `25dd7a6` V4.3A | DCL plan drift fix, exact e2e locators, the three V4.3A docs, README numbers | 15 |
 
 Total vs `origin/main`: ≈ 92 files, + 19 k lines. Largest files are JPEG captures (≤ 400 KB).
 
