@@ -161,7 +161,8 @@ async fn plan_for(e: &Env, spend: u128, half_width: i32, deadline: u64) -> anyho
         let qx = u(&view(&e.w, e.dcl.id(), "quote", json!({ "pool_ids": [e.p_usdc(), e.p_raw()], "input_token": e.usdc.id(), "output_token": e.raw.id(), "input_amount": to_x.to_string() })).await?["amount"]);
         let qy = u(&view(&e.w, e.dcl.id(), "quote", json!({ "pool_ids": [e.p_usdc()], "input_token": e.usdc.id(), "output_token": e.wrap.id(), "input_amount": (spend - to_x).to_string() })).await?["amount"]);
         let (a, bb, _, _) = predict(e, to_x, spend - to_x, l, r, qx / 2, qy / 2).await?;
-        let (_, _, cx, cy) = predict(e, to_x, spend - to_x, l, r, a, bb).await?;
+        // same 5 bps cap margin as packages/near-client/src/dcl.ts (a live chain can move between the two views)
+        let (_, _, cx, cy) = predict(e, to_x, spend - to_x, l, r, a * 9_995 / 10_000, bb * 9_995 / 10_000).await?;
         (ox, oy, nx, ny) = (a, bb, cx, cy);
         let (ux, uy) = (cx as f64 / a as f64, cy as f64 / bb as f64);
         if (ux - uy).abs() < 0.0002 {

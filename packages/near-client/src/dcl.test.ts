@@ -129,6 +129,19 @@ test("plan builder converges on a SYNTHETIC predictor and keeps the guards of th
   assert.equal(checkDclPlan(r.plan, 18_000_000n, 1_000n, { maxSlippageBps: 100, maxPriceImpactBps: 1000, maxPlanTtlNs: 10_000n, minRangeWidth: 4000, maxRangeWidth: 200_000 }, 200), null);
 });
 
+test("plan builder survives a new block between its two simulations (SYNTHETIC: outputs drop 3 bps, caps above outputs → E101 like mainnet)", async () => {
+  let calls = 0;
+  const predict = async (toX: bigint, toY: bigint, capX: bigint, capY: bigint): Promise<HotzapPrediction> => {
+    const drift = calls++ % 2 === 1 ? 9_997n : 10_000n; // every second call sees a slightly worse block
+    const outX = (toX * 2n * drift) / 10_000n, outY = (toY * 3n * drift) / 10_000n;
+    if (capX > outX || capY > outY) throw new Error("E101: insufficient balance");
+    const liq = capX < capY / 2n ? capX : capY / 2n;
+    return { outX, outY, needX: liq, needY: liq * 2n, liquidity: liq };
+  };
+  const r = await buildDclPlan({ spend: 17_000_000n, left: -20_000, right: 20_200, slippageBps: 100, deadlineNs: 2_000n, quote: async (x, y) => [x * 2n, y * 3n], predict });
+  assert.ok(r.prediction.liquidity > 0n);
+});
+
 test("TreasuryDCL position states from the real sandbox views", () => {
   const at = (k: string) => sbx[k] as DclPositionView;
   const confirmed = at("position_confirmed");

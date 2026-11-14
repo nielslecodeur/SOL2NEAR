@@ -31,7 +31,8 @@ const sensitive = files.filter((f) => /(^|\/)(\.env(\..*)?|id\.json|.*-keypair\.
 sensitive.length ? fail(`sensitive file names tracked: ${sensitive.join(", ")}`) : pass("no .env / keypair / pem file tracked");
 
 // 2. personal absolute paths in code (docs may cite the author's working folder; code must not depend on it)
-const code = files.filter((f) => isText(f) && !f.startsWith("docs/") && !/\.md$/.test(f));
+const SELF = "scripts/check-release.mjs"; // its own patterns would match itself
+const code = files.filter((f) => isText(f) && f !== SELF && !f.startsWith("docs/") && !/\.md$/.test(f));
 // the author's own paths only: third-party build paths recorded on-chain (e.g. Nearly's /home/near/code in its
 // contract_source_metadata, kept verbatim in an evidence fixture) are not a dependency of this repo
 const paths = code.filter((f) => /[A-Z]:\\Users\\|\/home\/niels\/(?!\.cargo|\.near|sol2near-target)|OneDrive/.test(text(f)));
@@ -57,7 +58,7 @@ const missing = [...refs].filter((r) => !files.includes(`packages/near-client/sr
 missing.length ? fail(`fixtures referenced but not tracked: ${missing.join(", ")}`) : pass(`${refs.size} referenced fixtures are tracked`);
 
 // 5. no destructive command in scripts / probes
-const scripts = files.filter((f) => f.startsWith("scripts/") || f.startsWith("sandbox-tests/run"));
+const scripts = files.filter((f) => f !== SELF && (f.startsWith("scripts/") || f.startsWith("sandbox-tests/run")));
 const destructive = scripts.filter((f) => /\brm\s+-rf?\b|\bdelete-account\b|\baccount\s+delete\b|\bnear\s+delete\b|git\s+push|--force\b/.test(text(f)));
 destructive.length ? fail(`destructive command in scripts: ${destructive.join(", ")}`) : pass(`no destructive command in ${scripts.length} scripts`);
 

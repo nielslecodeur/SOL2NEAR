@@ -66,7 +66,7 @@ Every line names its kind of evidence. They are never mixed: a sandbox run is no
 Prerequisites:
 - **Node ≥ 22.18** (tested with 24.12): the TypeScript tests run `.ts` files with Node's built-in type stripping, so Node 20 is not enough.
 - pnpm 10 (`packageManager` pins 10.34.9).
-- Rust stable (tested with 1.98) with the `wasm32-unknown-unknown` target.
+- Rust stable (tested with 1.98) with the `wasm32-unknown-unknown` target. On Windows from a deep folder, use a short `CARGO_TARGET_DIR` (the near-sdk test dependency `aws-lc-sys` builds with CMake and can hit the 260-character path limit).
 - For the wasm builds and the sandbox runs: Linux or WSL, with cargo-near 0.22.0.
 - For the browser tests: a local Google Chrome (Playwright `channel: "chrome"`).
 
@@ -76,7 +76,7 @@ Prerequisites:
 | 2 | `cargo test --workspace` (on Windows, set the CMake env from `docs/ARCHITECTURE.md` §7 first) | `34 passed` (treasury), `31 passed` (fuel), `47 passed` (treasury-v4, V4.1, not deployed), `3 passed` (sandbox-meme), `41 passed` (treasury-dcl, V4.2A, not deployed) | test names map to the rules in `docs/FUEL_REACTOR.md` §2–4 |
 | 3 | `cargo test -p sol2near-fuel demo_walkthrough -- --nocapture` | 6 numbered steps: position admitted with its Ref/Treasury proof, a non-backed one refused, season progress, `close_season` → Success/level 1, claim paid, **second claim REJECTED** | output says "MOCKED NEAR VM (not testnet)" |
 | 4 | `bash scripts/build-wasm.sh` (Linux/WSL, cargo-near) | `Contract successfully built!` twice | sizes and SHA-256 printed. The FUEL ABI has no mint method |
-| 5 | `pnpm install --frozen-lockfile && pnpm typecheck && pnpm test:ts && pnpm --filter @sol2near/web test` | all `fail 0`: near-client 56, crosschain 36, web 48 | the near-client tests run on real read fixtures (labelled); crosschain tests are **mocked** (Tidepool + Solana RPC) |
+| 5 | `pnpm install --frozen-lockfile && pnpm typecheck && pnpm test:ts && pnpm --filter @sol2near/web test` | all `fail 0`: near-client 57, crosschain 36, web 48 | the near-client tests run on real read fixtures (labelled); crosschain tests are **mocked** (Tidepool + Solana RPC) |
 | 6 | `pnpm --filter @sol2near/web e2e` | 43 passed in local Chrome. Live tests read public endpoints; one automatic retry absorbs a provider blip, and retried tests are listed as "flaky" | `@live`, `@mock` and `@preview` in the test names say which ones use intercepted data |
 | 7 | `pnpm --filter @sol2near/web dev`, open the URL | **Creator Portal**: the journey Connect → Choose pool → Amount → Review → Track, with two separate modes (*Live · NEAR testnet* and *Explore · NEAR memecoins*, read-only). `#/dashboard`: type `sol2near-dev.testnet`, click **Load** → 20 USDC received, split 18 / 1.6 / 0.4, LP **BACKED ON REF**, FUEL `Claimed` | the *What is real today* table on the portal shows the evidence kind of every feature |
 | 8 | `node scripts/probes/verify-testnet.mjs` and `node scripts/probes/verify-g6-g7.mjs` (read-only, no keys) | `all checks passed`; `all G6/G7 proofs re-verified` | Tidepool is a community service with no SLA: on a network that filters its domain the Tidepool checks print `FAIL … fetch failed` |

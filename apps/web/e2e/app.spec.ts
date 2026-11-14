@@ -414,7 +414,7 @@ test.describe("@preview V4.1B Position Manager on REAL contract views from the L
 
   test("estimator + review on the sandbox pool: 20 USDC planned like the contract did; 900 USDC refused by the impact guard; sign locked", async ({ page }) => {
     await preview(page, "budget_allocated", "/#/pools");
-    const est = pilot(page).getByLabel("Estimate");
+    const est = pilot(page).getByLabel("Estimate", { exact: true });
     await expect(est).toContainText("LP budget 18", { timeout: 30_000 });
     await expect(est).toContainText("Swap 8.97332 USDC");
     const review = pilot(page).getByLabel("Review");
@@ -499,7 +499,7 @@ test.describe("@mock V4.1B with an intercepted RPC (no contract exists on testne
     await mockDeployedPilot(page, { config: plannedConfig(9999), nowNs: (BigInt(Date.now()) * 1_000_000n).toString() });
     await page.goto("/#/pools");
     await expect(pilot(page).getByTestId("deployment")).toContainText("DEPLOYED · awaiting validation", { timeout: 30_000 });
-    await expect(pilot(page).getByLabel("Estimate")).toContainText("Ref get_return ✓ equals the plan");
+    await expect(pilot(page).getByLabel("Estimate", { exact: true })).toContainText("Ref get_return ✓ equals the plan");
     await expect(pilot(page).locator('[data-state="READY"]')).toBeVisible();
     await expect(pilot(page).getByRole("button", { name: "Sign deposit — locked" })).toBeDisabled();
     await expect(pilot(page).getByLabel("Review")).toContainText("Signing is disabled in V4.1B");

@@ -266,7 +266,10 @@ export async function buildDclPlan(o: {
     const toY = o.spend - toX;
     const [qx, qy] = await o.quote(toX, toY);
     const first = await o.predict(toX, toY, qx / 2n, qy / 2n);
-    last = await o.predict(toX, toY, first.outX, first.outY);
+    // caps 5 bps under the first simulation's outputs: on a live chain the second view can run one block later,
+    // with slightly lower outputs, and caps above the outputs make the DCL answer "E101: insufficient balance"
+    // (seen on mainnet NEARLY in the V4.3A e2e run)
+    last = await o.predict(toX, toY, (first.outX * 9_995n) / 10_000n, (first.outY * 9_995n) / 10_000n);
     const ux = Number(last.needX) / Number(last.outX), uy = Number(last.needY) / Number(last.outY);
     if (Math.abs(ux - uy) < 0.0002) break;
     if (ux > uy) lo = f; else hi = f;
