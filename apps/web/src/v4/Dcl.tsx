@@ -21,12 +21,12 @@ const TONE: Record<string, string> = {
 };
 
 /** view_account on mainnet (the token's global contract hash). Read only. */
-async function globalHash(account: string): Promise<string | null> {
+async function globalHash(account: string, blockId?: number): Promise<string | null> {
   const why: string[] = [];
   for (const url of MAINNET_READ_ONLY_RPCS) {
     try {
       const r = await fetch(url, { method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "query", params: { request_type: "view_account", finality: "final", account_id: account } }) });
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "query", params: { request_type: "view_account", ...(blockId === undefined ? { finality: "final" } : { block_id: blockId }), account_id: account } }) });
       if (!r.ok) { why.push(`${new URL(url).host}: HTTP ${r.status}`); continue; }
       const j = await r.json();
       if (j.result) return j.result.global_contract_hash ?? null;
@@ -46,15 +46,16 @@ async function retry<T>(f: () => Promise<T>): Promise<T> {
   }
 }
 
-export async function readLive(c: DclCandidate): Promise<DclLive> {
+/** Every view of one read at ONE final block (`blockId`), so interdependent values come from the same state. */
+export async function readLive(c: DclCandidate, blockId?: number): Promise<DclLive> {
   const ref = 100_000_000n;
   const route = [c.usdcPool, c.poolId];
-  const q = (amount: bigint) => mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route, input_token: MAINNET_USDC, output_token: c.tokenX, input_amount: String(amount) }).then((r) => BigInt(r.amount)); // a failed read throws (→ OBSERVE_ONLY "unreadable"); only a real DCL answer of 0 means "no route"
+  const q = (amount: bigint) => mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route, input_token: MAINNET_USDC, output_token: c.tokenX, input_amount: String(amount) }, blockId).then((r) => BigInt(r.amount)); // a failed read throws (→ OBSERVE_ONLY "unreadable"); only a real DCL answer of 0 means "no route"
   // sequential on purpose: a burst of parallel views is rate-limited by the public providers
-  const pool = await retry(() => mainnet.view<RawDclPoolFull>(c.dex, "get_pool", { pool_id: c.poolId }));
-  const meta = await retry(() => mainnet.view<{ state: string }>(c.dex, "get_metadata"));
-  const hash = await retry(() => globalHash(c.tokenX));
-  const tax = await retry(() => mainnet.view<{ tax: { buy_bps: number; sell_bps: number } | null }>(c.tokenX, "get_tax")).then(
+  const pool = await retry(() => mainnet.view<RawDclPoolFull>(c.dex, "get_pool", { pool_id: c.poolId }, blockId));
+  const meta = await retry(() => mainnet.view<{ state: string }>(c.dex, "get_metadata", {}, blockId));
+  const hash = await retry(() => globalHash(c.tokenX, blockId));
+  const tax = await retry(() => mainnet.view<{ tax: { buy_bps: number; sell_bps: number } | null }>(c.tokenX, "get_tax", {}, blockId)).then(
     (t) => (t.tax ? { kind: "READ" as const, buy_bps: t.tax.buy_bps, sell_bps: t.tax.sell_bps } : { kind: "READ" as const, buy_bps: 0, sell_bps: 0 }),
     (e: Error) => (/MethodNotFound|MethodResolveError/.test(e.message) ? { kind: "ABSENT" as const } : { kind: "UNREADABLE" as const, error: e.message }));
   const qRef = await retry(() => q(ref));
@@ -197,14 +198,20 @@ function DclEstimator({ row, live }: { row: Row; live: DclLive }) {
   );
 }
 
+/** The latest final mainnet block: a live quote pins every view to it (H6: unpinned "final" reads could straddle two blocks
+ *  while the pool moved, and Rhea then answered E101 for a plan built on the previous state). */
+export async function finalMainnetBlock(): Promise<{ height: number; timestampNs: bigint }> {
+  return retry(() => mainnet.finalBlock!());
+}
+
 /** Mainnet REFERENCE simulation (view calls only): Rhea's own quote + predict_hotzap through buildDclPlan, 90/8/2 split. */
-export async function simulateDcl(c: DclCandidate, usdcIn: bigint, left: number, right: number) {
+export async function simulateDcl(c: DclCandidate, usdcIn: bigint, left: number, right: number, blockId?: number) {
   const spend = (usdcIn * 9000n) / 10_000n;
   const route = { x: [c.usdcPool, c.poolId], y: [c.usdcPool] };
   const quote = async (toX: bigint, toY: bigint): Promise<[bigint, bigint]> => {
     // sequential: a burst of parallel views is rate-limited by the public providers
-    const a = await retry(() => mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route.x, input_token: MAINNET_USDC, output_token: c.tokenX, input_amount: String(toX) }));
-    const b = await retry(() => mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route.y, input_token: MAINNET_USDC, output_token: c.tokenY, input_amount: String(toY) }));
+    const a = await retry(() => mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route.x, input_token: MAINNET_USDC, output_token: c.tokenX, input_amount: String(toX) }, blockId));
+    const b = await retry(() => mainnet.view<{ amount: string }>(c.dex, "quote", { pool_ids: route.y, input_token: MAINNET_USDC, output_token: c.tokenY, input_amount: String(toY) }, blockId));
     return [BigInt(a.amount), BigInt(b.amount)];
   };
   const predict = async (toX: bigint, toY: bigint, capX: bigint, capY: bigint) => {
@@ -215,7 +222,7 @@ export async function simulateDcl(c: DclCandidate, usdcIn: bigint, left: number,
         { pool_ids: route.y, input_token: MAINNET_USDC, output_token: c.tokenY, amount_in: String(toY), min_output_amount: "0" },
       ],
       add_liquidity_infos: [{ pool_id: c.poolId, left_point: left, right_point: right, amount_x: String(capX), amount_y: String(capY), min_amount_x: "0", min_amount_y: "0" }],
-    }));
+    }, blockId));
     const p = parsePredictHotzap(v, c.tokenX, c.tokenY);
     if (!p) throw new Error("predict_hotzap: unexpected result");
     return p;

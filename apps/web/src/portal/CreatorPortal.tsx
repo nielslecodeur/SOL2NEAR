@@ -1,20 +1,20 @@
-// V4.3A Creator Portal: the guided journey Connect → Choose pool → Amount → Review → Track.
+// V4.3A Creator Portal, since H6 the developer "Testnet console" (#/console): Connect → Choose pool → Amount → Review → Track.
+// The NEARLY memecoin journey moved to Explore (#/explore, NearlyJourney.tsx).
 // It REUSES the real modules: the NEAR panel (wallet, deposit, execute_lp, FUEL — every signature is a reviewed wallet
 // approval), the Phantom bridge card (Tidepool), the V4.0 pool readers, the V4.2A DCL explorer. It adds no signing code.
-// Two strictly separate modes: Live NEAR testnet (deployed contracts only) and Explore NEAR memecoins (read-only).
+// Deployed testnet contracts only.
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   createTidepoolClient, memoryStore, SolanaDevnet,
 } from "../../../../packages/crosschain/src/index.ts";
 import {
-  EVIDENCE_LABEL, FEATURES, fromV3Deposit, poolOffers, simulateLiveContribution,
-  type BridgeQuoteLike, type ClassicLeg, type Evidence, type PortalMode, type SimRow,
+  EVIDENCE_LABEL, fromV3Deposit, poolOffers, simulateLiveContribution,
+  type BridgeQuoteLike, type ClassicLeg, type Evidence, type SimRow,
 } from "../../../../packages/near-client/src/index.ts";
 import { BridgeLive, injected } from "../BridgeLive.tsx";
 import { TREASURY_ACCOUNT_ID, view, type Snapshot } from "../chain.ts";
 import { formatUnits, parseUnits } from "../format.ts";
 import { poolReaders, type Catalog } from "../pools/live.ts";
-import { NEARLY_STEPS, NearlyJourney } from "./NearlyJourney.tsx";
 import { UnifiedCard } from "./UnifiedCard.tsx";
 
 const USDC_TP = "usdc.tidepool-sandbox.testnet";
@@ -37,25 +37,18 @@ const STEPS = ["Connect", "Choose pool", "Amount & simulation", "Review & sign",
 export function CreatorPortal({ wallet, account, snap, nearPanel, onWatch }: {
   wallet: string | null; account: string; snap: Snapshot | null; nearPanel: ReactNode; onWatch: (a: string) => void;
 }) {
-  // the public read-only demo opens on the NEARLY journey (nothing to sign there); the full app keeps the last choice
-  const [mode, setModeState] = useState<PortalMode>(() => (readStore("sol2near:portal-mode") as PortalMode) ?? (READ_ONLY ? "EXPLORE_MEMECOINS" : "LIVE_TESTNET"));
   const [stepRaw, setStepState] = useState(() => Math.max(0, Number(readStore("sol2near:portal-step") ?? 0) || 0));
-  const setMode = (m: PortalMode) => { writeStore("sol2near:portal-mode", m); setModeState(m); };
   const setStep = (s: number) => { writeStore("sol2near:portal-step", String(s)); setStepState(s); };
-  const live = mode === "LIVE_TESTNET";
-  const steps: readonly string[] = live ? STEPS : NEARLY_STEPS;
+  const steps: readonly string[] = STEPS;
   const step = Math.min(stepRaw, steps.length - 1);
   return (
     <main className="portal">
-      <Hero />
-      <section className="card" aria-label="Mode">
-        <div className="modes" role="tablist" aria-label="Portal mode">
-          <button role="tab" aria-selected={live} className={live ? "on" : ""} onClick={() => setMode("LIVE_TESTNET")}>Live · NEAR testnet</button>
-          <button role="tab" aria-selected={!live} className={!live ? "on" : ""} onClick={() => setMode("EXPLORE_MEMECOINS")}>Explore · NEARLY memecoin (read-only)</button>
-        </div>
-        {live
-          ? <p className="muted" data-testid="mode-note">Deployed contracts on <b>NEAR testnet</b> only. {READ_ONLY ? "State is read live; signing is not available in this public demo (the full app, run locally, asks your own wallet to approve each transaction after a review)." : "Real transactions, each approved in your own wallet after a review."} The only fundable pool today is Ref Classic <b>#2951 USDC/wNEAR — not a memecoin</b>.</p>
-          : <div className="banner sim" data-testid="mode-note">EXPLORE MODE — the real NEARLY memecoin pool read on <b>mainnet</b> (view calls), a reference simulation and the LOCAL SANDBOX proof of the position. Nothing in this mode can be signed or executed.</div>}
+      <header className="page-head compact">
+        <p className="eyebrow">Developers · NEAR testnet</p>
+        <h1>Testnet console</h1>
+        <p className="muted" data-testid="mode-note">Deployed contracts on <b>NEAR testnet</b> only. {READ_ONLY ? "State is read live; signing is not available in this public demo (the full app, run locally, asks your own wallet to approve each transaction after a review)." : "Real transactions, each approved in your own wallet after a review."} The only fundable pool today is Ref Classic <b>#2951 USDC/wNEAR — not a memecoin</b>. The NEARLY memecoin journey is in <a href="#/explore">Explore</a>.</p>
+      </header>
+      <section className="card" aria-label="Journey steps">
         <ol className="stepper" aria-label="Journey">
           {steps.map((s, i) => (
             <li key={s}><button className={i === step ? "on" : i < step ? "done" : ""} aria-current={i === step ? "step" : undefined} onClick={() => setStep(i)}>{i + 1} · {s}</button></li>
@@ -64,52 +57,19 @@ export function CreatorPortal({ wallet, account, snap, nearPanel, onWatch }: {
       </section>
 
       {/* The real NEAR panel stays mounted (wallet session); it is shown where the journey needs it. */}
-      <div hidden={!(live && (step === 0 || step === 3))}>{nearPanel}</div>
+      <div hidden={!(step === 0 || step === 3)}>{nearPanel}</div>
 
-      {live && step === 0 && <StepConnect live={live} wallet={wallet} />}
-      {live && step === 1 && <StepPoolLive />}
-      {live && step === 2 && <StepSimulate wallet={wallet} />}
-      {live && step === 3 && <StepReview wallet={wallet} account={account} />}
-      {live && step === 4 && <StepTrack account={account} snap={snap} onWatch={onWatch} />}
-      {!live && <NearlyJourney step={step} connect={<StepConnect live={false} wallet={wallet} />} />}
+      {step === 0 && <StepConnect live wallet={wallet} />}
+      {step === 1 && <StepPoolLive />}
+      {step === 2 && <StepSimulate wallet={wallet} />}
+      {step === 3 && <StepReview wallet={wallet} account={account} />}
+      {step === 4 && <StepTrack account={account} snap={snap} onWatch={onWatch} />}
 
       <div className="watch navsteps">
         <button className="ghost" disabled={step === 0} onClick={() => setStep(step - 1)}>← Back</button>
         <button disabled={step === steps.length - 1} onClick={() => setStep(step + 1)}>Next: {steps[Math.min(step + 1, steps.length - 1)]} →</button>
       </div>
     </main>
-  );
-}
-
-function Hero() {
-  return (
-    <section className="card hero" aria-label="What SOL2NEAR does">
-      <h2>Bring your Solana USDC to NEAR memecoin liquidity — with proof of where it went</h2>
-      <p>
-        You send USDC you control from Solana. It is bridged to NEAR, split <b>90 % liquidity / 8 % your reserve / 2 % community</b> by a contract with no
-        admin method (on testnet its account still has a developer key, so it is not locked yet), and put into a NEAR pool. The liquidity position is held for you, verified on-chain, locked for a fixed time, and shown here with
-        every transaction. SOL2NEAR is a router for liquidity, not a bridge, a launchpad or a DEX.
-      </p>
-      <div className="route" aria-label="Networks">
-        <span>Solana <b>devnet</b> · Phantom</span><span>→</span><span>Tidepool <small>(community sandbox, not NEAR Intents)</small></span><span>→</span>
-        <span>NEAR <b>testnet</b> · your NEAR wallet</span><span>→</span><span>Treasury 90/8/2</span><span>→</span><span>Ref pool</span>
-      </div>
-      <p className="muted">
-        What you may get: the pool's trading fees attributable to your position (variable, can be zero) and FUEL where the FUEL rules allow it. What you
-        risk: the value of the pooled assets moves with the market, a memecoin can lose most of its value, and test tokens have no value at all. No yield
-        is promised. Creator fees from Pump.fun / Bags are <b>not</b> captured automatically: you choose and send the amount yourself.
-      </p>
-      <details open>
-        <summary><b>What is real today</b> (each line says what kind of evidence backs it)</summary>
-        <table className="status" aria-label="Feature status">
-          <tbody>
-            {FEATURES.map((f) => (
-              <tr key={f.id} data-feature={f.id}><td>{f.label}</td><td><EvidenceBadge e={f.evidence} /></td><td className="muted small">{f.proof}</td></tr>
-            ))}
-          </tbody>
-        </table>
-      </details>
-    </section>
   );
 }
 

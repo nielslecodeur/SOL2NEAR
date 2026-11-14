@@ -1,20 +1,3 @@
-:root {
-  --bg: #07090d; --panel: #0e131a; --line: #1c2430; --text: #e6edf3; --muted: #8b98a8;
-  --near: #00ec97; --sol: #9945ff; --warn: #ffb020; --bad: #ff4d6d; --info: #3aa0ff;
-  font-family: "Space Grotesk", system-ui, sans-serif; color: var(--text); background: var(--bg);
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: radial-gradient(1200px 500px at 80% -10%, rgba(153,69,255,.12), transparent), var(--bg); }
-a { color: var(--near); text-decoration: none; }
-code, .table, .stat b, .big { font-family: "JetBrains Mono", ui-monospace, monospace; }
-.app { max-width: 1120px; margin: 0 auto; padding: 0 16px 40px; }
-header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 18px 0; }
-.logo { font-weight: 700; font-size: 22px; color: var(--text); letter-spacing: .5px; }
-.logo span { background: linear-gradient(90deg, var(--sol), var(--near)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-nav { display: flex; gap: 6px; }
-nav a { color: var(--muted); padding: 6px 12px; border-radius: 8px; }
-nav a.on { color: var(--text); background: var(--panel); border: 1px solid var(--line); }
-.net { display: flex; gap: 8px; align-items: center; }
 select, input, button { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
 button { background: var(--near); color: #04120c; font-weight: 700; border: 0; cursor: pointer; }
 button:disabled { opacity: .5; }
@@ -65,7 +48,6 @@ a.row:hover { background: rgba(0,236,151,.05); }
 .season h2 { margin: 0 0 4px; }
 .bar { height: 14px; background: var(--line); border-radius: 999px; overflow: hidden; margin: 10px 0 6px; }
 .bar div { height: 100%; background: linear-gradient(90deg, var(--sol), var(--near)); }
-footer { margin-top: 32px; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
 h2 { margin: 6px 0; overflow-wrap: anywhere; }
 .transfer { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 6px; }
 .ghost { background: transparent; color: var(--text); border: 1px solid var(--line); font-weight: 500; }
@@ -151,7 +133,6 @@ table.sim tr.warn td:nth-child(3) { color: var(--warn); }
   table.status td:nth-child(3) { display: none; }
   .hero h2 { font-size: 18px; }
 }
-nav { flex-wrap: wrap; }
 table.status .badge, table.sim .badge { white-space: normal; }
 /* G9.1: a badge used as a message paragraph (e.g. an RPC error) must wrap on mobile instead of overflowing */
 p.badge { white-space: normal; overflow-wrap: anywhere; }

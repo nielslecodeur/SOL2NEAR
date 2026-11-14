@@ -615,7 +615,7 @@ test.describe("@preview V4.2A TreasuryDCL position on REAL views from the LOCAL 
   });
 });
 
-// ---- V4.3A: Creator Portal (#/) — guided journey, two strictly separate modes, unified positions ----
+// ---- V4.3A Creator Portal, since H6 the developer "Testnet console" (#/console); the NEARLY journey is #/explore ----
 const portal = (page: Page) => page.locator("main.portal");
 const step = (page: Page, n: number) => portal(page).getByRole("list", { name: "Journey" }).getByRole("button").nth(n);
 /** MOCK Tidepool /v0/quote (dry): same response shape as the live API (packages/crosschain fixtures). */
@@ -630,18 +630,20 @@ async function freshPortal(page: Page) {
   await page.addInitScript(() => {
     if (!sessionStorage.getItem("e2e-init")) {
       localStorage.removeItem("sol2near:portal-step");
-      localStorage.removeItem("sol2near:portal-mode");
       sessionStorage.setItem("e2e-init", "1");
     }
   });
 }
 
 test.describe("@live V4.3A Creator Portal", () => {
-  test("a new visitor lands on the portal: value proposition, networks, honest status per evidence kind, no JS error, nothing signed", async ({ page }) => {
+  test("H6 a new visitor lands on the home page: value proposition, read-only status, How it works with networks and honest status per evidence kind, no JS error, nothing signed", async ({ page }) => {
     const errors = watchErrors(page);
     await freshPortal(page);
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: /Bring your Solana USDC to NEAR memecoin liquidity/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Fuel memecoin liquidity across chains." })).toBeVisible();
+    await expect(page.getByText("Read-only demonstration · No real funds required")).toBeVisible();
+    await expect(page.getByLabel("Sample position from a historical quote")).toContainText(/Historical quote · mainnet block \d+/);
+    await page.getByLabel("Main").getByRole("link", { name: "How it works" }).click();
     await expect(page.getByLabel("Networks")).toContainText("Tidepool");
     await expect(page.getByLabel("Networks")).toContainText("community sandbox, not NEAR Intents");
     const st = page.getByLabel("Feature status");
@@ -650,9 +652,10 @@ test.describe("@live V4.3A Creator Portal", () => {
     await expect(st.locator('[data-feature="v42_dcl"] [data-evidence]')).toHaveText("Local sandbox only (real code, local state)");
     await expect(st.locator('[data-feature="nearly_pools"] [data-evidence]')).toHaveText("Live read (no transaction)");
     for (const f of ["memecoin_execution", "g8", "creator_fees", "phantom_only", "exit_v3"]) await expect(st.locator(`[data-feature="${f}"] [data-evidence]`)).toHaveText("Not available");
-    await expect(page.getByTestId("mode-note")).toContainText("not a memecoin");
     await expect(page.getByText(/No yield\s+is promised/)).toBeVisible();
-    await expect(nearPanel(page)).toBeVisible(); // step 1 shows the real NEAR panel
+    await page.goto("/#/console");
+    await expect(page.getByTestId("mode-note")).toContainText("not a memecoin");
+    await expect(nearPanel(page)).toBeVisible(); // console step 1 shows the real NEAR panel
     await page.screenshot({ path: "../../docs/v4/v43a-portal-home.jpg", type: "jpeg", quality: 70, fullPage: true });
     expect(await page.evaluate(() => (window as any).__signCalls ?? 0)).toBe(0);
     expect(errors).toEqual([]);
@@ -660,7 +663,7 @@ test.describe("@live V4.3A Creator Portal", () => {
 
   test("live mode, step 2: only pool 2951 is available (labelled not a memecoin); every other pool is not available, with its reason", async ({ page }) => {
     await freshPortal(page);
-    await page.goto("/");
+    await page.goto("/#/console");
     await step(page, 1).click();
     const s2 = page.getByLabel("Step 2 Choose pool");
     await expect(s2.locator("li.ok")).toHaveCount(1, { timeout: 30_000 });
@@ -670,33 +673,31 @@ test.describe("@live V4.3A Creator Portal", () => {
     await expect(s2.locator('li[data-offer="near-testnet:ref-finance-101.testnet:2131"]')).toContainText("NOT AVAILABLE");
   });
 
-  test("explore mode = the NEARLY journey: 8 steps, a LIVE mainnet quote from Rhea views, the sandbox proof; nothing enabled can execute", async ({ page }) => {
-    await freshPortal(page);
-    await page.goto("/");
-    await page.getByRole("tab", { name: /Explore/ }).click();
-    await expect(page.getByTestId("mode-note")).toContainText("EXPLORE MODE");
-    await expect(page.getByTestId("mode-note")).toContainText("Nothing in this mode can be signed or executed");
-    await expect(nearPanel(page)).toBeHidden(); // no NEAR wallet in this mode
-    await expect(page.getByRole("list", { name: "Journey" }).getByRole("button")).toHaveCount(8);
-    await step(page, 1).click();
-    await expect(page.getByLabel("NEARLY step 2 Choose pool")).toContainText("nearly-993927.nearlytrade.near|wrap.near|10000");
-    await step(page, 3).click();
-    await page.getByRole("button", { name: /Get a live quote/ }).click();
-    const q = page.getByLabel("NEARLY step 4 Quote");
-    await expect(q.getByTestId("quote-source")).toHaveText("LIVE", { timeout: 120_000 });
+  test("H6 Explore = the NEARLY journey in 3 steps: a LIVE indicative quote pinned to one mainnet block, the sandbox proof; nothing enabled can execute", async ({ page }) => {
+    await page.goto("/#/explore");
+    await expect(page.getByTestId("nearly-evidence-note")).toContainText("no mainnet contribution has ever been made");
+    await expect(page.getByRole("navigation", { name: "Journey" }).getByRole("link")).toHaveCount(3);
+    await expect(nearPanel(page)).toHaveCount(0); // no NEAR wallet on the product pages
+    await page.getByText("Advanced details").click();
+    await expect(page.getByLabel("NEARLY pool details")).toContainText("nearly-993927.nearlytrade.near|wrap.near|10000");
+    await page.getByRole("link", { name: /Next: Preview/ }).click();
+    await page.getByRole("button", { name: "Get a live indicative quote" }).click();
+    await expect(page.getByTestId("quote-source")).toHaveText("Live indicative quote", { timeout: 120_000 });
+    await expect(page.getByTestId("quote-label")).toContainText(/Mainnet block \d+ · .* UTC/);
+    await expect(page.getByTestId("quote-label")).toContainText("Not an executable offer");
+    await page.getByText("Advanced details").click();
     await expect(page.getByLabel("NEARLY contribution quote")).toContainText("NEARLY +");
     await expect(page.getByLabel("NEARLY contribution quote")).toContainText("Price impact");
-    await step(page, 4).click();
     await expect(page.getByRole("button", { name: "Execute on mainnet — not available" })).toBeDisabled();
-    await step(page, 7).click();
-    await expect(page.getByRole("button", { name: "Fund NEARLY on mainnet — not available" })).toBeDisabled();
+    await page.getByRole("link", { name: /Next: Proof/ }).click();
+    await expect(page.getByLabel("Sandbox proof summary card")).toContainText("Local sandbox execution verified");
     const actionable = await page.locator("button:enabled:visible").allInnerTexts();
     expect(actionable.filter((t) => /^\s*(fund|execute|sign|deposit|bridge|deploy|claim|withdraw)/i.test(t))).toEqual([]);
   });
 
   test("step 5: the real G6/G7 creator's positions in the common shape — #1/#2 confirmed with verified shares, #3 (bridged) not LP; no exit offered", async ({ page }) => {
     await freshPortal(page);
-    await page.goto("/");
+    await page.goto("/#/console");
     await step(page, 4).click();
     const s5 = page.getByLabel("Step 5 Track");
     await s5.getByLabel("NEAR account").fill("lowarena9362.testnet");
@@ -723,7 +724,7 @@ test.describe("@live V4.3A Creator Portal", () => {
   test("mobile 390px: every portal step has no horizontal page scroll", async ({ page }) => {
     await freshPortal(page);
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/");
+    await page.goto("/#/console");
     for (let i = 0; i < 5; i++) {
       await step(page, i).click();
       await page.waitForTimeout(400);
@@ -738,7 +739,7 @@ test.describe("@mock V4.3A Creator Portal with an intercepted Tidepool quote (po
     await page.clock.install();
     await freshPortal(page);
     await mockTidepoolQuote(page, () => ({ amountOut: "1994800", minAmountOut: "1994800" })); // the G7 numbers
-    await page.goto("/");
+    await page.goto("/#/console");
     await step(page, 2).click();
     const s3 = page.getByLabel("Step 3 Simulate");
     await s3.getByLabel("USDC to send from Solana").fill("2");
@@ -757,7 +758,7 @@ test.describe("@mock V4.3A Creator Portal with an intercepted Tidepool quote (po
   test("simulator: 1 USDC (0.9974 arrives) is blocked below the Treasury minimum; Tidepool down → nothing downstream is computed", async ({ page }) => {
     await freshPortal(page);
     await mockTidepoolQuote(page, () => ({ amountOut: "997400", minAmountOut: "997400" }));
-    await page.goto("/");
+    await page.goto("/#/console");
     await step(page, 2).click();
     const s3 = page.getByLabel("Step 3 Simulate");
     await s3.getByLabel("USDC to send from Solana").fill("1");
@@ -772,7 +773,7 @@ test.describe("@mock V4.3A Creator Portal with an intercepted Tidepool quote (po
   });
   test("Phantom (MOCK injected provider): absent → explained; trusted session restored after reload; empty devnet USDC balance read from Solana devnet", async ({ page }) => {
     await freshPortal(page);
-    await page.goto("/");
+    await page.goto("/#/console");
     await expect(page.getByLabel("Solana wallet")).toContainText("Phantom not detected");
     await expect(page.getByRole("button", { name: "Connect Phantom" })).toBeDisabled();
     // MOCK provider: approves only an explicit connect, then reconnects silently (onlyIfTrusted) like Phantom
@@ -797,14 +798,15 @@ test.describe("@mock V4.3A Creator Portal with an intercepted Tidepool quote (po
     await expect(page.getByLabel("Solana wallet")).toContainText("Connected 11111111111111111111111111111111"); // session restored, no click
     expect(await page.evaluate(() => (window as any).__solSign ?? 0)).toBe(0);
   });
-  test("reload keeps the mode and the step (per-viewer convenience)", async ({ page }) => {
+  test("reload keeps the console step (per-viewer convenience) and the Explore step (in the URL)", async ({ page }) => {
     await freshPortal(page);
-    await page.goto("/");
-    await page.getByRole("tab", { name: /Explore/ }).click();
+    await page.goto("/#/console");
     await step(page, 3).click();
     await page.reload();
-    await expect(page.getByTestId("mode-note")).toContainText("EXPLORE MODE");
     await expect(step(page, 3)).toHaveAttribute("aria-current", "step");
+    await page.goto("/#/explore/proof");
+    await page.reload();
+    await expect(page.getByRole("navigation", { name: "Journey" }).getByRole("link", { name: /Proof/ })).toHaveAttribute("aria-current", "step");
   });
 });
 
@@ -825,7 +827,7 @@ test.describe("@offline @public G9.1 read-only demo build", () => {
     await publicOffline(page);
     const pageErrors: string[] = [];
     page.on("pageerror", (e) => pageErrors.push(e.message));
-    for (const hash of ["", "#/", "#/dashboard", "#/pools", "#/positions", "#/proofs", "#/reactor"]) {
+    for (const hash of ["", "#/", "#/how", "#/explore", "#/explore/preview", "#/explore/proof", "#/console", "#/portal", "#/dashboard", "#/pools", "#/positions", "#/proofs", "#/reactor"]) {
       await page.goto(PUBLIC + hash);
       await expect(page.getByTestId("read-only-banner")).toContainText("cannot send any transaction");
       await page.reload();
@@ -835,12 +837,19 @@ test.describe("@offline @public G9.1 read-only demo build", () => {
     expect(await page.evaluate(() => (window as any).__phantomCalls)).toBe(0);
     expect(pageErrors).toEqual([]);
   });
-  test("Creator Portal: wallets explained as unavailable, the NEAR panel is the read-only notice, the bridge card cannot deposit", async ({ page }) => {
+  test("H6 home: the product in one screen, a working Explore CTA; the testnet console explains wallets as unavailable, its NEAR panel is the read-only notice, the bridge card cannot deposit", async ({ page }) => {
     await publicOffline(page);
     await page.goto(PUBLIC);
-    await expect(page.getByRole("heading", { name: /Bring your Solana USDC to NEAR memecoin liquidity/ })).toBeVisible();
-    await expect(page.getByTestId("wallets-disabled")).toContainText("contains no wallet code"); // NEARLY journey, step 1
-    await page.getByRole("tab", { name: /Live/ }).click(); // the testnet journey: wallet panel and bridge card are read-only stubs
+    await expect(page.getByRole("heading", { level: 1, name: "Fuel memecoin liquidity across chains." })).toBeVisible();
+    await expect(page.getByText("Explore how Solana capital can become a verifiable liquidity position on NEAR.")).toBeVisible();
+    await expect(page.getByText("Read-only demonstration · No real funds required")).toBeVisible();
+    await expect(page.getByLabel("Main").getByRole("link")).toHaveText(["Explore", "How it works", "Proof"]);
+    await page.screenshot({ path: "../../docs/h6/home-desktop.jpg", type: "jpeg", quality: 72, fullPage: true });
+    await page.getByRole("link", { name: "Explore the demo" }).first().click();
+    await expect(page).toHaveURL(/#\/explore\/choose$/);
+    await expect(page.getByRole("navigation", { name: "Journey" }).getByRole("link", { name: /Choose/ })).toHaveAttribute("aria-current", "step");
+    await page.goto(PUBLIC + "#/console"); // the developer testnet journey: wallet panel and bridge card are read-only stubs
+    await expect(page.getByTestId("wallets-disabled")).toContainText("contains no wallet code");
     await expect(page.getByLabel("NEAR wallet (not available in the public demo)")).toContainText("not included");
     await page.getByRole("list", { name: "Journey" }).getByRole("button").nth(3).click();
     await expect(page.getByLabel("Bridge (read-only)")).toContainText("not available");
@@ -851,6 +860,10 @@ test.describe("@offline @public G9.1 read-only demo build", () => {
   test("Proofs page lists the executed transactions with explorer links and the documentation; CSP meta present", async ({ page }) => {
     await publicOffline(page);
     await page.goto(PUBLIC + "#/proofs");
+    await expect(page.getByLabel("On-chain testnet proofs").locator("article")).toHaveCount(4); // simple view: 4 milestones
+    await expect(page.getByLabel("On-chain testnet proofs").locator('a[href*="explorer.solana.com/tx/bGUicpgy"]')).toHaveCount(1);
+    await expect(page.getByLabel("Executed transactions")).toHaveCount(0);
+    await page.getByRole("button", { name: "Technical view" }).click();
     const txs = page.getByLabel("Executed transactions");
     await expect(txs.locator("tr")).toHaveCount(16);
     await expect(txs.locator('[data-proof="G7-SOL"] a')).toHaveAttribute("href", /explorer\.solana\.com\/tx\/bGUicpgy.*cluster=devnet/);
@@ -864,63 +877,117 @@ test.describe("@offline @public G9.1 read-only demo build", () => {
   test("mobile 390px: no horizontal scroll on the public routes", async ({ page }) => {
     await publicOffline(page);
     await page.setViewportSize({ width: 390, height: 844 });
-    for (const hash of ["#/", "#/proofs", "#/pools", "#/positions"]) {
+    for (const hash of ["#/", "#/how", "#/explore/choose", "#/explore/preview", "#/explore/proof", "#/proofs", "#/console", "#/pools", "#/positions"]) {
       await page.goto(PUBLIC + hash);
       await expect(page.getByTestId("read-only-banner")).toBeVisible();
       await page.waitForTimeout(300);
       expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), hash).toBeLessThanOrEqual(0);
     }
   });
-  test("H1/H3 NEARLY journey offline: recorded snapshot + quote labelled with their block, the real error of a failed live quote, the sandbox proof with code provenance", async ({ page }) => {
+  test("H1/H3/H6 NEARLY journey offline: historical snapshot + quote labelled with their block, the real error of a failed live quote, no invented quote, the sandbox proof in two levels with code provenance", async ({ page }) => {
     test.setTimeout(150_000); // the failed live quote goes through the client's retries on every provider first
     await publicOffline(page);
-    await page.goto(PUBLIC);
-    await expect(page.getByTestId("mode-note")).toContainText("EXPLORE MODE"); // the public demo opens on the NEARLY journey
+    await page.goto(PUBLIC + "#/explore");
     await expect(page.getByTestId("nearly-evidence-note")).toContainText("no mainnet contribution has ever been made");
-    const nav = page.getByRole("list", { name: "Journey" }).getByRole("button");
-    await expect(nav).toHaveCount(8);
+    const nav = page.getByRole("navigation", { name: "Journey" }).getByRole("link");
+    await expect(nav).toHaveText([/Choose/, /Preview/, /Proof/]);
+    const choose = page.getByLabel("Step 1 Choose");
+    await expect(choose).toContainText(/Snapshot · block \d+/);
+    await choose.getByText("Advanced details").click();
+    await expect(page.getByLabel("NEARLY pool details")).toContainText(/SNAPSHOT block \d+/);
     await nav.nth(1).click();
-    await expect(page.getByLabel("NEARLY step 2 Choose pool")).toContainText(/SNAPSHOT block \d+/);
-    await nav.nth(2).click();
-    await expect(page.getByLabel("90/8/2 split")).toContainText("90 USDC");
-    await nav.nth(3).click();
-    await expect(page.getByTestId("quote-source")).toHaveText("RECORDED");
-    await expect(page.getByLabel("NEARLY step 4 Quote")).toContainText(/recorded at mainnet block \d+/);
-    await page.getByRole("button", { name: /Get a live quote/ }).click();
+    const pv = page.getByLabel("Step 2 Preview");
+    await expect(page.getByLabel("Contribution preview")).toContainText("90 USDC");
+    await expect(page.getByLabel("90/8/2 split", { exact: true })).toContainText("90 USDC");
+    await expect(page.getByTestId("quote-source")).toHaveText("Historical quote");
+    await expect(page.getByTestId("quote-label")).toContainText(/Mainnet block \d+ · 2026-11-14 15:51 UTC/);
+    await expect(page.getByTestId("quote-label")).toContainText("Not an executable offer");
+    await expect(page.getByLabel("Contribution preview")).toContainText("NEARLY");
+    await page.getByRole("button", { name: "Get a live indicative quote" }).click();
     await expect(page.getByTestId("quote-error")).toContainText("Live quote failed", { timeout: 60_000 }); // every endpoint is blocked: the real error is shown
-    await expect(page.getByTestId("quote-source")).toHaveText("RECORDED"); // and the recorded quote keeps its label
-    await nav.nth(2).click();
-    await page.getByLabel("USDC you would send").fill("250");
-    await nav.nth(3).click();
+    await expect(page.getByTestId("quote-source")).toHaveText("Historical quote"); // and the historical quote keeps its label
+    await expect(pv.getByRole("button", { name: "Execute on mainnet — not available" })).toBeDisabled();
+    await page.screenshot({ path: "../../docs/h6/explore-preview-desktop.jpg", type: "jpeg", quality: 72, fullPage: true });
+    await nav.nth(0).click();
+    await page.getByLabel("Contribution", { exact: true }).fill("250");
+    await nav.nth(1).click();
     await expect(page.getByTestId("quote-none")).toBeVisible(); // no invented quote for another amount
-    await nav.nth(6).click();
-    const pr = page.getByLabel("NEARLY step 7 Sandbox proof");
-    await expect(pr).toContainText("LOCAL SANDBOX");
+    await expect(page.getByLabel("Contribution preview")).toContainText("needs a quote");
+    await nav.nth(2).click();
+    const card = page.getByLabel("Sandbox proof summary card");
+    await expect(card).toContainText("Local sandbox execution verified");
+    for (const f of ["Position created", "Ownership verified", "Fees accounted for", "Withdrawal tested"]) await expect(card.locator(`li.fact.ok[data-fact="${f}"]`)).toHaveCount(1);
+    await expect(card.getByText("58", { exact: true })).toBeVisible();
+    await expect(card.getByText("3 / 3", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Sandbox steps")).toHaveCount(0); // the 58 steps stay behind the technical view
+    await card.getByRole("button", { name: "View technical evidence" }).click();
+    const tech = page.getByLabel("Technical evidence");
+    await expect(tech).toContainText("LOCAL SANDBOX");
     await expect(page.getByLabel("Code provenance").getByText("= mainnet code")).toHaveCount(3);
     await expect(page.getByLabel("Sandbox steps").locator("tr[data-step]")).toHaveCount(58);
-    await expect(page.getByLabel("Sandbox proof summary")).toContainText("treasury-dcl.test.near");
+    await expect(page.getByLabel("Sandbox proof summary", { exact: true })).toContainText("treasury-dcl.test.near");
     await page.locator('tr[data-step="F1"]').getByRole("button", { name: "proof" }).click();
-    await expect(pr.locator("pre.json")).toContainText("dcl_nft_token_owner");
+    await expect(tech.locator("pre.json")).toContainText("dcl_nft_token_owner");
+    await expect(page.getByLabel("Fees and exit")).toContainText("not a forecast");
     await page.screenshot({ path: "../../docs/v4/h1-nearly-sandbox-proof.jpg", type: "jpeg", quality: 70, fullPage: true });
-    await nav.nth(7).click();
-    await expect(page.getByLabel("NEARLY step 8 Fees and exit")).toContainText("not a forecast");
-    await expect(page.getByRole("button", { name: "Fund NEARLY on mainnet — not available" })).toBeDisabled();
-    await nav.nth(2).click();
-    await page.getByLabel("USDC you would send").fill("100");
-    await nav.nth(3).click();
-    await expect(page.getByTestId("quote-source")).toHaveText("RECORDED");
+    await nav.nth(0).click();
+    await page.getByLabel("Contribution", { exact: true }).fill("100");
+    await nav.nth(1).click();
+    await expect(page.getByTestId("quote-source")).toHaveText("Historical quote");
     await page.screenshot({ path: "../../docs/v4/h1-nearly-quote.jpg", type: "jpeg", quality: 70, fullPage: true });
     expect(await page.evaluate(() => (window as any).__phantomCalls)).toBe(0);
   });
-  test("H1 NEARLY journey at 390px: no horizontal scroll on any of the 8 steps", async ({ page }) => {
+  test("H6 NEARLY journey at 390px: no horizontal scroll on any of the 3 steps, advanced details and technical evidence open", async ({ page }) => {
     await publicOffline(page);
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(PUBLIC + "#/explore/choose");
+    await page.getByText("Advanced details").click();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), "choose").toBeLessThanOrEqual(0);
+    await page.screenshot({ path: "../../docs/h6/explore-choose-mobile.jpg", type: "jpeg", quality: 72, fullPage: true });
+    await page.goto(PUBLIC + "#/explore/preview");
+    await page.getByText("Advanced details").click();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), "preview").toBeLessThanOrEqual(0);
+    await page.goto(PUBLIC + "#/explore/proof");
+    await page.getByRole("button", { name: "View technical evidence" }).click();
+    await page.locator('tr[data-step="F1"]').getByRole("button", { name: "proof" }).click();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), "proof").toBeLessThanOrEqual(0);
+    await page.goto(PUBLIC + "#/");
+    await page.screenshot({ path: "../../docs/h6/home-mobile.jpg", type: "jpeg", quality: 72, fullPage: true });
+    await page.goto(PUBLIC + "#/proofs");
+    await page.screenshot({ path: "../../docs/h6/proof-mobile.jpg", type: "jpeg", quality: 72, fullPage: true });
+  });
+  test("H6 keyboard: skip link, main navigation and the Developers menu work without a mouse", async ({ page }) => {
+    await publicOffline(page);
     await page.goto(PUBLIC);
-    const nav = page.getByRole("list", { name: "Journey" }).getByRole("button");
-    for (let i = 0; i < 8; i++) {
-      await nav.nth(i).click();
-      if (i === 6) await page.locator('tr[data-step="F1"]').getByRole("button", { name: "proof" }).click();
-      expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), `step ${i + 1}`).toBeLessThanOrEqual(0);
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("link", { name: "SOL2NEAR home" })).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(page.getByLabel("Main").getByRole("link", { name: "Explore" })).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/#\/explore$/);
+    await page.locator(".devmenu summary").focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator(".devmenu-list").getByRole("link", { name: "Testnet console" })).toBeVisible();
+    await page.locator(".devmenu-list").getByRole("link", { name: "Pools" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/#\/pools$/);
+    await expect(page.locator(".devmenu-list")).toBeHidden(); // the menu closes after navigation
+  });
+  test("H6 Proof page and Explore at 1440px and 768px: simple and technical views, no horizontal scroll", async ({ page }) => {
+    await publicOffline(page);
+    for (const w of [1440, 768]) {
+      await page.setViewportSize({ width: w, height: 900 });
+      await page.goto(PUBLIC + "#/proofs");
+      if (w === 1440) await page.screenshot({ path: "../../docs/h6/proof-desktop.jpg", type: "jpeg", quality: 72, fullPage: true });
+      await page.getByRole("button", { name: "Technical view" }).click();
+      await expect(page.getByLabel("Sandbox steps").locator("tr[data-step]")).toHaveCount(58);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), String(w)).toBeLessThanOrEqual(0);
+      await page.goto(PUBLIC + "#/explore/choose");
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), `explore ${w}`).toBeLessThanOrEqual(0);
+      if (w === 1440) await page.screenshot({ path: "../../docs/h6/explore-choose-desktop.jpg", type: "jpeg", quality: 72, fullPage: true });
+      if (w === 768) await page.screenshot({ path: "../../docs/h6/explore-choose-tablet.jpg", type: "jpeg", quality: 72, fullPage: true });
     }
   });
 });

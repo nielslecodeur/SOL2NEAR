@@ -14,7 +14,10 @@ export class RpcError extends Error {
 }
 
 export interface NearRpc {
-  view<T>(contract: string, method: string, args?: object): Promise<T>;
+  /** View call at the latest final block, or at `blockId` when given (interdependent views then read one consistent state). */
+  view<T>(contract: string, method: string, args?: object, blockId?: number): Promise<T>;
+  /** Height and timestamp (ns) of the latest final block. */
+  finalBlock?(): Promise<{ height: number; timestampNs: bigint }>;
   /** Liquid NEAR (yocto) of an account, or null if it does not exist. */
   nearBalance(accountId: string): Promise<bigint | null>;
   /** Code hash of a deployed contract, or null if the account has no contract / does not exist. */
@@ -70,9 +73,9 @@ export function nearRpc(urls: string | string[] = NEAR_RPC_URLS, doFetch: FetchL
     return json.result;
   }
   return {
-    async view<T>(contract: string, method: string, args: object = {}) {
+    async view<T>(contract: string, method: string, args: object = {}, blockId?: number) {
       const r = await call("query", {
-        request_type: "call_function", finality: "final", account_id: contract, method_name: method,
+        request_type: "call_function", ...(blockId === undefined ? { finality: "final" } : { block_id: blockId }), account_id: contract, method_name: method,
         args_base64: btoa(JSON.stringify(args)),
       });
       return JSON.parse(new TextDecoder().decode(new Uint8Array(r.result))) as T;
@@ -98,6 +101,10 @@ export function nearRpc(urls: string | string[] = NEAR_RPC_URLS, doFetch: FetchL
     async blockTimestampNs() {
       const r = await call("block", { finality: "final" });
       return BigInt(r.header.timestamp_nanosec);
+    },
+    async finalBlock() {
+      const r = await call("block", { finality: "final" });
+      return { height: Number(r.header.height), timestampNs: BigInt(r.header.timestamp_nanosec) };
     },
     async txStatus(hash, signerId) {
       try {

@@ -28,7 +28,8 @@ for (const [name, re] of MARKERS) {
   const m = js.match(re);
   if (m) { bad++; console.log(`FAIL ${name}: found "${m[0]}"`); } else console.log(`PASS no ${name}`);
 }
-const ro = /PUBLIC READ-ONLY DEMO/.test(js);
+// H6: the banner text changed ("Public read-only demo — … it cannot send any transaction"); both its test id and its claim must be compiled in
+const ro = /read-only-banner/.test(js) && /Public read-only demo/.test(js) && /cannot send any transaction/.test(js);
 ro ? console.log("PASS read-only banner compiled in") : (bad++, console.log("FAIL read-only banner missing"));
 /Content-Security-Policy/.test(html) && /connect-src/.test(html) && /form-action 'none'/.test(html)
   ? console.log("PASS CSP meta (connect-src restricted to the read-only data sources)") : (bad++, console.log("FAIL CSP meta missing"));

@@ -11,22 +11,39 @@ import { UnifiedCard } from "./portal/UnifiedCard.tsx";
 import { DclPositionPreview } from "./v4/Dcl.tsx";
 import { fromV3Deposit } from "../../../packages/near-client/src/index.ts";
 import { ProofsPage } from "./proofs/Proofs.tsx";
+import { Home, HowItWorks } from "./home/Home.tsx";
+import { EXPLORE_STEPS, NearlyJourney, type ExploreStep } from "./portal/NearlyJourney.tsx";
 
 /** Public read-only demo build (`vite build --mode public`): no wallet or signing code is bundled (see vite.config.ts). */
 const READ_ONLY = import.meta.env.VITE_PUBLIC_READ_ONLY === "1";
 import { bridgeTone, depositStatus, duration, fuel, pct, usdc, wnear, type Tone } from "./format.ts";
 
-type Route = { page: "creator" } | { page: "proofs" } | { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" } | { page: "pools" } | { page: "positions" };
+// H6 routes. Product: home, how, explore (3 steps), proofs. Developers: console (the former Creator Portal testnet journey,
+// also at #/portal), dashboard, vault, reactor, pools, positions — every historical direct route still works.
+type Route =
+  | { page: "home" } | { page: "how" } | { page: "explore"; step: ExploreStep } | { page: "proofs" } | { page: "console" }
+  | { page: "dashboard" } | { page: "vault"; id: string } | { page: "reactor" } | { page: "pools" } | { page: "positions" };
+const DEV_PAGES = new Set<Route["page"]>(["console", "dashboard", "vault", "reactor", "pools", "positions"]);
+const DEV_LINKS: [string, string, Route["page"][]][] = [
+  ["#/console", "Testnet console", ["console"]], ["#/dashboard", "Dashboard", ["dashboard", "vault"]], ["#/reactor", "FUEL Reactor", ["reactor"]],
+  ["#/pools", "Pools", ["pools"]], ["#/positions", "Positions", ["positions"]],
+];
+const REPO = "https://github.com/nielslecodeur/SOL2NEAR";
 
 function parseRoute(): Route {
+  // a browser wallet returning with ?transactionHashes= / ?errorCode= lands where the NEAR panel records it (#/console)
+  if (/[?&](transactionHashes|errorCode)=/.test(location.search) && !location.hash.replace(/^#\/?/, "")) return { page: "console" };
   const [, page, id] = location.hash.split("/");
   if (page === "vault" && id) return { page: "vault", id };
+  if (page === "explore") return { page: "explore", step: EXPLORE_STEPS.find((s) => s.id === id)?.id ?? "choose" };
+  if (page === "how") return { page: "how" };
+  if (page === "console" || page === "portal") return { page: "console" };
   if (page === "reactor") return { page: "reactor" };
   if (page === "pools") return { page: "pools" };
   if (page === "positions") return { page: "positions" };
   if (page === "dashboard") return { page: "dashboard" };
   if (page === "proofs") return { page: "proofs" };
-  return { page: "creator" };
+  return { page: "home" };
 }
 
 const Badge = ({ tone, children }: { tone: Tone; children: React.ReactNode }) => <span className={`badge ${tone}`}>{children}</span>;
@@ -39,11 +56,20 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const devMenu = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
-    const on = () => setRoute(parseRoute());
+    const on = () => {
+      setRoute(parseRoute());
+      if (devMenu.current) devMenu.current.open = false;
+      scrollTo({ top: 0 });
+    };
     addEventListener("hashchange", on);
     return () => removeEventListener("hashchange", on);
   }, []);
+  useEffect(() => {
+    const t: Partial<Record<Route["page"], string>> = { home: "SOL2NEAR — memecoin liquidity across chains", how: "How it works · SOL2NEAR", explore: "Explore NEARLY · SOL2NEAR", proofs: "Proof · SOL2NEAR" };
+    document.title = t[route.page] ?? "Developers · SOL2NEAR (testnet)";
+  }, [route.page]);
 
   const [tidepoolOk, setTidepoolOk] = useState<boolean | null>(null);
   /** The account of the CONNECTED wallet (testnet only), distinct from the watched account. */
@@ -85,39 +111,46 @@ export function App() {
     />
   );
   const watch = (a: string) => { setAccount(a); localStorageSet("account", a); refresh(a); };
+  const dev = DEV_PAGES.has(route.page);
+  const cur = (p: Route["page"]) => (route.page === p ? "page" as const : undefined);
   return (
     <div className="app">
-      <header>
-        <a href="#/" className="logo">SOL<span>2</span>NEAR</a>
-        <nav>
-          <a href="#/" className={route.page === "creator" ? "on" : ""}>Creator Portal</a>
-          <a href="#/dashboard" className={route.page === "dashboard" || route.page === "vault" ? "on" : ""}>Dashboard</a>
-          <a href="#/reactor" className={route.page === "reactor" ? "on" : ""}>FUEL Reactor</a>
-          <a href="#/pools" className={route.page === "pools" ? "on" : ""}>Pools (V4)</a>
-          <a href="#/positions" className={route.page === "positions" ? "on" : ""}>Positions (V4)</a>
-          <a href="#/proofs" className={route.page === "proofs" ? "on" : ""}>Proofs</a>
+      <a className="skip" href="#content" onClick={(e) => { e.preventDefault(); document.getElementById("content")?.focus(); }}>Skip to content</a>
+      <header className="topbar">
+        <a href="#/" className="logo" aria-label="SOL2NEAR home">SOL<span>2</span>NEAR</a>
+        <nav className="mainnav" aria-label="Main">
+          <a href="#/explore" aria-current={cur("explore")}>Explore</a>
+          <a href="#/how" aria-current={cur("how")}>How it works</a>
+          <a href="#/proofs" aria-current={cur("proofs")}>Proof</a>
         </nav>
-        <div className="net">
+        <details className="devmenu" ref={devMenu}>
+          <summary className={dev ? "on" : ""}>Developers</summary>
+          <div className="devmenu-list">
+            {DEV_LINKS.map(([h, label, pages]) => <a key={h} href={h} aria-current={pages.includes(route.page) ? "page" : undefined}>{label}</a>)}
+            <a href={REPO} target="_blank" rel="noreferrer">GitHub ↗</a>
+          </div>
+        </details>
+      </header>
+
+      {READ_ONLY && (
+        <div className="statusbar" role="note" data-testid="read-only-banner">
+          <span className="dot" aria-hidden="true" /><span><b>Public read-only demo</b> — this site contains no wallet and no signing code: it cannot send any transaction.</span>
+        </div>
+      )}
+
+      {dev && (
+        <div className="devbar" aria-label="Developer settings">
           <Badge tone="pending">TESTNET</Badge>
           <select value={source} onChange={(e) => setSource(e.target.value as "testnet" | "demo")} aria-label="Data source">
             <option value="testnet">Live testnet (read-only)</option>
             <option value="demo">SIMULATED / DEMO DATA</option>
           </select>
-        </div>
-      </header>
-
-      {READ_ONLY && (
-        <div className="banner sim" role="note" data-testid="read-only-banner">
-          PUBLIC READ-ONLY DEMO — this site contains no wallet and no signing code: it cannot send any transaction. Testnet and mainnet data are read with
-          public view calls; sandbox results are labelled. To sign on testnet with your own wallets, run the app locally (README).
+          <small>Tidepool, used for the Solana Devnet → NEAR bridge, is a <b>community sandbox, not official NEAR Intents</b>. Test tokens have no value.{READ_ONLY && " To sign on testnet with your own wallets, run the app locally (README)."}</small>
         </div>
       )}
-      {demo && <div className="banner sim">SIMULATED / DEMO DATA: nothing on this screen comes from a chain.</div>}
-      <div className="banner info">
-        Tidepool, used for the Solana Devnet → NEAR bridge, is a <b>community sandbox, not official NEAR Intents</b>. Test tokens have no value.
-      </div>
+      {dev && demo && <div className="banner sim">SIMULATED / DEMO DATA: nothing on this screen comes from a chain.</div>}
 
-      {!demo && route.page !== "creator" && (
+      {dev && !demo && route.page !== "console" && (
         <form className="watch" onSubmit={(e) => { e.preventDefault(); localStorageSet("account", account); refresh(); }}>
           <label htmlFor="acct">Creator account</label>
           <input id="acct" placeholder="you.testnet" value={account} onChange={(e) => setAccount(e.target.value)} />
@@ -126,19 +159,23 @@ export function App() {
         </form>
       )}
 
-      {!demo && route.page !== "creator" && nearPanel}
+      {dev && !demo && route.page !== "console" && nearPanel}
 
-      {error && <div className="banner err">{error}</div>}
-      {snap && !demo && !snap.deployed.treasury && (
+      {dev && error && <div className="banner err">{error}</div>}
+      {dev && snap && !demo && !snap.deployed.treasury && (
         <div className="banner err">
           Treasury <code>{TREASURY_ACCOUNT_ID}</code> has no contract on testnet yet, so there is no real data to show. Switch to SIMULATED to preview the screens.
         </div>
       )}
 
-      {route.page === "creator" && (demo
-        ? <main><div className="banner sim">The Creator Portal has no simulated data: switch to Live testnet.</div></main>
-        : <CreatorPortal wallet={walletAccount} account={account} snap={snap} nearPanel={nearPanel} onWatch={watch} />)}
+      <div id="content" tabIndex={-1} className={dev ? "content dev" : "content"}>
+      {route.page === "home" && <Home />}
+      {route.page === "how" && <HowItWorks />}
+      {route.page === "explore" && <NearlyJourney step={route.step} />}
       {route.page === "proofs" && <ProofsPage />}
+      {route.page === "console" && (demo
+        ? <main><div className="banner sim">The testnet console has no simulated data: switch to Live testnet.</div></main>
+        : <CreatorPortal wallet={walletAccount} account={account} snap={snap} nearPanel={nearPanel} onWatch={watch} />)}
       {snap && route.page === "dashboard" && <Dashboard snap={snap} account={account} onTidepool={setTidepoolOk} />}
       {snap && route.page === "vault" && <Vault snap={snap} id={route.id} />}
       {snap && route.page === "reactor" && <ReactorPage snap={snap} />}
@@ -152,10 +189,26 @@ export function App() {
             <PositionsPage wallet={walletAccount} />
             <main className="pools"><section className="card"><h3>Positions (V4.2A) · TreasuryDCL — not deployed</h3><DclPositionPreview /></section></main>
           </>)}
+      </div>
 
-      <footer>
-        Contracts: <a href={explorerAccount(TREASURY_ACCOUNT_ID)} target="_blank" rel="noreferrer">{TREASURY_ACCOUNT_ID}</a> ·{" "}
-        <a href={explorerAccount(FUEL_ACCOUNT_ID)} target="_blank" rel="noreferrer">{FUEL_ACCOUNT_ID}</a> · NEAR testnet
+      <footer className="sitefoot">
+        <div className="foot-brand">
+          <a href="#/" className="logo">SOL<span>2</span>NEAR</a>
+          <p>Solana capital → NEAR memecoin liquidity. A NEAR Hackathon 2026 project on test networks only. Contracts are unaudited.</p>
+        </div>
+        <nav aria-label="Product">
+          <b>Product</b>
+          <a href="#/explore">Explore</a><a href="#/how">How it works</a><a href="#/proofs">Proof</a>
+          <a href={REPO} target="_blank" rel="noreferrer">GitHub</a>
+        </nav>
+        <nav aria-label="Developers">
+          <b>Developers</b>
+          {DEV_LINKS.map(([h, label]) => <a key={h} href={h}>{label}</a>)}
+        </nav>
+        <p className="foot-contracts">
+          Contracts (NEAR testnet): <a href={explorerAccount(TREASURY_ACCOUNT_ID)} target="_blank" rel="noreferrer">{TREASURY_ACCOUNT_ID}</a> ·{" "}
+          <a href={explorerAccount(FUEL_ACCOUNT_ID)} target="_blank" rel="noreferrer">{FUEL_ACCOUNT_ID}</a>
+        </p>
       </footer>
     </div>
   );
