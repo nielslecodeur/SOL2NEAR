@@ -7,13 +7,34 @@ The demo has been **prepared and tested locally only**. **It is not deployed**: 
 
 | Item | State |
 |---|---|
-| G9 commits `62dfc04`, `9033645`, `9b96f76` | **published** on `origin/main` (head `9b96f76f8c59d9c9a0ef288c06f5078c7b1dec7c`, checked on the remote) |
-| G9.1 read-only build, Proofs page, bundle check, e2e tests, Pages workflow, this doc | **local commit only, not pushed** |
-| GitHub Pages site | **not enabled, not deployed** |
+| G9 commits `62dfc04`, `9033645`, `9b96f76` | **published** on `origin/main` |
+| G9.1 commit `3368d8a` (read-only build, Proofs page, bundle check, e2e tests, Pages workflow, this doc) | **published** on `origin/main` (pushed with the lead's approval, checked on the remote) |
+| Vercel config (`vercel.json`, bundle check extension, this section) | local commit, not pushed |
+| Vercel project / deployment | **not created, not deployed** |
+| GitHub Pages site | **not enabled, not deployed** (kept as a manual-only fallback) |
 | FullAccess keys on `treasury.sol2near-dev.testnet` and `fuel.sol2near-dev.testnet` | **kept** (lead's decision), disclosed in README, portal and G9 docs |
 | G8 (`execute_lp(3)`) | **not executed** (refused by the lead), still `G8 READY FOR USER SIGNATURE` |
 
-## 2. Hosting chosen: GitHub Pages via GitHub Actions
+## 2. Hosting chosen: Vercel (lead's preference), static, prebuilt
+
+- `vercel.json` (repo root): `framework: null`, `installCommand: pnpm install --frozen-lockfile`,
+  `buildCommand: pnpm --filter @sol2near/web build:public && node scripts/check-public-bundle.mjs`,
+  `outputDirectory: apps/web/dist-public`, **`git.deploymentEnabled: false`** (even if the GitHub repo is connected later,
+  no push deploys anything automatically).
+- Real **HTTP headers** on every path (better than GitHub Pages, which only allows the `<meta>` CSP):
+  the same CSP as the meta **plus `frame-ancestors 'none'`**, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: no-referrer`, `Permissions-Policy` (camera, microphone, geolocation, payment, usb, clipboard-read off).
+  HSTS is added by Vercel itself.
+- `check-public-bundle.mjs` now also checks `vercel.json`: build + check command, output dir, auto-deploy off,
+  CSP header `connect-src` identical to the meta, anti-framing headers. All PASS.
+- **Deployment mode: prebuilt from a clean clone of the pushed commit.** `vercel build --prod` runs the build command locally
+  (same toolchain as the tests), then `vercel deploy --prebuilt --prod` uploads **only `.vercel/output`** (static files +
+  headers config), never the source tree or any local file.
+- Vercel defaults that matter: production `*.vercel.app` domains are public; preview deployments are behind Vercel
+  Authentication; Web Analytics / Speed Insights are off unless enabled. The URL is `<project>.vercel.app` **only if that name
+  is free**; the real URL is the one the CLI prints, never assumed.
+
+### Fallback: GitHub Pages via GitHub Actions (manual only, not enabled)
 
 - Why: same repository as the code (no new account or cloud project), static files only, HTTPS, deploys only what the workflow built
   from a given commit, and it can be unpublished in one click.
@@ -106,6 +127,26 @@ Removing them later (not authorized, not planned now):
 - Visitors could still mistake test tokens for value: banner and "testnet / devnet only" wording on every route.
 
 ## 8. Deployment procedure (needs the lead's approval for each step)
+
+### Vercel (chosen)
+1. The lead logs in once, interactively: `npx vercel@65.16.0 login` (no token is stored in the repo).
+   Flags checked against `vercel@65.16.0 <cmd> --help` (link, pull, build, deploy `--prebuilt --prod`, rollback, remove).
+2. Clean clone of the pushed commit, install, link (**creates the Vercel project**), pull settings, build, deploy:
+   ```
+   git clone https://github.com/nielslecodeur/SOL2NEAR.git sol2near-demo && cd sol2near-demo
+   pnpm install --frozen-lockfile
+   npx vercel@65.16.0 link --yes                # new project named after the folder: sol2near-demo
+   npx vercel@65.16.0 pull --yes --environment=production
+   npx vercel@65.16.0 build --prod          # runs build:public + check-public-bundle (fails = nothing to deploy)
+   npx vercel@65.16.0 deploy --prebuilt --prod
+   ```
+3. Verify on the printed URL: `curl -sI <url>` shows the CSP / X-Frame-Options headers; banner on every route; Proofs page;
+   no wallet button; devtools network tab shows only the CSP-listed hosts.
+
+Rollback (Vercel): `npx vercel@65.16.0 rollback` / promote an earlier deployment, or `npx vercel@65.16.0 remove sol2near-demo`
+(asks for confirmation; deletes the deployments and their URLs), or Project → Settings → Delete. Nothing on-chain depends on the site.
+
+### GitHub Pages (fallback)
 
 1. **Push** the local G9.1 commit(s) to `origin/main` (`git push origin main`, no force).
 2. GitHub → repository **Settings → Pages → Build and deployment → Source = "GitHub Actions"**.
